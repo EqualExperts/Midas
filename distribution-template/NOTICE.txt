@@ -1,0 +1,26 @@
+=========================================================================
+==  NOTICE file corresponding to the section 4 d of                    ==
+==  the Apache License, Version 2.0,                                   ==
+==  in this case for the Midas distribution.                           ==
+=========================================================================
+
+This product includes software developed by
+The Apache Software Foundation (http://www.apache.org/).
+
+It includes the following other software:
+Groovy (http://groovy.codehaus.org)
+Scala (http://www.scala-lang.org/)
+MongoDB Java Driver (http://docs.mongodb.org/ecosystem/drivers/#java)
+
+It uses the following other software:
+JUnit (http://www.junit.org/)
+Mockito (https://code.google.com/p/mockito/)
+Hamcrest (http://code.google.com/p/hamcrest/)
+Spock (http://code.google.com/p/spock/)
+Specs2 (http://etorreborre.github.io/specs2/)
+Gradle (http://www.gradle.org/)
+Cobertura (http://cobertura.sourceforge.net/)
+Checkstyle (http://checkstyle.sourceforge.net/)
+FindBugs (http://findbugs.sourceforge.net/)
+
+For licenses see the LICENSE.txt file.

@@ -25,6 +25,10 @@ project.ext {
     mockito = 'org.mockito:mockito-all:1.9.5'
     specs2 = 'org.specs2:specs2_2.10:2.2.2'
     spock = 'org.spockframework:spock-core:0.7-groovy-2.0'
+
+    //Distribution settings
+    distsTemplateDir = 'distribution-template'
+    distsBinDir = "$distsDir/bin"
 }
 
 repositories {
@@ -53,3 +57,33 @@ jar {
 }
 
 
+task distribute(type:Zip, dependsOn: assemble) {
+    doFirst {
+        ant.mkdir(dir:"$distsBinDir")
+        prepareExecutables()
+    }
+    from project.ext.distsBinDir
+    from (project.ext.distsTemplateDir) {
+        include ('**/*.txt')
+    }
+    from ("$libsDir") { into ('libs') }
+}
+
+def prepareExecutables() {
+    def allLibFiles = new File("$libsDir").list().collect { "libs/$it" }
+    new File("$distsTemplateDir").list().each { filename ->
+        if (filename.startsWith('midas')) {
+            def contents = new File("$distsTemplateDir/$filename").text
+            new FileWriter("$distsBinDir/$filename").withWriter { writer ->
+                if(filename.endsWith('.sh')) {
+                    writer.append contents.replace('%%JAVA_CLASS_PATH%%', allLibFiles.collect({"\$MIDAS_HOME/$it"}).join(":"))
+                }
+                if(filename.endsWith('.bat')) {
+                    writer.append contents.replace('%%JAVA_CLASS_PATH%%', allLibFiles.collect({"%MIDAS_HOME%/$it"}).join(";"))
+                }
+            }
+        }
+    }
+}
+
+build.dependsOn = ['check', 'distribute']

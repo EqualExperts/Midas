@@ -10,6 +10,13 @@ sourceCompatibility = '1.6'
 targetCompatibility = '1.6'
 
 project.ext {
+    //App Config
+    appConfigUrl = new URL("file:///${projectDir}/AppConfig.groovy")
+    appConfig = new ConfigSlurper('configuration').parse(appConfigUrl).configuration
+    manifest = appConfig.product.distribution.jar.manifest.details
+    project.archivesBaseName = appConfig.product.distribution.name
+    previousArchiveName = appConfig.product.distribution.previousArchiveName
+
     //libs
     mongoDriver = 'org.mongodb:mongo-java-driver:2.11.3'
     groovy = 'org.codehaus.groovy:groovy-all:2.1.8'
@@ -31,4 +38,18 @@ dependencies {
     compile(project.ext.mongoDriver, project.ext.groovy, project.ext.scala)
     testCompile(project.ext.junit, project.ext.specs2, project.ext.mockito, project.ext.spock)
 }
+
+jar {
+    manifest {
+        attributes.putAll(project.ext.manifest)
+    }
+
+    doLast {
+        copy {
+            from (configurations.compile.asPath.split(File.pathSeparator))
+            into "$libsDir"
+        }
+    }
+}
+
 

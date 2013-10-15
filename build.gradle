@@ -4,6 +4,11 @@ apply plugin: 'scala'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 
+apply plugin: 'checkstyle' //for java code conventions
+apply plugin: 'jdepend' //for dependency analysis
+apply plugin: 'findbugs' //for static code analysis
+apply plugin: 'pmd'
+
 defaultTasks 'clean', 'build'
 
 sourceCompatibility = '1.6'
@@ -25,6 +30,9 @@ project.ext {
     mockito = 'org.mockito:mockito-all:1.9.5'
     specs2 = 'org.specs2:specs2_2.10:2.2.2'
     spock = 'org.spockframework:spock-core:0.7-groovy-2.0'
+
+    //dependency analysis
+    jdepend = 'jdepend:jdepend:2.9.1'
 
     //Distribution settings
     distsTemplateDir = 'distribution-template'
@@ -56,6 +64,26 @@ jar {
     }
 }
 
+findbugs {
+    toolVersion = '2.0.2'
+    reportsDir = file("$reporting.baseDir/findbugs")
+    effort = "max"
+    reportLevel = "high"
+}
+
+tasks.withType(FindBugs) {
+    excludeFilter = file("${projectDir}/tools-config/findbugs/excludeFilter.xml")
+}
+
+findbugsTest.enabled = false
+
+checkstyle {
+   configFile = file("${projectDir}/tools-config/checkstyle/checkstyle.xml")
+}
+
+checkstyleTest {
+    exclude('**/*/*Specs.java')
+}
 
 task distribute(type:Zip, dependsOn: assemble) {
     doFirst {

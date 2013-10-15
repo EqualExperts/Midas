@@ -1,7 +1,10 @@
 package com.ee.midas.runner;
 
-public class Server {
-    public static void main(String[] args) {
+public final class Server {
+    private Server() {
+    }
+
+    public static void main(final String ...args) {
         System.out.println("Running Midas....");
     }
 }

@@ -24,7 +24,7 @@ We will be following [JBoss Versioning Convention](https://community.jboss.org/w
 * `major.minor.micro.Alpha[n]`
 * `major.minor.micro.Beta[n]`
 * `major.minor.micro.CR[n]`
-Please refer to `AppConfig.groovy` - a single place of change for all the project get
+Please refer to `AppConfig.groovy` - a single place of change for all the project configuration changes
 
 ## License
 **Midas is licensed under the terms of the [FreeBSD License](http://en.wikipedia.org/wiki/BSD_licenses)**

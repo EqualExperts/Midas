@@ -1,0 +1,14 @@
+.get
+build
+.gradle
+bin
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+cobertura.ser
+.idea
+target
+out
+.settings

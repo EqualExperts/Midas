@@ -1,9 +1,16 @@
 # Midas
 ***On-the-fly Schema Migration Tool for MongoDB***
 ##Overview
-TODO
-<br>
+  Currently, applications have to hand-roll their own schema migration infrastructure or use some third-party tool
+  It is difficult to migrate TBs of data without downtime (unacceptable from SLA stand-point!).  This is where
+  Midas fills the gap.
 
+  It intercepts responses at MongoDB Protocol level and upgrades or downgrades document schema in-transit.
+  As Midas works at protocol level, it is agnostic of Language specific MongoDB drivers (Ruby, Python, C#
+  and Java drivers) and their versions within those languages
+
+  Further, Midas is Agnostic of the MongoDB configurations like Standalone, Replica Sets, Sharded environments.
+<br>
 
 ## Build Info
 We are using Gradle 1.8 for our builds.  You can download it [here](http://services.gradle.org/distributions/gradle-1.8-bin.zip)

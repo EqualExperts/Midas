@@ -14,7 +14,6 @@ project.ext {
     mongoDriver = 'org.mongodb:mongo-java-driver:2.11.3'
     groovy = 'org.codehaus.groovy:groovy-all:2.1.8'
     scala = 'org.scala-lang:scala-library:2.10.2'
-    scalaCompiler = 'org.scala-lang:scala-compiler:2.10.2'
     junit = 'junit:junit:4.8.1'
     mockito = 'org.mockito:mockito-all:1.9.5'
     specs2 = 'org.specs2:specs2_2.10:2.2.2'
@@ -23,12 +22,12 @@ project.ext {
 
 repositories {
     mavenCentral()
-    mavenRepo url: 'http://code.google.com/p/google-maven-repository'
+    maven {
+        url 'http://code.google.com/p/google-maven-repository'
+    }
 }
 
 dependencies {
-    groovy(project.ext.groovy)
-    scalaTools(project.ext.scalaCompiler)
     compile(project.ext.mongoDriver, project.ext.groovy, project.ext.scala)
     testCompile(project.ext.junit, project.ext.specs2, project.ext.mockito, project.ext.spock)
 }

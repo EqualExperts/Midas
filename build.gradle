@@ -32,9 +32,13 @@ project.ext {
     spock = 'org.spockframework:spock-core:0.7-groovy-2.0'
 
     //for scala style plugin
-//    scalaStylePlugin = 'org.github.mansur.scalastyle:gradle-scalastyle-plugin_2.10:0.3'
     scalaStyle = 'org.scalastyle:scalastyle_2.10:0.3.2'
     scalaStyleReportsDirName = "$reporting.baseDir/scalastyle"
+
+    //code coverage lib
+    coberturaCoverageReportsDirName = "$reporting.baseDir/cobertura"
+    coberturaLineCoverageBaseline = 85
+    coberturaBranchCoverageBaseline = 70
 
     //dependency analysis
     jdepend = 'jdepend:jdepend:2.9.1'
@@ -43,6 +47,20 @@ project.ext {
     distsTemplateDir = 'distribution-template'
     distsBinDirName = "$distsDir/bin"
 }
+
+// Apply External Plugins
+buildscript {
+    repositories {
+        mavenCentral()
+        mavenLocal()
+    }
+
+    dependencies {
+        classpath 'net.saliman:gradle-cobertura-plugin:2.1.0-SNAPSHOT'
+    }
+}
+
+apply plugin: 'cobertura'
 
 repositories {
     mavenCentral()
@@ -106,6 +124,14 @@ task scalastyle(description: 'Run scalaStyle analysis for main and test classes'
     }
 }
 
+//Cobertura Configuration
+cobertura {
+    coverageReportDir = file(project.ext.coberturaCoverageReportsDirName)
+    cobertura.coverageExcludes = ['.*net.saliman.*']
+    totalLineCoverage = 50
+    totalBranchCoverage = 80
+}
+
 task distribute(type:Zip, dependsOn: assemble) {
     doFirst {
         ant.mkdir(dir:"$distsBinDirName")
@@ -136,4 +162,5 @@ def prepareExecutables() {
 }
 
 check.dependsOn << ['scalastyle']
-build.dependsOn = ['check', 'distribute']
+//build.dependsOn = ['check', 'cobertura', 'coberturaCheck', 'distribute']
+build.dependsOn = ['cobertura', 'coberturaCheck', 'distribute']

@@ -1,4 +1,4 @@
 object ScalaGreeter {
   def apply = this
-  def greet = "Hello World"
+  def greet : String = "Hello World"
 }

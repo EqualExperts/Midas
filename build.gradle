@@ -162,5 +162,4 @@ def prepareExecutables() {
 }
 
 check.dependsOn << ['scalastyle']
-//build.dependsOn = ['check', 'cobertura', 'coberturaCheck', 'distribute']
-build.dependsOn = ['cobertura', 'coberturaCheck', 'distribute']
+build.dependsOn = ['check', 'cobertura', 'coberturaCheck', 'distribute']

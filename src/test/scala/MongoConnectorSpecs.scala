@@ -1,5 +1,6 @@
 import com.ee.midas.connector.{Proxy, MongoConnector}
 import java.io.IOException
+import java.io.OutputStream
 import java.net.{UnknownHostException, Socket}
 import org.junit.runner.RunWith
 import org.specs2.mutable.Specification
@@ -9,12 +10,14 @@ import org.specs2.runner.JUnitRunner
 object MongoConnectorSpecs extends Specification{
 
     "mongo connector" should {
-
+      var mongoSocket:Socket = null
       "connect to mongo server" in {
         val mongoConnector = new MongoConnector("localhost", 27017)
-        val mongoSocket = mongoConnector.connect()
+        mongoSocket = mongoConnector.connect()
         mongoSocket.isConnected() must beTrue
       }
+
+
       "throw exception when incorrect port is given" in {
         val mongoConnector = new MongoConnector("localhost", 1000)
         mongoConnector.connect() must throwAn[IOException]
@@ -23,13 +26,8 @@ object MongoConnectorSpecs extends Specification{
         val mongoConnector = new MongoConnector("some host", 1000)
         mongoConnector.connect() must throwAn[UnknownHostException]
       }
+
     }
 
-     "proxy" should {
-       new Proxy(27020,  "localhost", 27017).start()
-       "accept connection" in {
-         val clientSocket = new Socket("localhost", 27020)
-         clientSocket.isConnected must beTrue
-       }
-     }
+
 }

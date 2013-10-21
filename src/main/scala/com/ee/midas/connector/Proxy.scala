@@ -13,15 +13,21 @@ class Proxy(port: Int, host: String, mongoPort:Int) extends Thread {
 
   var client: Socket = null
   var mongo: Socket = null
+  var serverSocket:ServerSocket = null
   def mongoConnector = new MongoConnector(host,mongoPort)
 
   private def openConnection() = {
-    val serverSocket:ServerSocket = new ServerSocket(port)
+     serverSocket = new ServerSocket(port)
     client = serverSocket.accept()
     mongo = mongoConnector.connect()
   }
 
+
+
+
   override def run()  = {
     openConnection()
+    val dataPipe = new DataPipe()
+     dataPipe.readFromClient(client.getInputStream())
   }
 }

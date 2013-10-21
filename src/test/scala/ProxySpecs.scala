@@ -7,13 +7,10 @@
  */
 
 import com.mongodb.MongoClient
-import java.io.{InputStream, OutputStream}
-import java.net.Socket
-import java.util.Scanner
 import org.junit.runner.RunWith
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
-import com.ee.midas.connector.{Proxy, MongoConnector}
+import com.ee.midas.connector.Proxy
 
 @RunWith(classOf[JUnitRunner])
 object ProxySpecs extends Specification{

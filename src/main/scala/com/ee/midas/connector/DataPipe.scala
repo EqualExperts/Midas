@@ -5,17 +5,17 @@ import java.io.{OutputStream, InputStream}
 
 class DataPipe {
 
-  def readFromClient(clientInputStream: InputStream):String={
-
-    var data:Array[Byte] = new Array[Byte](clientInputStream.available())
+  def readFromClient(clientInputStream: InputStream):Array[Byte]={
+    val data:Array[Byte] = new Array[Byte](clientInputStream.available())
     clientInputStream.read(data)
-    val strData:String = new String(data)
+    /*val strData:String = new String(data)
     println("Data is "+ strData)
-    strData
+    strData*/
+    data
   }
 
-  def writeToServer(serverOutputStream: OutputStream, data:Array[byt  e])={
-
-    serverOutputStream.write()
+  def writeToServer(serverOutputStream: OutputStream, data:Array[Byte])={
+    serverOutputStream.write(data, 0, data.length)
+    serverOutputStream.flush()
   }
 }

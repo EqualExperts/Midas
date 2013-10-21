@@ -2,13 +2,6 @@ package com.ee.midas.connector
 
 import java.net.{Socket, ServerSocket}
 
-/**
- * Created with IntelliJ IDEA.
- * User: komal
- * Date: 18/10/13
- * Time: 5:06 PM
- * To change this template use File | Settings | File Templates.
- */
 class Proxy(port: Int, host: String, mongoPort:Int) extends Thread {
 
   var client: Socket = null
@@ -17,17 +10,23 @@ class Proxy(port: Int, host: String, mongoPort:Int) extends Thread {
   def mongoConnector = new MongoConnector(host,mongoPort)
 
   private def openConnection() = {
-     serverSocket = new ServerSocket(port)
+    serverSocket = new ServerSocket(port)
     client = serverSocket.accept()
     mongo = mongoConnector.connect()
   }
 
-
-
-
   override def run()  = {
     openConnection()
     val dataPipe = new DataPipe()
-     dataPipe.readFromClient(client.getInputStream())
+    println("client is connected? " + client.isConnected())
+    println("server is connected? " + mongo.isConnected())
+    while(client.isConnected() && mongo.isConnected()){
+      if(client.getInputStream.available() > 0) {
+        dataPipe.writeToServer(mongo.getOutputStream(), dataPipe.readFromClient(client.getInputStream()))
+      }
+      if(mongo.getInputStream.available() > 0) {
+        dataPipe.writeToServer(client.getOutputStream(), dataPipe.readFromClient(mongo.getInputStream()))
+      }
+    }
   }
 }

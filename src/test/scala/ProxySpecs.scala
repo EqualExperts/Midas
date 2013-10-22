@@ -10,22 +10,22 @@ import com.mongodb.MongoClient
 import org.junit.runner.RunWith
 import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
-import com.ee.midas.connector.Proxy
+import com.ee.midas.connector.Midas
 
 @RunWith(classOf[JUnitRunner])
 object ProxySpecs extends Specification{
 
   "proxy" should {
-    val proxy: Proxy = new Proxy(27020, "localhost", 27017)
-    var mongoClient:MongoClient = null
+    val midas: Midas = new Midas()
+    var application:MongoClient = null
 
     "read data from client" in {
-      proxy.start()
-      mongoClient = new MongoClient("localhost", 27020)
+      midas.start(null, 27020, "localhost", 27017)
+      application = new MongoClient("localhost", 27020)
       println("getting dbs")
-      val databases = mongoClient.getDatabaseNames()
+      val databases = application.getDatabaseNames()
       println("show dbs: " + databases)
-      val database = mongoClient.getDB("midas")
+      val database = application.getDB("midas")
       println("show collections: " + database.getCollectionNames())
       val collection = database.getCollection("demo1k")
       var cursor = collection.find()
@@ -35,7 +35,7 @@ object ProxySpecs extends Specification{
         println(cursor.next())
       }
       println("total docs were: " + count)
-      mongoClient.close()
+      application.close()
       database must_!=null
     }
   }

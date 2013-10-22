@@ -1,3 +1,5 @@
+package com.ee.midas.connector
+
 import com.ee.midas.connector.{Midas, MongoConnector}
 import java.io.IOException
 import java.io.OutputStream

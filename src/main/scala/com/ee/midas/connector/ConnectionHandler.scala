@@ -10,11 +10,13 @@ class ConnectionHandler(host: String, port: Int, mongoHost:String, mongoPort:Int
   var targetMongo: Socket = null
   var midasSocket:ServerSocket = null
   def mongoConnector = new MongoConnector(host,mongoPort)
+  val maxClientConnections = 50
 
   private def openConnection() = {
-    midasSocket = new ServerSocket(port, 10, InetAddress.getByName(host))
+    midasSocket = new ServerSocket(port, maxClientConnections, InetAddress.getByName(host))
     midasClient = midasSocket.accept()
     targetMongo = mongoConnector.connect()
+    println("Connection Opened")
   }
 
   override def run() = {

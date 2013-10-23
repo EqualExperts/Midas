@@ -2,14 +2,22 @@ package com.ee.midas.data
 
 import java.io.{OutputStream, InputStream}
 
-class SimplexPipe(source: InputStream, destination: OutputStream) {
+class SimplexPipe(val source: InputStream, val destination: OutputStream) extends Thread{
 
-  def handle() {
-    if(source.available() > 0) {
-      val data:Array[Byte] = new Array[Byte](source.available())
-      source.read(data)
-      destination.write(data)
-      destination.flush()
-    }
+  override def run()={
+      handle()
+  }
+
+
+  def handle() = {
+    var bytesRead:Int=0
+    do{
+      if(source.available() > 0) {
+        val data:Array[Byte] = new Array[Byte](source.available())
+        bytesRead = source.read(data)
+        destination.write(data)
+        destination.flush()
+      }
+    }while(bytesRead != -1)
   }
 }

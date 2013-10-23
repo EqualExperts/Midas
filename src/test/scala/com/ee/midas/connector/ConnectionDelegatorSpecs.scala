@@ -7,14 +7,15 @@ import com.mongodb.MongoClient
 import java.net.Socket
 
 @RunWith(classOf[JUnitRunner])
-object ConnectionHandlerSpecs extends Specification{
-    "connection handler" should {
+object ConnectionDelegatorSpecs extends Specification{
+    "connection delegator" should {
 
-      "connect with client and read data from mongo" in {
-        val connectionHandler: ConnectionHandler = new ConnectionHandler("localhost", 27020, "localhost", 27017)
-        connectionHandler.start()
+      "accept connection from client and read data from mongo" in {
+        val connectionReceiver: ConnectionDelegator = new ConnectionDelegator("localhost", 27020, "localhost", 27017)
+        connectionReceiver.start()
         val application:MongoClient = new MongoClient("localhost", 27020)
         val databases = application.getDatabaseNames()
+        println(databases)
         application.close()
         databases must_!=null
       }

@@ -18,10 +18,10 @@ object SimplexPipeSpecs extends Specification{
       val simplexPipe = new SimplexPipe(source, destination)
 
       //when
-      simplexPipe.handle()
+      simplexPipe.start()
 
       //then
-      util.Arrays.equals(destination.toByteArray(), data) must beTrue
+      destination.toByteArray() must beEqualTo(data)
     }
   }
 }

@@ -37,7 +37,6 @@ object Midas extends App {
                                             targetMongo.getInputStream(), targetMongo.getOutputStream())
         connection.transferData()
         connection.waitForClientToTerminate()
-        connection.close
       }
       catch {
         case e:UnknownHostException => println(e.getMessage)

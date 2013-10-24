@@ -3,24 +3,39 @@ package com.ee.midas.data
 import java.io.{OutputStream, InputStream}
 
 class SimplexPipe(val source: InputStream, val destination: OutputStream) extends Thread {
-  var stopThread = false
 
   override def run : Unit = {
-    while(!stopThread) {
-      handle
-    }
-  }
-
-  def close = {
-    stopThread = true
+    handle
   }
 
   def handle : Unit = {
-    if(source.available() > 0) {
-      val data:Array[Byte] = new Array[Byte](source.available())
-      source.read(data)
-      destination.write(data)
-      destination.flush()
+    var bytesRead: Int =0
+    val data:Array[Byte] = new Array[Byte](1024 * 16)
+    var numOfRetries:Int = 0
+    do{
+        numOfRetries = checkSourceStream(numOfRetries)
+        bytesRead=source.read(data)
+        if(bytesRead > 0) {
+          destination.write(data,0,bytesRead)
+          destination.flush()
+        }
+    } while(bytesRead!= -1)
+
+  }
+
+  def checkSourceStream(numOfRetries:Int):Int = {
+    var numOfRetriesNew:Int = numOfRetries
+    if(source.available()== 0){
+       if(numOfRetries>= 15)
+           println("data not available on connection")
+       try{
+            Thread.sleep(50,0)
+       }
+       catch {
+         case e:InterruptedException => println(e.printStackTrace())
+       }
+      numOfRetriesNew = numOfRetriesNew + 1
     }
+    numOfRetries
   }
 }

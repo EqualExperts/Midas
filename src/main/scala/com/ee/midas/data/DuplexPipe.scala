@@ -17,9 +17,5 @@ class DuplexPipe(sourceInputStream: InputStream, sourceOutputStream: OutputStrea
     requestPipe.join()
   }
 
-  def close = {
-    requestPipe.close
-    responsePipe.close
-  }
 }
 

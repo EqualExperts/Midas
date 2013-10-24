@@ -4,8 +4,7 @@ import org.specs2.mutable.Specification
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 import org.specs2.mock.Mockito
-import java.net.Socket
-import java.io.{ByteArrayOutputStream, ByteArrayInputStream, OutputStream, InputStream}
+import java.io.{ByteArrayOutputStream, ByteArrayInputStream}
 
 @RunWith(classOf[JUnitRunner])
 object DuplexPipeSpecs extends Specification with Mockito {
@@ -21,12 +20,10 @@ object DuplexPipeSpecs extends Specification with Mockito {
         val targetMongoInputStream = new ByteArrayInputStream(response)
         val targetMongoOutputStream = new ByteArrayOutputStream()
 
-//        val duplexPipe = new DuplexPipe(midasClientInputStream, midasClientOutputStream,
-//                                        targetMongoInputStream, targetMongoOutputStream)
+        val duplexPipe = new DuplexPipe(midasClientInputStream, midasClientOutputStream,
+                                        targetMongoInputStream, targetMongoOutputStream)
 
-//        duplexPipe.transferData()
-//        Thread.sleep(1000)
-//        duplexPipe.close
+        duplexPipe.transferData()
 
         targetMongoOutputStream.toByteArray must beEqualTo(request)
         midasClientOutputStream.toByteArray must beEqualTo(response)

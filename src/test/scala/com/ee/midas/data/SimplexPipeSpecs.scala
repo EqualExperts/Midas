@@ -19,9 +19,23 @@ object SimplexPipeSpecs extends Specification{
 
       //when
       simplexPipe.start()
+      Thread.sleep(2000)
+      simplexPipe.close
+      source.close()
+      destination.close()
+      simplexPipe.join()
 
       //then
       destination.toByteArray() must beEqualTo(data)
+    }
+
+    "stop execution" in {
+      val simplexPipe = new SimplexPipe(new ByteArrayInputStream(new Array[Byte](10)), new ByteArrayOutputStream())
+      simplexPipe.start()
+      simplexPipe.isAlive() must beTrue
+
+      simplexPipe.close
+      simplexPipe.isAlive() must beFalse
     }
   }
 }

@@ -11,11 +11,11 @@ import com.mongodb.MongoException.DuplicateKey
 
 @RunWith(classOf[JUnitRunner])
 object MidasSpecs extends Specification {
-     val midas:Midas = new Midas()
+
      var application: MongoClient = null
     "midas" should {
        "bubble up mongo internal exceptions to the client" in new tests{
-         midas.start("localhost",27020,"localhost",27017)
+//         Midas.main(Array("localhost","27020","localhost","27017"))
          application = new MongoClient("localhost", 27020)
           val database:DB = application.getDB("midas")
           val collection:DBCollection = database.getCollection("demo1k")

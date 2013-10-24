@@ -30,6 +30,7 @@ project.ext {
     mockito = 'org.mockito:mockito-all:1.9.5'
     specs2 = 'org.specs2:specs2_2.10:2.2.2'
     spock = 'org.spockframework:spock-core:0.7-groovy-2.0'
+    slf4j = 'org.slf4j:slf4j-api:1.7.5'
 
     //for scala style plugin
     scalaStyle = 'org.scalastyle:scalastyle_2.10:0.3.2'
@@ -71,7 +72,7 @@ repositories {
 }
 
 dependencies {
-    compile(project.ext.mongoDriver, project.ext.groovy, project.ext.scala, project.ext.scalaStyle)
+    compile(project.ext.mongoDriver, project.ext.groovy, project.ext.scala, project.ext.scalaStyle, project.ext.slf4j)
     testCompile(project.ext.junit, project.ext.specs2, project.ext.mockito, project.ext.spock)
 }
 

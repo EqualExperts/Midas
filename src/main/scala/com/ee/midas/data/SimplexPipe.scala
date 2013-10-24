@@ -1,11 +1,17 @@
 package com.ee.midas.data
 
 import java.io.{OutputStream, InputStream}
+import java.net.SocketException
 
 class SimplexPipe(val source: InputStream, val destination: OutputStream) extends Thread {
 
   override def run : Unit = {
-    handle
+    try{
+      handle
+    }
+    catch {
+      case e:SocketException => println("Socket closed")
+    }
   }
 
   def handle : Unit = {

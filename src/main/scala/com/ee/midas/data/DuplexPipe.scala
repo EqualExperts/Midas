@@ -11,7 +11,7 @@ class DuplexPipe(sourceInputStream: InputStream, sourceOutputStream: OutputStrea
   def transferData() = {
     requestPipe.start()
     responsePipe.start()
-  }
+   }
 
   def waitForClientToTerminate() {
     requestPipe.join()

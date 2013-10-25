@@ -7,7 +7,7 @@ import org.specs2.mock.Mockito
 import java.io.{ByteArrayOutputStream, ByteArrayInputStream}
 
 @RunWith(classOf[JUnitRunner])
-object DuplexPipeSpecs extends Specification with Mockito {
+object EndPointsSpecs extends Specification with Mockito {
 
     "duplex channel" should {
 
@@ -19,11 +19,12 @@ object DuplexPipeSpecs extends Specification with Mockito {
         val midasClientOutputStream = new ByteArrayOutputStream()
         val targetMongoInputStream = new ByteArrayInputStream(response)
         val targetMongoOutputStream = new ByteArrayOutputStream()
+        val requestPipe = new SimplexPipe("request", midasClientInputStream, targetMongoOutputStream)
+        val responsePipe = new SimplexPipe("response", targetMongoInputStream, midasClientOutputStream)
 
-        val duplexPipe = new DuplexPipe(midasClientInputStream, midasClientOutputStream,
-                                        targetMongoInputStream, targetMongoOutputStream)
+//        val duplexPipe = DuplexPipe(requestPipe, responsePipe)
 
-        duplexPipe.transferData()
+//        duplexPipe.start
 
         targetMongoOutputStream.toByteArray must beEqualTo(request)
         midasClientOutputStream.toByteArray must beEqualTo(response)

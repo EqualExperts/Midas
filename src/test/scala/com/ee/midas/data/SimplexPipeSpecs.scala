@@ -15,14 +15,14 @@ object SimplexPipeSpecs extends Specification{
       val data = "Hello World".getBytes()
       val source = new ByteArrayInputStream(data)
       val destination = new ByteArrayOutputStream()
-      val simplexPipe = new SimplexPipe(source, destination)
+      val simplexPipe = new SimplexPipe("test-pipe",source, destination)
 
       //when
-      simplexPipe.start()
+      simplexPipe.run()
       Thread.sleep(2000)
       source.close()
       destination.close()
-      simplexPipe.join()
+//      simplexPipe.join()
 
       //then
       destination.toByteArray() must beEqualTo(data)

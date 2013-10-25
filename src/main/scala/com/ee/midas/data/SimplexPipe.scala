@@ -1,47 +1,42 @@
 package com.ee.midas.data
 
-import java.io.{OutputStream, InputStream}
+import java.io.{IOException, OutputStream, InputStream}
 import java.net.SocketException
+import scala.beans.BeanProperty
 
-class SimplexPipe(val source: InputStream, val destination: OutputStream) extends Thread {
+class SimplexPipe(val name: String, val src: InputStream, val dest: OutputStream) extends Runnable {
+  val EOF = -1
+  private var gracefulStop = false
 
-  override def run : Unit = {
-    try{
-      handle
-    }
-    catch {
-      case e:SocketException => println("Socket closed")
-    }
+  private var isRunning = false
+
+  override def run: Unit = {
+    isRunning = true
+    var bytesRead = 0
+    val data = new Array[Byte](1024 * 16)
+    do {
+      bytesRead = src.read(data)
+      println(name + ", Bytes Read = " + bytesRead)
+      if (bytesRead > 0) {
+        dest.write(data, 0, bytesRead)
+        println(name + ", Bytes Written = " + bytesRead)
+        dest.flush
+      }
+    } while (bytesRead != EOF && !gracefulStop)
+    isRunning = false
   }
 
-  def handle : Unit = {
-    var bytesRead: Int =0
-    val data:Array[Byte] = new Array[Byte](1024 * 16)
-    var numOfRetries:Int = 0
-    do{
-        numOfRetries = checkSourceStream(numOfRetries)
-        bytesRead=source.read(data)
-        if(bytesRead > 0) {
-          destination.write(data,0,bytesRead)
-          destination.flush()
-        }
-    } while(bytesRead!= -1)
+  def stop = gracefulStop = true
 
+  def isActive = isRunning
+
+  def close = {
+    val threadName = Thread.currentThread().getName()
+    println("["+ threadName+"] " + toString + ": Closing Streams...")
+    src.close()
+    dest.close()
+    println("["+ threadName+"] " + toString + ": Closing Streams Done")
   }
 
-  def checkSourceStream(numOfRetries:Int):Int = {
-    var numOfRetriesNew:Int = numOfRetries
-    if(source.available()== 0){
-       if(numOfRetries>= 15)
-           println("data not available on connection")
-       try{
-            Thread.sleep(50,0)
-       }
-       catch {
-         case e:InterruptedException => println(e.printStackTrace())
-       }
-      numOfRetriesNew = numOfRetriesNew + 1
-    }
-    numOfRetries
-  }
+  override def toString = getClass.getSimpleName + ":" + name
 }

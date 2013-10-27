@@ -46,7 +46,21 @@ project.ext {
 
     //Distribution settings
     distsTemplateDir = 'distribution-template'
-    distsBinDirName = "$distsDir/bin"
+    distsBinDirName = "$project.distsDir/bin"
+    distsZipFileName = "${project.distsDir}/${project.archivesBaseName}.zip"
+
+    //Explode Distributables here
+    explodedDir = "$project.buildDir/exploded"
+
+    //Runtime Configurations
+    DEFAULT_PORT_PREFIX = 270
+    portPrefix = System.getProperty('portPrefix', "$DEFAULT_PORT_PREFIX")
+
+    MIDAS_SERVER = 'localhost'
+    midasServer = System.getProperty('midasServer', "$MIDAS_SERVER")
+
+    MONGODB_SERVER = 'localhost'
+    mongoDB = System.getProperty('mongoDB', "$MONGODB_SERVER")
 }
 
 // Apply External Plugins
@@ -160,6 +174,28 @@ def prepareExecutables() {
             }
         }
     }
+}
+
+task unzip(type: Copy) {
+    def zipFile = file("$distsZipFileName")
+    def outputDir = file(project.ext.explodedDir)
+    from zipTree(zipFile)
+    into outputDir
+}
+
+task run(description: "Runs $project.archivesBaseName", dependsOn: [distribute, unzip]) << {
+    //Explode Zip
+    def zipFile = file(distsZipFileName)
+    def runtimeClasspath = fileTree(dir: "${project.ext.explodedDir}/libs", include: '*.jar')
+    runtimeClasspath = runtimeClasspath + fileTree(dir: project.distsDir, include: '*.jar')
+    javaexec {
+        systemProperties['portPrefix'] = project.ext.portPrefix
+        main = 'com.ee.midas.Main'
+        classpath = runtimeClasspath
+        args = ["$project.ext.midasServer", "${project.ext.portPrefix}20", "${project.ext.mongoDB}", "${project.ext.portPrefix}17"]
+    }
+
+    //Run Midas from zip
 }
 
 check.dependsOn << ['scalastyle']

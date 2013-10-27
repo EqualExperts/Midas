@@ -30,12 +30,12 @@ class SimplexPipe(val name: String, val src: InputStream, val dest: OutputStream
 
   def isActive = isRunning
 
-  def close = {
+  def forceStop = {
     val threadName = Thread.currentThread().getName()
-    println("["+ threadName+"] " + toString + ": Closing Streams...")
+    println("["+ threadName + "] " + toString + ": Closing Streams...")
     src.close()
     dest.close()
-    println("["+ threadName+"] " + toString + ": Closing Streams Done")
+    println("["+ threadName + "] " + toString + ": Closing Streams Done")
   }
 
   override def toString = getClass.getSimpleName + ":" + name

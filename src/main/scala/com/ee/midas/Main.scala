@@ -1,9 +1,9 @@
-package com.ee.midas.connector
+package com.ee.midas
 
 import java.net._
 import com.ee.midas.data.{DuplexPipe, SimplexPipe}
 
-object Midas extends App {
+object Main extends App {
 
   val maxClientConnections = 50
 
@@ -14,32 +14,31 @@ object Midas extends App {
     val midasSocket = new ServerSocket(midasPort, maxClientConnections, InetAddress.getByName(midasHost))
 
     sys.ShutdownHookThread {
-      println("Midas exiting")
+      println("User Forced Stop on Midas...Closing Open Connections")
     }
 
     while(true) {
       val midasClient = waitForNewConnectionOn(midasSocket)
+      println("New connection received...")
       //TODO: do something if Mongo is not available
       val mongoSocket = new Socket(mongoHost, mongoPort)
-      createEndPoints(midasClient, mongoSocket)
-      println("New connection received...")
+      val dataPipe = setupDataPipeBetween(midasClient, mongoSocket)
+      println("Setup DataPipe = " + dataPipe.toString)
     }
-
-
   }
 
-
-  private def createEndPoints(midasClient: Socket, mongoSocket: Socket) {
-    val clientIn = midasClient.getInputStream
-    val serverOut = mongoSocket.getOutputStream
+  private def setupDataPipeBetween(client: Socket, server: Socket) = {
+    val clientIn = client.getInputStream
+    val serverOut = server.getOutputStream
     val requestPipe = new SimplexPipe("Request", clientIn, serverOut)
 
-    val serverIn = mongoSocket.getInputStream
-    val clientOut = midasClient.getOutputStream
+    val serverIn = server.getInputStream
+    val clientOut = client.getOutputStream
     val responsePipe = new SimplexPipe("Response", serverIn, clientOut)
 
     val duplexPipe = DuplexPipe(requestPipe, responsePipe)
     duplexPipe.start
+    duplexPipe
   }
 
   def waitForNewConnectionOn(serverSocket: ServerSocket) = {

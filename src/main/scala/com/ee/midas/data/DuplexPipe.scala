@@ -2,33 +2,32 @@ package com.ee.midas.data
 
 import java.io.IOException
 
-class DuplexPipe private (val id: Long, val request: SimplexPipe, val response: SimplexPipe) {
-
-  private val duplexGroup = new ThreadGroup(getClass.getSimpleName + "-%d".format(id))
+class DuplexPipe private (val id: Long, private val request: SimplexPipe, private val response: SimplexPipe) {
+  val name = getClass.getSimpleName + "-%d".format(id)
+  private val duplexGroup = new ThreadGroup(name)
   private val exceptionHandler = new UncaughtExceptionHandler(this)
 
-  private val requestThread = new Thread(duplexGroup, request, getPipeName(request)) {{
+  private val requestThread = new Thread(duplexGroup, request, fullName(request.toString)) {{
     setUncaughtExceptionHandler(exceptionHandler)
   }}
 
-  private val responseThread = new Thread(duplexGroup, response, getPipeName(response)) {{
+  private val responseThread = new Thread(duplexGroup, response, fullName(response.toString)) {{
     setUncaughtExceptionHandler(exceptionHandler)
   }}
 
-  private val monitor = new PipesMonitor(this, 2000)
-  private val monitorThread = new Thread(duplexGroup, monitor, "PipesMonitorThread")
+  private val monitor = new PipesMonitor(this, checkEveryMillis = 5000)
+  private val monitorThread = new Thread(duplexGroup, monitor, fullName("Monitor"))
 
-  private def getPipeName(pipe: SimplexPipe) =
-    duplexGroup.getName + "-" + pipe.toString
+  private def fullName(name: String) = duplexGroup.getName + "-" + name + "-Thread"
 
   def start = {
     requestThread.start
     responseThread.start
     monitorThread.start
   }
-  
-  def isActive = {
-    println("ThreadGroup name = " + duplexGroup.getName())
+
+  def dump : Unit = {
+    println("Pipe Name = " + duplexGroup.getName())
     println("Active Threads = " + duplexGroup.activeCount())
     if(requestThread.isAlive) {
       println("Request Thread Id = " + requestThread.getId)
@@ -38,15 +37,22 @@ class DuplexPipe private (val id: Long, val request: SimplexPipe, val response: 
       println("Response Thread Name = " + responseThread.getName)
       println("Response Thread Id = " + responseThread.getId)
     }
-    request.isActive && response.isActive
-  }
-
-  def close = {
-    request.close
-    response.close
+    if(monitorThread.isAlive) {
+      println("Monitor Thread Name = " + monitorThread.getName)
+      println("Monitor Thread Id = " + monitorThread.getId)
+    }
   }
   
-  class PipesMonitor (duplexPipe: DuplexPipe, val monitorEveryMillis: Long) extends Runnable {
+  def isActive = request.isActive && response.isActive
+
+  def forceStop = {
+    request.forceStop
+    response.forceStop
+  }
+
+  override def toString = name
+  
+  class PipesMonitor (duplexPipe: DuplexPipe, val checkEveryMillis: Long = 2000) extends Runnable {
     private var keepRunning = true
 
     def close = keepRunning = false
@@ -54,14 +60,15 @@ class DuplexPipe private (val id: Long, val request: SimplexPipe, val response: 
     override def run = {
       while(keepRunning) {
         try {
+          duplexPipe.dump
           if(!duplexPipe.isActive) {
             val threadName = Thread.currentThread().getName()
-            println("["+ threadName+"] " + "Detected Broken Pipe...Initiating Duplex Pipe Closure")
-            duplexPipe.close
+            println("[" + threadName + "] Detected Broken Pipe...Initiating Duplex Pipe Closure")
+            duplexPipe.forceStop
             keepRunning = false
-            println("["+ threadName+"] " + "Shutting down Monitor")
+            println("["+ threadName + "] Shutting down Monitor")
           }            
-          Thread.sleep(monitorEveryMillis)
+          Thread.sleep(checkEveryMillis)
         } catch {
           case e: InterruptedException => println( "Status Thread Interrupted")
             keepRunning = false
@@ -75,8 +82,8 @@ class DuplexPipe private (val id: Long, val request: SimplexPipe, val response: 
       val threadName = Thread.currentThread().getName
       t match {
         case e: IOException => {
-          println("["+ threadName + "] " + "UncaughtExceptionHandler Received IOException in %s".format(e.getMessage))
-          println("["+ threadName + "] " + "Closing pipe: " + pipe.duplexGroup.getName)
+          println("["+ threadName + "] UncaughtExceptionHandler Received IOException in %s".format(e.getMessage))
+          println("["+ threadName + "] Closing pipe: " + pipe.duplexGroup.getName)
         }
       }
     }

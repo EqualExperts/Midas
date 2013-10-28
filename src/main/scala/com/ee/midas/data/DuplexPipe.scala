@@ -51,13 +51,13 @@ extends Pipe {
 
   override def toString = name
 
-  class UncaughtExceptionHandler(pipe: DuplexPipe) extends Thread.UncaughtExceptionHandler {
+  class UncaughtExceptionHandler(pipe: Pipe) extends Thread.UncaughtExceptionHandler {
     def uncaughtException(thread: Thread, t: Throwable) : Unit = {
       val threadName = Thread.currentThread().getName
       t match {
         case e: IOException => {
           println("["+ threadName + "] UncaughtExceptionHandler Received IOException in %s".format(e.getMessage))
-          println("["+ threadName + "] Closing pipe: " + pipe.duplexGroup.getName)
+          println("["+ threadName + "] Closing pipe: " + pipe.name)
         }
       }
     }

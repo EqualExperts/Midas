@@ -7,9 +7,9 @@ import org.specs2.mock.Mockito
 import java.io.{ByteArrayOutputStream, ByteArrayInputStream}
 
 @RunWith(classOf[JUnitRunner])
-object EndPointsSpecs extends Specification with Mockito {
+object DuplexPipeSpecs extends Specification with Mockito {
 
-    "duplex channel" should {
+    "duplex pipe" should {
 
       "send and receive data" in {
         // given
@@ -22,12 +22,44 @@ object EndPointsSpecs extends Specification with Mockito {
         val requestPipe = new SimplexPipe("request", midasClientInputStream, targetMongoOutputStream)
         val responsePipe = new SimplexPipe("response", targetMongoInputStream, midasClientOutputStream)
 
-//        val duplexPipe = DuplexPipe(requestPipe, responsePipe)
+        val duplexPipe = DuplexPipe(requestPipe, responsePipe)
+        Thread.sleep(1000)
+        //when
+        duplexPipe.start
 
-//        duplexPipe.start
-
+        //then
         targetMongoOutputStream.toByteArray must beEqualTo(request)
         midasClientOutputStream.toByteArray must beEqualTo(response)
+      }
+
+      "close the request and response pipes on forceStop" in {
+        //given
+        val request = mock[SimplexPipe]
+        val response = mock[SimplexPipe]
+
+        //when
+        val duplexPipe = DuplexPipe(request, response)
+        Thread.sleep(1000)
+        duplexPipe.forceStop
+
+        //then
+        there was one(request).forceStop
+        there was one(response).forceStop
+      }
+
+      "close gracefully" in {
+        //given
+        val request = mock[SimplexPipe]
+        val response = mock[SimplexPipe]
+
+        //when
+        val duplexPipe = DuplexPipe(request, response)
+        Thread.sleep(1000)
+        duplexPipe.stop
+
+        //then
+        there was one(request).stop
+        there was one(response).stop
       }
     }
 }

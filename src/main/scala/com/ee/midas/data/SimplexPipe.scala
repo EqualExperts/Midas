@@ -4,11 +4,16 @@ import java.io.{IOException, OutputStream, InputStream}
 import java.net.SocketException
 import scala.beans.BeanProperty
 
-class SimplexPipe(val name: String, val src: InputStream, val dest: OutputStream) extends Runnable {
+class SimplexPipe(val name: String, val src: InputStream, val dest: OutputStream)
+  extends Pipe with Runnable {
   val EOF = -1
   private var gracefulStop = false
 
   private var isRunning = false
+
+  def start: Unit = {
+    println("Starting " +  toString)
+  }
 
   override def run: Unit = {
     isRunning = true
@@ -36,6 +41,11 @@ class SimplexPipe(val name: String, val src: InputStream, val dest: OutputStream
     src.close()
     dest.close()
     println("["+ threadName + "] " + toString + ": Closing Streams Done")
+  }
+
+  def dump: Unit = {
+    println("Pipe Name = " + name)
+    println("isActive? = " + isActive)
   }
 
   override def toString = getClass.getSimpleName + ":" + name

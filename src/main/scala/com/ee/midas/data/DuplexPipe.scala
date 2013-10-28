@@ -2,8 +2,9 @@ package com.ee.midas.data
 
 import java.io.IOException
 
-class DuplexPipe private (val id: Long, private val request: SimplexPipe, private val response: SimplexPipe) {
-  val name = getClass.getSimpleName + "-%d".format(id)
+class DuplexPipe private (val id: Long, private val request: SimplexPipe, private val response: SimplexPipe)
+extends Pipe {
+  val name = classOf[DuplexPipe].getSimpleName + "-%d".format(id)
   private val duplexGroup = new ThreadGroup(name)
   private val exceptionHandler = new UncaughtExceptionHandler(this)
 
@@ -15,15 +16,12 @@ class DuplexPipe private (val id: Long, private val request: SimplexPipe, privat
     setUncaughtExceptionHandler(exceptionHandler)
   }}
 
-  private val monitor = new PipesMonitor(this, checkEveryMillis = 5000)
-  private val monitorThread = new Thread(duplexGroup, monitor, fullName("Monitor"))
-
   private def fullName(name: String) = duplexGroup.getName + "-" + name + "-Thread"
 
-  def start = {
+  override def start: Unit = {
+    println("Starting " +  toString)
     requestThread.start
     responseThread.start
-    monitorThread.start
   }
 
   def dump : Unit = {
@@ -37,10 +35,6 @@ class DuplexPipe private (val id: Long, private val request: SimplexPipe, privat
       println("Response Thread Name = " + responseThread.getName)
       println("Response Thread Id = " + responseThread.getId)
     }
-    if(monitorThread.isAlive) {
-      println("Monitor Thread Name = " + monitorThread.getName)
-      println("Monitor Thread Id = " + monitorThread.getId)
-    }
   }
   
   def isActive = request.isActive && response.isActive
@@ -53,35 +47,9 @@ class DuplexPipe private (val id: Long, private val request: SimplexPipe, privat
   def stop = {
     request.stop
     response.stop
-    monitor.stop
   }
 
   override def toString = name
-  
-  class PipesMonitor (duplexPipe: DuplexPipe, val checkEveryMillis: Long = 2000) extends Runnable {
-    private var keepRunning = true
-
-    def stop = keepRunning = false
-
-    override def run = {
-      while(keepRunning) {
-        try {
-          duplexPipe.dump
-          if(!duplexPipe.isActive) {
-            val threadName = Thread.currentThread().getName()
-            println("[" + threadName + "] Detected Broken Pipe...Initiating Duplex Pipe Closure")
-            duplexPipe.forceStop
-            keepRunning = false
-            println("["+ threadName + "] Shutting down Monitor")
-          }            
-          Thread.sleep(checkEveryMillis)
-        } catch {
-          case e: InterruptedException => println( "Status Thread Interrupted")
-            keepRunning = false
-        }
-      }
-    }
-  }
 
   class UncaughtExceptionHandler(pipe: DuplexPipe) extends Thread.UncaughtExceptionHandler {
     def uncaughtException(thread: Thread, t: Throwable) : Unit = {
@@ -101,6 +69,9 @@ object DuplexPipe {
 
   private def nextId = id.getAndIncrement
 
-  def apply(request: SimplexPipe, response: SimplexPipe) = new DuplexPipe(nextId, request, response)
+  def apply(request: SimplexPipe, response: SimplexPipe) =
+    new DuplexPipe(nextId, request, response) with PipesMonitorComponent {
+      val checkEveryMillis: Long = 3000
+    }
 }
 

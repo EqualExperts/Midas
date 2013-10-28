@@ -188,6 +188,8 @@ task run(description: "Runs $project.archivesBaseName", dependsOn: [distribute, 
     def zipFile = file(distsZipFileName)
     def runtimeClasspath = fileTree(dir: "${project.ext.explodedDir}/libs", include: '*.jar')
     runtimeClasspath = runtimeClasspath + fileTree(dir: project.distsDir, include: '*.jar')
+
+    //Run Midas from zip
     javaexec {
         systemProperties['portPrefix'] = project.ext.portPrefix
         main = 'com.ee.midas.Main'
@@ -195,7 +197,6 @@ task run(description: "Runs $project.archivesBaseName", dependsOn: [distribute, 
         args = ["$project.ext.midasServer", "${project.ext.portPrefix}20", "${project.ext.mongoDB}", "${project.ext.portPrefix}17"]
     }
 
-    //Run Midas from zip
 }
 
 check.dependsOn << ['scalastyle']

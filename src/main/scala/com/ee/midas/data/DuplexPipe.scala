@@ -49,13 +49,19 @@ class DuplexPipe private (val id: Long, private val request: SimplexPipe, privat
     request.forceStop
     response.forceStop
   }
+  
+  def stop = {
+    request.stop
+    response.stop
+    monitor.stop
+  }
 
   override def toString = name
   
   class PipesMonitor (duplexPipe: DuplexPipe, val checkEveryMillis: Long = 2000) extends Runnable {
     private var keepRunning = true
 
-    def close = keepRunning = false
+    def stop = keepRunning = false
 
     override def run = {
       while(keepRunning) {

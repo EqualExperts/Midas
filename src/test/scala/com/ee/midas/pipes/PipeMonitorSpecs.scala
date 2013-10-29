@@ -47,6 +47,7 @@ object PipeMonitorSpecs extends Specification with Mockito{
          }
          //when
          moniterablePipe.start
+         Thread.sleep(1000)
 
          //then
          moniterablePipe.isStartCalled must beTrue

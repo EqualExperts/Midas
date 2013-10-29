@@ -24,7 +24,7 @@ object Main extends App {
     sys.ShutdownHookThread {
       val pipes = accumulate(null)
       println("User Forced Stop on Midas...Closing Open Connections = ")
-      pipes.foreach(pipe => pipe.stop)
+      pipes filter(_.isActive) map(_.forceStop)
     }
 
     while (true) {

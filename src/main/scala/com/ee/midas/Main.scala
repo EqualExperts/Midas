@@ -52,7 +52,7 @@ object Main extends App {
     duplexPipe
   }
 
-  def waitForNewConnectionOn(serverSocket: ServerSocket) = {
+  private def waitForNewConnectionOn(serverSocket: ServerSocket) = {
     println("Listening on port " + serverSocket.getLocalPort() + " for new connections...")
     serverSocket.accept()
   }

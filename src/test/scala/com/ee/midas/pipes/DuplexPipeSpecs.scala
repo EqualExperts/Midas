@@ -23,7 +23,7 @@ object DuplexPipeSpecs extends Specification with Mockito {
         val responsePipe = new SimplexPipe("response", targetMongoInputStream, midasClientOutputStream)
 
         val duplexPipe = DuplexPipe(requestPipe, responsePipe)
-        Thread.sleep(1000)
+
         //when
         duplexPipe.start
 
@@ -39,7 +39,6 @@ object DuplexPipeSpecs extends Specification with Mockito {
 
         //when
         val duplexPipe = DuplexPipe(request, response)
-        Thread.sleep(1000)
         duplexPipe.forceStop
 
         //then
@@ -54,7 +53,6 @@ object DuplexPipeSpecs extends Specification with Mockito {
 
         //when
         val duplexPipe = DuplexPipe(request, response)
-        Thread.sleep(1000)
         duplexPipe.stop
 
         //then

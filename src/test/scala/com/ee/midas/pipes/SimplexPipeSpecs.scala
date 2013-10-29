@@ -19,7 +19,7 @@ object SimplexPipeSpecs extends Specification with Mockito {
 
       //when
       simplexPipe.run()
-      Thread.sleep(2000)
+
       source.close()
       destination.close()
 
@@ -50,12 +50,14 @@ object SimplexPipeSpecs extends Specification with Mockito {
 
       //when
       pipeThread.start()
+      Thread.sleep(100)
+
       //then
       pipe.isActive must beTrue
 
       //when
       pipe.stop
-      Thread.sleep(1000)
+      Thread.sleep(100)
       //then
       pipe.isActive must beFalse
     }

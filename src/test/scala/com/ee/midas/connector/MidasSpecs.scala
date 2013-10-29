@@ -17,10 +17,10 @@ object MidasSpecs extends Specification {
        "bubble up mongo internal exceptions to the client" in new tests{
 //         Midas.main(Array("localhost","27020","localhost","27017"))
          application = new MongoClient("localhost", 27020)
-          val database:DB = application.getDB("midas")
-          val collection:DBCollection = database.getCollection("demo1k")
-          val document: DBObject = collection.findOne()
-          collection.insert(document) must throwA[DuplicateKey]
+         val database:DB = application.getDB("midas")
+         val collection:DBCollection = database.getCollection("demo1k")
+         val document: DBObject = collection.findOne()
+         collection.insert(document) must throwA[DuplicateKey]
        }
     }
 

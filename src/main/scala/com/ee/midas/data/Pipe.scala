@@ -1,9 +1,7 @@
 package com.ee.midas.data
 
-trait Pipe extends Startable {
+trait Pipe extends Startable with Stoppable {
   val name: String
-  def stop: Unit
-  def forceStop: Unit
   def isActive: Boolean
-  def dump: Unit
+  def inspect: Unit
 }

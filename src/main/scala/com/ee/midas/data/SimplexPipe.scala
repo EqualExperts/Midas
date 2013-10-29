@@ -43,7 +43,7 @@ class SimplexPipe(val name: String, val src: InputStream, val dest: OutputStream
     println("["+ threadName + "] " + toString + ": Closing Streams Done")
   }
 
-  def dump: Unit = {
+  def inspect: Unit = {
     println("Pipe Name = " + name)
     println("isActive? = " + isActive)
   }

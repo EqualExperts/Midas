@@ -8,15 +8,15 @@ extends Pipe {
   private val duplexGroup = new ThreadGroup(name)
   private val exceptionHandler = new UncaughtExceptionHandler(this)
 
-  private val requestThread = new Thread(duplexGroup, request, fullName(request.toString)) {{
+  private val requestThread = new Thread(duplexGroup, request, threadName(request.toString)) {{
     setUncaughtExceptionHandler(exceptionHandler)
   }}
 
-  private val responseThread = new Thread(duplexGroup, response, fullName(response.toString)) {{
+  private val responseThread = new Thread(duplexGroup, response, threadName(response.toString)) {{
     setUncaughtExceptionHandler(exceptionHandler)
   }}
 
-  private def fullName(name: String) = duplexGroup.getName + "-" + name + "-Thread"
+  private def threadName(name: String) = duplexGroup.getName + "-" + name + "-Thread"
 
   override def start: Unit = {
     println("Starting " +  toString)
@@ -24,7 +24,7 @@ extends Pipe {
     responseThread.start
   }
 
-  def dump : Unit = {
+  def inspect : Unit = {
     println("Pipe Name = " + duplexGroup.getName())
     println("Active Threads = " + duplexGroup.activeCount())
     if(requestThread.isAlive) {

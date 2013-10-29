@@ -1,4 +1,4 @@
-package com.ee.midas.data
+package com.ee.midas.pipes
 
 import java.io.{IOException, OutputStream, InputStream}
 import java.net.SocketException

@@ -1,7 +1,7 @@
 package com.ee.midas
 
 import java.net._
-import com.ee.midas.data.{DuplexPipe, SimplexPipe}
+import com.ee.midas.pipes.{DuplexPipe, SimplexPipe}
 
 object Main extends App {
 

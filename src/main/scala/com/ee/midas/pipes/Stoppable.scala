@@ -1,4 +1,4 @@
-package com.ee.midas.data
+package com.ee.midas.pipes
 
 trait Stoppable {
   def stop: Unit

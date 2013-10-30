@@ -60,7 +60,7 @@ extends Pipe {
       t match {
         case e: IOException => {
           log.error("["+ threadName + "] UncaughtExceptionHandler Received IOException in %s".format(e.getMessage))
-          println("["+ threadName + "] Closing pipe: " + pipe.name)
+          log.error("["+ threadName + "] Closing pipe: " + pipe.name)
         }
       }
     }

@@ -1,11 +1,13 @@
 package com.ee.midas.pipes
 
+import org.slf4j.LoggerFactory
+
 
 trait PipesMonitorComponent extends Startable with Stoppable {
   pipe: Pipe =>
 
   val checkEveryMillis: Long
-
+  def log = LoggerFactory.getLogger(getClass)
   abstract override def start: Unit = {
     println("Starting Pipe..." + pipe.name)
     //Start Target First
@@ -16,20 +18,20 @@ trait PipesMonitorComponent extends Startable with Stoppable {
   }
 
   abstract override def stop: Unit = {
-    println("Stopping Pipe..." + pipe.name)
+    log.info("Stopping Pipe..." + pipe.name)
     //Start Target First
     super.stop
     val pipesMonitor = new PipesMonitor
-    println("Stopping PipesMonitor..." + pipesMonitor.toString)
+    log.info("Stopping PipesMonitor..." + pipesMonitor.toString)
     pipesMonitor.close
   }
 
   abstract override def forceStop: Unit = {
-    println("Forcing Stop on Pipe..." + pipe.name)
+    log.info("Forcing Stop on Pipe..." + pipe.name)
     //Start Target First
     super.forceStop
     val pipesMonitor = new PipesMonitor
-    println("Stopping PipesMonitor..." + pipesMonitor.toString)
+    log.info("Stopping PipesMonitor..." + pipesMonitor.toString)
     pipesMonitor.close
   }
 
@@ -51,7 +53,7 @@ trait PipesMonitorComponent extends Startable with Stoppable {
           }
           Thread.sleep(checkEveryMillis)
         } catch {
-          case e: InterruptedException => println("Status Thread Interrupted")
+          case e: InterruptedException => log.error("Status Thread Interrupted")
             keepRunning = false
         }
       }

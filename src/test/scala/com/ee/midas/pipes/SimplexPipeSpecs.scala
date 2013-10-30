@@ -1,18 +1,19 @@
 package com.ee.midas.pipes
 
-import org.specs2.mutable.Specification
 import org.junit.runner.RunWith
-import org.specs2.runner.JUnitRunner
 import org.specs2.mock.Mockito
 import java.io.{OutputStream, InputStream, ByteArrayOutputStream, ByteArrayInputStream}
+import org.mockito.runners.MockitoJUnitRunner
+import org.specs2.matcher.JUnitMustMatchers
+import org.junit.Test
 
-@RunWith(classOf[JUnitRunner])
-object SimplexPipeSpecs extends Specification with Mockito {
+@RunWith(classOf[MockitoJUnitRunner])
+class SimplexPipeSpecs extends JUnitMustMatchers with Mockito {
 
-  "simplex pipe" should {
-    val pipeName = "test-pipe"
-    val waitTime = 1000
-    "transfer data from source to destination" in {
+  val pipeName = "test-pipe"
+
+   @Test
+   def transferDataFromSourceToDestination() {
       //given
       val data = "Hello World".getBytes()
       val source = new ByteArrayInputStream(data)
@@ -29,7 +30,8 @@ object SimplexPipeSpecs extends Specification with Mockito {
       destination.toByteArray() must beEqualTo(data)
     }
 
-    "close on force stop" in {
+   @Test
+   def closeOnForceStop() {
       //given
       val mockInputStream = mock[InputStream]
       val mockOutputStream = mock[OutputStream]
@@ -43,7 +45,8 @@ object SimplexPipeSpecs extends Specification with Mockito {
       there was one(mockOutputStream).close()
     }
 
-    "stop gracefully" in {
+   @Test
+   def stopGracefully() {
       //given
       val mockInputStream = mock[InputStream]
       val mockOutputStream = mock[OutputStream]
@@ -52,17 +55,18 @@ object SimplexPipeSpecs extends Specification with Mockito {
 
       //when
       pipeThread.start()
-      Thread.sleep(waitTime)
 
       //then
       pipe.isActive must beTrue
 
       //when
       pipe.stop
-      Thread.sleep(waitTime)
+
+      pipeThread.join
+
       //then
       pipe.isActive must beFalse
     }
 
-  }
+
 }

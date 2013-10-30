@@ -1,13 +1,13 @@
 package com.ee.midas.pipes
 
-import org.slf4j.LoggerFactory
+import org.slf4j.Logger
 
 
 trait PipesMonitorComponent extends Startable with Stoppable {
   pipe: Pipe =>
 
   val checkEveryMillis: Long
-  def log = LoggerFactory.getLogger(getClass)
+  val monitorLog : Logger
   abstract override def start: Unit = {
     println("Starting Pipe..." + pipe.name)
     //Start Target First
@@ -18,20 +18,20 @@ trait PipesMonitorComponent extends Startable with Stoppable {
   }
 
   abstract override def stop: Unit = {
-    log.info("Stopping Pipe..." + pipe.name)
+    monitorLog.info("Stopping Pipe..." + pipe.name)
     //Start Target First
     super.stop
     val pipesMonitor = new PipesMonitor
-    log.info("Stopping PipesMonitor..." + pipesMonitor.toString)
+    monitorLog.info("Stopping PipesMonitor..." + pipesMonitor.toString)
     pipesMonitor.close
   }
 
   abstract override def forceStop: Unit = {
-    log.info("Forcing Stop on Pipe..." + pipe.name)
+    monitorLog.info("Forcing Stop on Pipe..." + pipe.name)
     //Start Target First
     super.forceStop
     val pipesMonitor = new PipesMonitor
-    log.info("Stopping PipesMonitor..." + pipesMonitor.toString)
+    monitorLog.info("Stopping PipesMonitor..." + pipesMonitor.toString)
     pipesMonitor.close
   }
 
@@ -46,14 +46,14 @@ trait PipesMonitorComponent extends Startable with Stoppable {
           pipe.inspect
           if (!pipe.isActive) {
             val threadName = Thread.currentThread().getName()
-            println("[" + threadName + "] Detected Broken Pipe...Initiating Pipe Closure")
+            monitorLog.error("[" + threadName + "] Detected Broken Pipe...Initiating Pipe Closure")
             pipe.forceStop
             keepRunning = false
-            println("[" + threadName + "] Shutting down Monitor")
+            monitorLog.error("[" + threadName + "] Shutting down Monitor")
           }
           Thread.sleep(checkEveryMillis)
         } catch {
-          case e: InterruptedException => log.error("Status Thread Interrupted")
+          case e: InterruptedException => monitorLog.error("Status Thread Interrupted")
             keepRunning = false
         }
       }

@@ -3,16 +3,17 @@ package com.ee.midas.pipes
 import java.io.{IOException, OutputStream, InputStream}
 import java.net.SocketException
 import scala.beans.BeanProperty
+import org.slf4j.LoggerFactory
 
 class SimplexPipe(val name: String, val src: InputStream, val dest: OutputStream)
   extends Pipe with Runnable {
   val EOF = -1
   private var gracefulStop = false
-
+  val log = LoggerFactory.getLogger(getClass)
   private var isRunning = false
 
   def start: Unit = {
-    println("Starting " +  toString)
+    log.info("Starting " +  toString)
   }
 
   override def run: Unit = {
@@ -24,7 +25,7 @@ class SimplexPipe(val name: String, val src: InputStream, val dest: OutputStream
       println(name + ", Bytes Read = " + bytesRead)
       if (bytesRead > 0) {
         dest.write(data, 0, bytesRead)
-        println(name + ", Bytes Written = " + bytesRead)
+        log.info(name + ", Bytes Written = " + bytesRead)
         dest.flush
       }
     } while (bytesRead != EOF && !gracefulStop)
@@ -37,15 +38,15 @@ class SimplexPipe(val name: String, val src: InputStream, val dest: OutputStream
 
   def forceStop = {
     val threadName = Thread.currentThread().getName()
-    println("["+ threadName + "] " + toString + ": Closing Streams...")
+    log.info("["+ threadName + "] " + toString + ": Closing Streams...")
     src.close()
     dest.close()
-    println("["+ threadName + "] " + toString + ": Closing Streams Done")
+    log.info("["+ threadName + "] " + toString + ": Closing Streams Done")
   }
 
   def inspect: Unit = {
-    println("Pipe Name = " + name)
-    println("isActive? = " + isActive)
+    log.info("Pipe Name = " + name)
+    log.info("isActive? = " + isActive)
   }
 
   override def toString = getClass.getSimpleName + ":" + name

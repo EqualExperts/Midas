@@ -4,12 +4,12 @@ import java.io.{IOException, OutputStream, InputStream}
 import java.net.SocketException
 import scala.beans.BeanProperty
 import org.slf4j.LoggerFactory
+import com.ee.midas.utils.Loggable
 
 class SimplexPipe(val name: String, val src: InputStream, val dest: OutputStream)
-  extends Pipe with Runnable {
+  extends Pipe with Runnable with Loggable {
   val EOF = -1
   private var gracefulStop = false
-  val log = LoggerFactory.getLogger(getClass)
   private var isRunning = false
 
   def start: Unit = {

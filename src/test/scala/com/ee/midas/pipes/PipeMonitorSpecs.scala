@@ -7,7 +7,7 @@ import org.specs2.mock.Mockito
 import org.slf4j.{LoggerFactory, Logger}
 
 @RunWith(classOf[JUnitRunner])
-object PipeMonitorSpecs extends Specification with Mockito{
+object PipeMonitorSpecs extends Specification with Mockito {
 
      "pipes monitor component" should {
 
@@ -33,7 +33,6 @@ object PipeMonitorSpecs extends Specification with Mockito{
          //given
          val moniterablePipe = new TestPipe(true) with PipesMonitorComponent {
            val checkEveryMillis: Long = 1
-           val monitorLog:Logger = LoggerFactory.getLogger(getClass)
          }
          //when
          moniterablePipe.start
@@ -46,7 +45,6 @@ object PipeMonitorSpecs extends Specification with Mockito{
          //given
          val moniterablePipe = new TestPipe(false) with PipesMonitorComponent {
            val checkEveryMillis: Long = 1
-           val monitorLog:Logger = LoggerFactory.getLogger(getClass)
          }
 
          //when
@@ -62,7 +60,6 @@ object PipeMonitorSpecs extends Specification with Mockito{
          //given
          val moniterablePipe = new TestPipe(false) with PipesMonitorComponent {
            val checkEveryMillis: Long = 1
-           val monitorLog:Logger = LoggerFactory.getLogger(getClass)
          }
 
          //when

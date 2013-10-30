@@ -1,11 +1,10 @@
 package com.ee.midas.pipes
 
 import java.io.IOException
-import org.slf4j.{Logger, LoggerFactory}
+import com.ee.midas.utils.Loggable
 
 class DuplexPipe private (val id: Long, private val request: SimplexPipe, private val response: SimplexPipe)
-extends Pipe {
-  val log = LoggerFactory.getLogger(getClass)
+extends Pipe with Loggable {
   val name = classOf[DuplexPipe].getSimpleName + "-%d".format(id)
   private val duplexGroup = new ThreadGroup(name)
   private val exceptionHandler = new UncaughtExceptionHandler(this)
@@ -72,8 +71,8 @@ object DuplexPipe {
 
   def apply(request: SimplexPipe, response: SimplexPipe) =
     new DuplexPipe(nextId, request, response) with PipesMonitorComponent {
+      override val log = logFor(classOf[DuplexPipe])
       val checkEveryMillis: Long = 3000
-      val monitorLog: Logger = LoggerFactory.getLogger(getClass)
     }
 }
 

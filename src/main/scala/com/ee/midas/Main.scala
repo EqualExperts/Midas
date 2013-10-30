@@ -4,11 +4,10 @@ package com.ee.midas
 import com.ee.midas.pipes.{DuplexPipe, SimplexPipe}
 import org.slf4j.LoggerFactory
 import java.net.{Socket, InetAddress, ServerSocket}
+import com.ee.midas.utils.Loggable
 
 
-object Main extends App {
-
-  def log = LoggerFactory.getLogger(getClass)
+object Main extends App with Loggable {
 
   def startWith(initial : List[DuplexPipe]) : DuplexPipe => List[DuplexPipe] = {
     var acc = initial

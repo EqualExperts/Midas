@@ -22,7 +22,7 @@ class SimplexPipe(val name: String, val src: InputStream, val dest: OutputStream
     val data = new Array[Byte](1024 * 16)
     do {
       bytesRead = src.read(data)
-      println(name + ", Bytes Read = " + bytesRead)
+      log.info(name + ", Bytes Read = " + bytesRead)
       if (bytesRead > 0) {
         dest.write(data, 0, bytesRead)
         log.info(name + ", Bytes Written = " + bytesRead)
@@ -32,16 +32,16 @@ class SimplexPipe(val name: String, val src: InputStream, val dest: OutputStream
     isRunning = false
   }
 
-  def stop = gracefulStop = true
+  def stop : Unit = gracefulStop = true
 
   def isActive = isRunning
 
-  def forceStop = {
+  def forceStop : Unit = {
     val threadName = Thread.currentThread().getName()
-    log.info("["+ threadName + "] " + toString + ": Closing Streams...")
+    log.info("[" + threadName + "] " + toString + ": Closing Streams...")
     src.close()
     dest.close()
-    log.info("["+ threadName + "] " + toString + ": Closing Streams Done")
+    log.info("[" + threadName + "] " + toString + ": Closing Streams Done")
   }
 
   def inspect: Unit = {
@@ -49,5 +49,5 @@ class SimplexPipe(val name: String, val src: InputStream, val dest: OutputStream
     log.info("isActive? = " + isActive)
   }
 
-  override def toString = getClass.getSimpleName + ":" + name
+  override def toString  = getClass.getSimpleName + ":" + name
 }

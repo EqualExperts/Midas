@@ -10,12 +10,13 @@ import org.specs2.mock.Mockito
 object SimplexPipeSpecs extends Specification with Mockito {
 
   "simplex pipe" should {
+    val pipeName = "test-pipe"
     "transfer data from source to destination" in {
       //given
       val data = "Hello World".getBytes()
       val source = new ByteArrayInputStream(data)
       val destination = new ByteArrayOutputStream()
-      val simplexPipe = new SimplexPipe("test-pipe",source, destination)
+      val simplexPipe = new SimplexPipe(pipeName,source, destination)
 
       //when
       simplexPipe.run()
@@ -31,7 +32,7 @@ object SimplexPipeSpecs extends Specification with Mockito {
       //given
       val mockInputStream = mock[InputStream]
       val mockOutputStream = mock[OutputStream]
-      val pipe = new SimplexPipe("test-pipe", mockInputStream, mockOutputStream)
+      val pipe = new SimplexPipe(pipeName, mockInputStream, mockOutputStream)
 
       //when
       pipe.forceStop
@@ -45,7 +46,7 @@ object SimplexPipeSpecs extends Specification with Mockito {
       //given
       val mockInputStream = mock[InputStream]
       val mockOutputStream = mock[OutputStream]
-      val pipe = new SimplexPipe("test-pipe", mockInputStream, mockOutputStream)
+      val pipe = new SimplexPipe(pipeName, mockInputStream, mockOutputStream)
       val pipeThread = new Thread(pipe)
 
       //when

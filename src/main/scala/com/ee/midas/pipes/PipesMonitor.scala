@@ -9,11 +9,11 @@ trait PipesMonitorComponent extends Startable with Stoppable {
   val checkEveryMillis: Long
   val monitorLog : Logger
   abstract override def start: Unit = {
-    println("Starting Pipe..." + pipe.name)
+    monitorLog.info("Starting Pipe..." + pipe.name)
     //Start Target First
     super.start
     val pipesMonitor = new PipesMonitor
-    println("Starting PipesMonitor..." + pipesMonitor.toString)
+    monitorLog.info("Starting PipesMonitor..." + pipesMonitor.toString)
     pipesMonitor.start
   }
 
@@ -38,7 +38,7 @@ trait PipesMonitorComponent extends Startable with Stoppable {
   class PipesMonitor extends Thread(pipe.name + "-Monitor-Thread") {
     private var keepRunning = true
 
-    def close = keepRunning = false
+    def close : Unit = keepRunning = false
 
     override def run = {
       while (keepRunning) {

@@ -39,28 +39,27 @@ extends Pipe {
       log.info("Response Thread Id = " + responseThread.getId)
     }
   }
-  
   def isActive = request.isActive && response.isActive
 
-  def forceStop = {
+  def forceStop : Unit = {
     request.forceStop
     response.forceStop
   }
   
-  def stop = {
+  def stop : Unit = {
     request.stop
     response.stop
   }
 
-  override def toString = name
+  override def toString  = name
 
   class UncaughtExceptionHandler(pipe: Pipe) extends Thread.UncaughtExceptionHandler {
     def uncaughtException(thread: Thread, t: Throwable) : Unit = {
       val threadName = Thread.currentThread().getName
       t match {
         case e: IOException => {
-          log.error("["+ threadName + "] UncaughtExceptionHandler Received IOException in %s".format(e.getMessage))
-          log.error("["+ threadName + "] Closing pipe: " + pipe.name)
+          log.error("[" + threadName + "] UncaughtExceptionHandler Received IOException in %s".format(e.getMessage))
+          log.error("[" + threadName + "] Closing pipe: " + pipe.name)
         }
       }
     }

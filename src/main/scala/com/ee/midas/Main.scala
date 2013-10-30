@@ -2,8 +2,12 @@ package com.ee.midas
 
 import java.net._
 import com.ee.midas.pipes.{DuplexPipe, SimplexPipe}
+import org.slf4j.LoggerFactory
+
 
 object Main extends App {
+
+  def log = LoggerFactory.getLogger(getClass)
 
   def startWith(initial : List[DuplexPipe]) : DuplexPipe => List[DuplexPipe] = {
     var acc = initial
@@ -23,17 +27,17 @@ object Main extends App {
 
     sys.ShutdownHookThread {
       val pipes = accumulate(null)
-      println("User Forced Stop on Midas...Closing Open Connections = ")
+      log.info("User Forced Stop on Midas...Closing Open Connections = ")
       pipes filter(_.isActive) map(_.forceStop)
     }
 
     while (true) {
       val midasClient = waitForNewConnectionOn(midasSocket)
-      println("New connection received...")
+      log.info("New connection received...")
       //TODO: do something if Mongo is not available
       val mongoSocket = new Socket(mongoHost, mongoPort)
       val pipe = createDuplexPipe(midasClient, mongoSocket)
-      println("Setup DataPipe = " + pipe.toString)
+      log.info("Setup DataPipe = " + pipe.toString)
       accumulate(pipe)
     }
   }
@@ -53,7 +57,7 @@ object Main extends App {
   }
 
   private def waitForNewConnectionOn(serverSocket: ServerSocket) = {
-    println("Listening on port " + serverSocket.getLocalPort() + " for new connections...")
+    log.info("Listening on port " + serverSocket.getLocalPort() + " for new connections...")
     serverSocket.accept()
   }
 }

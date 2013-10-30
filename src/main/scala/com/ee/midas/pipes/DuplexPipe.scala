@@ -1,9 +1,11 @@
 package com.ee.midas.pipes
 
 import java.io.IOException
+import org.slf4j.LoggerFactory
 
 class DuplexPipe private (val id: Long, private val request: SimplexPipe, private val response: SimplexPipe)
 extends Pipe {
+  def log = LoggerFactory.getLogger(getClass)
   val name = classOf[DuplexPipe].getSimpleName + "-%d".format(id)
   private val duplexGroup = new ThreadGroup(name)
   private val exceptionHandler = new UncaughtExceptionHandler(this)
@@ -19,21 +21,22 @@ extends Pipe {
   private def threadName(name: String) = duplexGroup.getName + "-" + name + "-Thread"
 
   override def start: Unit = {
-    println("Starting " +  toString)
+    log.info("Starting " +  toString)
     requestThread.start
     responseThread.start
   }
 
   def inspect : Unit = {
-    println("Pipe Name = " + duplexGroup.getName())
-    println("Active Threads = " + duplexGroup.activeCount())
+
+    log.info("Pipe Name = " + duplexGroup.getName())
+    log.info("Active Threads = " + duplexGroup.activeCount())
     if(requestThread.isAlive) {
-      println("Request Thread Id = " + requestThread.getId)
-      println("Request Thread Name = " + requestThread.getName)
+      log.info("Request Thread Id = " + requestThread.getId)
+      log.info("Request Thread Name = " + requestThread.getName)
     }
     if(responseThread.isAlive) {
-      println("Response Thread Name = " + responseThread.getName)
-      println("Response Thread Id = " + responseThread.getId)
+      log.info("Response Thread Name = " + responseThread.getName)
+      log.info("Response Thread Id = " + responseThread.getId)
     }
   }
   
@@ -56,7 +59,7 @@ extends Pipe {
       val threadName = Thread.currentThread().getName
       t match {
         case e: IOException => {
-          println("["+ threadName + "] UncaughtExceptionHandler Received IOException in %s".format(e.getMessage))
+          log.error("["+ threadName + "] UncaughtExceptionHandler Received IOException in %s".format(e.getMessage))
           println("["+ threadName + "] Closing pipe: " + pipe.name)
         }
       }

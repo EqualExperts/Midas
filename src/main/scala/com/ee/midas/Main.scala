@@ -1,8 +1,9 @@
 package com.ee.midas
 
-import java.net._
+
 import com.ee.midas.pipes.{DuplexPipe, SimplexPipe}
 import org.slf4j.LoggerFactory
+import java.net.{Socket, InetAddress, ServerSocket}
 
 
 object Main extends App {

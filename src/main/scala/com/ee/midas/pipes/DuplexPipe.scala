@@ -45,7 +45,6 @@ extends Pipe {
     request.forceStop
     response.forceStop
   }
-  
   def stop : Unit = {
     request.stop
     response.stop

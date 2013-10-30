@@ -48,15 +48,14 @@ object PipeMonitorSpecs extends Specification with Mockito{
            val checkEveryMillis: Long = 1
            val monitorLog:Logger = LoggerFactory.getLogger(getClass)
          }
-         val timePause = 1000
+
          //when
          moniterablePipe.start
-         Thread.sleep(timePause)
+         waitForPipeToInitialize(1000)
 
          //then
-//         moniterablePipe.isStartCalled must beTrue
-//         moniterablePipe.forceStopCalled must beTrue
-           true
+         moniterablePipe.isStartCalled must beTrue
+         moniterablePipe.forceStopCalled must beTrue
        }
 
        "gracefully shut down the pipe" in {
@@ -73,4 +72,6 @@ object PipeMonitorSpecs extends Specification with Mockito{
          moniterablePipe.stopCalled must beTrue
        }
      }
+
+    def waitForPipeToInitialize(time: Int) = Thread.sleep(time)
 }

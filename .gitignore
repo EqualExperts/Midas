@@ -12,4 +12,4 @@ cobertura.ser
 target
 out
 .settings
-*.log
+*.log*

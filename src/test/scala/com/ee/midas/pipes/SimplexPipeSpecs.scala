@@ -51,22 +51,19 @@ class SimplexPipeSpecs extends JUnitMustMatchers with Mockito {
       val mockInputStream = mock[InputStream]
       val mockOutputStream = mock[OutputStream]
       val pipe = new SimplexPipe(pipeName, mockInputStream, mockOutputStream)
-      val pipeThread = new Thread(pipe)
+      scheduleStopToRunAfter(pipe, 550)
 
       //when
-      pipeThread.start()
-
-      //then
-      pipe.isActive must beTrue
-
-      //when
-      pipe.stop
-
-      pipeThread.join
+      pipe.run
 
       //then
       pipe.isActive must beFalse
     }
 
-
+  def scheduleStopToRunAfter(pipe: SimplexPipe, time: Int):Unit = {
+    new Thread  {
+      Thread.sleep(time)
+      pipe.stop
+    }
+  }
 }

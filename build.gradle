@@ -184,19 +184,16 @@ task unzip(type: Copy) {
 }
 
 task run(description: "Runs $project.archivesBaseName", dependsOn: [distribute, unzip]) << {
-    //Explode Zip
-    def zipFile = file(distsZipFileName)
+    //Run Midas from exploded dir
     def runtimeClasspath = fileTree(dir: "${project.ext.explodedDir}/libs", include: '*.jar')
     runtimeClasspath = runtimeClasspath + fileTree(dir: project.distsDir, include: '*.jar')
 
-    //Run Midas from zip
     javaexec {
         systemProperties['portPrefix'] = project.ext.portPrefix
         main = 'com.ee.midas.Main'
         classpath = runtimeClasspath
         args = ["$project.ext.midasServer", "${project.ext.portPrefix}20", "${project.ext.mongoDB}", "${project.ext.portPrefix}17"]
     }
-
 }
 
 check.dependsOn << ['scalastyle']

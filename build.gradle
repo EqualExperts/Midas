@@ -9,6 +9,18 @@ apply plugin: 'jdepend' //for dependency analysis
 apply plugin: 'findbugs' //for static code analysis
 apply plugin: 'pmd'
 
+idea {
+    module {
+        testSourceDirs += file('acceptance-tests')
+//        testSourceDirs += file('src/intTest/resources')
+
+        // selectively add Groovy code
+//        def File f = file('src/intTest/groovy')
+//        if( f.exists() && f.isDirectory() ) {
+//            testSourceDirs += file('src/intTest/groovy')
+//        }
+    }
+}
 defaultTasks 'clean', 'build'
 
 sourceCompatibility = '1.6'
@@ -63,6 +75,21 @@ project.ext {
     MONGODB_SERVER = 'localhost'
     mongoDB = System.getProperty('mongoDB', "$MONGODB_SERVER")
 }
+
+//sourceSets {
+//    acceptanceTest {
+//        java {
+//            srcDir 'acceptance-tests'
+//        }
+//        compileClasspath += sourceSets.main.runtimeClasspath
+//    }
+//}
+
+//task integrationTest(type: Test) {
+//    description = "Runs Integration Tests"
+//    testClassesDir = sourceSets.integrationTest.output.classesDir
+//    classpath += sourceSets.integrationTest.runtimeClasspath
+//}
 
 // Apply External Plugins
 buildscript {
@@ -145,7 +172,7 @@ cobertura {
     coverageReportDir = file(project.ext.coberturaCoverageReportsDirName)
     cobertura.coverageExcludes = ['.*net.saliman.*']
     totalLineCoverage = 50
-    totalBranchCoverage = 50
+    totalBranchCoverage = 80
 }
 
 task distribute(type:Zip, dependsOn: assemble) {

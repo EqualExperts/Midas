@@ -12,13 +12,6 @@ apply plugin: 'pmd'
 idea {
     module {
         testSourceDirs += file('acceptance-tests')
-//        testSourceDirs += file('src/intTest/resources')
-
-        // selectively add Groovy code
-//        def File f = file('src/intTest/groovy')
-//        if( f.exists() && f.isDirectory() ) {
-//            testSourceDirs += file('src/intTest/groovy')
-//        }
     }
 }
 defaultTasks 'clean', 'build'
@@ -41,6 +34,8 @@ project.ext {
     junit = 'junit:junit:4.8.1'
     mockito = 'org.mockito:mockito-all:1.9.5'
     specs2 = 'org.specs2:specs2_2.10:2.2.2'
+    //for acceptance-test reporting
+    pegdown = 'org.pegdown:pegdown:1.2.1'
     spock = 'org.spockframework:spock-core:0.7-groovy-2.0'
     slf4j = 'org.slf4j:slf4j-api:1.7.5'
     log4jBinding = 'org.slf4j:slf4j-log4j12:1.7.5'
@@ -74,22 +69,55 @@ project.ext {
 
     MONGODB_SERVER = 'localhost'
     mongoDB = System.getProperty('mongoDB', "$MONGODB_SERVER")
+
+    acceptanceTestDir = 'acceptance-tests'
+    acceptanceTestReportsDir = "$reporting.baseDir/acceptance-tests"
 }
 
-//sourceSets {
-//    acceptanceTest {
-//        java {
-//            srcDir 'acceptance-tests'
-//        }
-//        compileClasspath += sourceSets.main.runtimeClasspath
-//    }
-//}
+sourceSets {
+    test {
+        scala {
+        srcDir 'acceptance-tests'
+        compileClasspath += sourceSets.main.runtimeClasspath
+        runtimeClasspath = output + sourceSets.main.output + configurations.testRuntime
+        }
+    }
+}
 
-//task integrationTest(type: Test) {
-//    description = "Runs Integration Tests"
-//    testClassesDir = sourceSets.integrationTest.output.classesDir
-//    classpath += sourceSets.integrationTest.runtimeClasspath
-//}
+test {
+    exclude '**/acceptance/*.class'
+}
+
+
+task ('smoke-test', dependsOn: 'unzip') << {
+    println "Running smoke tests..."
+    runAcceptanceTests(project.ext.acceptanceTestDir, project.ext.acceptanceTestReportsDir)
+}
+
+def runAcceptanceTests(String srcFolder, String reportsFolder) {
+    def zipFile = file("${project.distsDir}/${project.archivesBaseName}.zip")
+    if(!zipFile.exists()) {
+        throw new RuntimeException(">>> Please run gradle to build the binary distributable ${project.archivesBaseName}.zip first!")
+    }
+    def runtimeClasspath = fileTree(dir: "${project.ext.explodedDir}/libs", include: '*.jar')
+    runtimeClasspath = runtimeClasspath + fileTree(dir: project.distsDir, include: '*.jar')
+    runtimeClasspath = runtimeClasspath + project.sourceSets.test.runtimeClasspath
+
+    println(runtimeClasspath.asPath)
+
+    def accTestReportsDir = new File("$project.ext.acceptanceTestReportsDir")
+    if(!accTestReportsDir.exists()) {
+        accTestReportsDir.mkdirs()
+    }
+
+    javaexec {
+        systemProperties['specs2.srcTestDir'] = srcFolder
+        systemProperties['specs2.outDir'] = reportsFolder
+        main = 'org.specs2.files'
+        classpath = runtimeClasspath
+        args = ['html','filesrunner.verbose']
+    }
+}
 
 // Apply External Plugins
 buildscript {
@@ -115,7 +143,7 @@ repositories {
 
 dependencies {
     compile(project.ext.mongoDriver, project.ext.groovy, project.ext.scala, project.ext.scalaStyle, project.ext.slf4j, project.ext.log4jBinding)
-    testCompile(project.ext.junit, project.ext.specs2, project.ext.mockito, project.ext.spock)
+    testCompile(project.ext.junit, project.ext.specs2, project.ext.mockito, project.ext.spock, project.ext.pegdown)
 }
 
 jar {

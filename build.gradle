@@ -86,12 +86,17 @@ sourceSets {
 }
 
 test {
-    exclude '**/run/*.class'
+    exclude '**/run/*.class', '**/sample/*.class'
 }
 
 task ('smoke-tests', dependsOn: 'unzip') << {
     println "Running smoke tests..."
     runAcceptanceTests(project.ext.smokeTestsDir, project.ext.smokeTestReportsDir)
+}
+
+task ('acceptance-tests', dependsOn: 'unzip') << {
+    println "Running acceptance tests..."
+    runAcceptanceTests(project.ext.acceptanceTestDir, project.ext.acceptanceTestReportsDir)
 }
 
 def runAcceptanceTests(String srcFolder, String reportsFolder) {
@@ -113,7 +118,7 @@ def runAcceptanceTests(String srcFolder, String reportsFolder) {
         systemProperties['specs2.outDir'] = reportsFolder
         main = 'org.specs2.files'
         classpath = runtimeClasspath
-        args = ['html', 'filesrunner.verbose']
+        args = ['html', 'filesrunner.verbose', 'filesrunner.pattern', '.*Specs']
     }
 }
 
@@ -198,7 +203,7 @@ cobertura {
     coverageReportDir = file(project.ext.coberturaCoverageReportsDirName)
     cobertura.coverageExcludes = ['.*net.saliman.*']
     totalLineCoverage = 50
-    totalBranchCoverage = 80
+    totalBranchCoverage = 50
 }
 
 task distribute(type:Zip, dependsOn: assemble) {
@@ -251,4 +256,4 @@ task run(description: "Runs $project.archivesBaseName", dependsOn: [distribute, 
 }
 
 check.dependsOn << ['scalastyle']
-build.dependsOn = ['check', 'cobertura', 'coberturaCheck', 'distribute']
+build.dependsOn = ['check', 'cobertura', 'coberturaCheck', 'distribute', 'smoke-tests']

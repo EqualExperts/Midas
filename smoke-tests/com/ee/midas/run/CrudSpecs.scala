@@ -6,17 +6,19 @@ import org.specs2.Specification
 import com.mongodb._
 
 @RunWith(classOf[JUnitRunner])
-class CrudSpec extends Specification {
+class CrudSpecs extends Specification {
 
     var application: MongoClient = null
     var document:DBObject = null
 
     def is = s2"""
     Narration:
+    //TODO: write a story to represent CRUD.
     This is a specification to verify that midas behaves as a proxy
-    Assuming that mongods and midas is running
+
     A client application should
-        Step 1: Connect to midas             $connect
+        Step 1: Ensure Midas and mongods are running
+            Connect to Midas                 $connect
 
         Step 2: Perform CRUD operations
             insert documents                 $insert
@@ -24,7 +26,8 @@ class CrudSpec extends Specification {
             update documents                 $update
             delete documents                 $delete
 
-        Step 3: Disconnect from midas        $disconnect
+        Step 3: Close connection to Midas
+            Disconnect                       $disconnect
                                                                """
 
     val connect = {

@@ -12,6 +12,7 @@ apply plugin: 'pmd'
 idea {
     module {
         testSourceDirs += file('acceptance-tests')
+        testSourceDirs += file('smoke-tests')
     }
 }
 defaultTasks 'clean', 'build'
@@ -72,26 +73,25 @@ project.ext {
 
     acceptanceTestDir = 'acceptance-tests'
     acceptanceTestReportsDir = "$reporting.baseDir/acceptance-tests"
+    smokeTestsDir = "smoke-tests"
+    smokeTestReportsDir = "$reporting.baseDir/smoke-tests"
 }
 
 sourceSets {
     test {
         scala {
-        srcDir 'acceptance-tests'
-        compileClasspath += sourceSets.main.runtimeClasspath
-        runtimeClasspath = output + sourceSets.main.output + configurations.testRuntime
+            srcDirs 'smoke-tests', 'acceptance-tests'
         }
     }
 }
 
 test {
-    exclude '**/acceptance/*.class'
+    exclude '**/run/*.class'
 }
 
-
-task ('smoke-test', dependsOn: 'unzip') << {
+task ('smoke-tests', dependsOn: 'unzip') << {
     println "Running smoke tests..."
-    runAcceptanceTests(project.ext.acceptanceTestDir, project.ext.acceptanceTestReportsDir)
+    runAcceptanceTests(project.ext.smokeTestsDir, project.ext.smokeTestReportsDir)
 }
 
 def runAcceptanceTests(String srcFolder, String reportsFolder) {
@@ -103,11 +103,9 @@ def runAcceptanceTests(String srcFolder, String reportsFolder) {
     runtimeClasspath = runtimeClasspath + fileTree(dir: project.distsDir, include: '*.jar')
     runtimeClasspath = runtimeClasspath + project.sourceSets.test.runtimeClasspath
 
-    println(runtimeClasspath.asPath)
-
-    def accTestReportsDir = new File("$project.ext.acceptanceTestReportsDir")
-    if(!accTestReportsDir.exists()) {
-        accTestReportsDir.mkdirs()
+    def testReportsDir = new File(reportsFolder)
+    if(!testReportsDir.exists()) {
+        testReportsDir.mkdirs()
     }
 
     javaexec {
@@ -115,7 +113,7 @@ def runAcceptanceTests(String srcFolder, String reportsFolder) {
         systemProperties['specs2.outDir'] = reportsFolder
         main = 'org.specs2.files'
         classpath = runtimeClasspath
-        args = ['html','filesrunner.verbose']
+        args = ['html', 'filesrunner.verbose']
     }
 }
 

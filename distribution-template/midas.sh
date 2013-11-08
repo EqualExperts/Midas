@@ -35,4 +35,4 @@ then
 fi
   CLASSPATH=%%JAVA_CLASS_PATH%%
 
-java -cp $CLASSPATH com.ee.midas.runner.Server $@
+java -cp $CLASSPATH com.ee.midas.Main $@

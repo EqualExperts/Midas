@@ -4,18 +4,10 @@ package com.ee.midas
 import com.ee.midas.pipes.{SocketConnector, DuplexPipe, SimplexPipe}
 import org.slf4j.LoggerFactory
 import java.net.{Socket, InetAddress, ServerSocket}
-import com.ee.midas.utils.Loggable
+import com.ee.midas.utils.{Accumulator, Loggable}
 
 
 object Main extends App with Loggable {
-
-  def startWith(initial : List[DuplexPipe]) : DuplexPipe => List[DuplexPipe] = {
-    var acc = initial
-    (pipe: DuplexPipe) => {
-      acc = if(pipe == null) acc else pipe :: acc
-      acc
-    }
-  }
 
   val maxClientConnections = 50
 
@@ -23,7 +15,7 @@ object Main extends App with Loggable {
 
     val (midasHost,midasPort,mongoHost,mongoPort) = (args(0), args(1).toInt, args(2), args(3).toInt)
     val midasSocket = new ServerSocket(midasPort, maxClientConnections, InetAddress.getByName(midasHost))
-    val accumulate = startWith(Nil)
+    val accumulate = Accumulator[DuplexPipe](Nil)
 
     sys.ShutdownHookThread {
       val pipes = accumulate(null)

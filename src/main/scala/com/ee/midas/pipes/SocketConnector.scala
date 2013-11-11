@@ -2,22 +2,22 @@ package com.ee.midas.pipes
 
 import java.net.Socket
 
-class SocketConnector private (client: Socket) {
-  def <==> (server: Socket) : DuplexPipe = DuplexPipe(==> (server), <== (server))
+class SocketConnector private (source: Socket) {
+  def <==> (target: Socket) : DuplexPipe = DuplexPipe(==> (target), <== (target))
 
-  def ==> (server: Socket) : SimplexPipe = {
-    val clientIn = client.getInputStream
-    val serverOut = server.getOutputStream
-    new SimplexPipe("==>", clientIn, serverOut)
+  def ==> (target: Socket) : SimplexPipe = {
+    val srcIn = source.getInputStream
+    val tgtOut = target.getOutputStream
+    new SimplexPipe("==>", srcIn, tgtOut)
   }
 
-  def <== (server: Socket) : SimplexPipe = {
-    val serverIn = server.getInputStream
-    val clientOut = client.getOutputStream
-    new SimplexPipe("<==", serverIn, clientOut)
+  def <== (target: Socket) : SimplexPipe = {
+    val tgtIn = target.getInputStream
+    val srcOut = source.getOutputStream
+    new SimplexPipe("<==", tgtIn, srcOut)
   }
 }
 
 object SocketConnector {
-  implicit def apply(client: Socket) = new SocketConnector(client)
+  implicit def apply(source: Socket) = new SocketConnector(source)
 }

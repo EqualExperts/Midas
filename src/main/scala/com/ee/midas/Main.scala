@@ -1,7 +1,7 @@
 package com.ee.midas
 
 
-import com.ee.midas.pipes.{DuplexPipe, SimplexPipe}
+import com.ee.midas.pipes.{SocketConnector, DuplexPipe, SimplexPipe}
 import org.slf4j.LoggerFactory
 import java.net.{Socket, InetAddress, ServerSocket}
 import com.ee.midas.utils.Loggable
@@ -31,29 +31,17 @@ object Main extends App with Loggable {
       pipes filter(_.isActive) map(_.forceStop)
     }
 
+    import SocketConnector._
     while (true) {
       val midasClient = waitForNewConnectionOn(midasSocket)
       log.info("New connection received...")
       //TODO: do something if Mongo is not available
       val mongoSocket = new Socket(mongoHost, mongoPort)
-      val pipe = createDuplexPipe(midasClient, mongoSocket)
-      log.info("Setup DataPipe = " + pipe.toString)
-      accumulate(pipe)
+      val duplexPipe = midasClient <==> mongoSocket
+      duplexPipe.start
+      log.info("Setup DataPipe = " + duplexPipe.toString)
+      accumulate(duplexPipe)
     }
-  }
-
-  private def createDuplexPipe(client: Socket, server: Socket) = {
-    val clientIn = client.getInputStream
-    val serverOut = server.getOutputStream
-    val requestPipe = new SimplexPipe("Request", clientIn, serverOut)
-
-    val serverIn = server.getInputStream
-    val clientOut = client.getOutputStream
-    val responsePipe = new SimplexPipe("Response", serverIn, clientOut)
-
-    val duplexPipe = DuplexPipe(requestPipe, responsePipe)
-    duplexPipe.start
-    duplexPipe
   }
 
   private def waitForNewConnectionOn(serverSocket: ServerSocket) = {

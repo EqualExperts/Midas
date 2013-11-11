@@ -1,8 +1,7 @@
 package com.ee.midas
 
 
-import com.ee.midas.pipes.{SocketConnector, DuplexPipe, SimplexPipe}
-import org.slf4j.LoggerFactory
+import com.ee.midas.pipes.{SocketConnector, DuplexPipe}
 import java.net.{Socket, InetAddress, ServerSocket}
 import com.ee.midas.utils.{Accumulator, Loggable}
 

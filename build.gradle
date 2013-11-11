@@ -202,7 +202,7 @@ task scalastyle(description: 'Run scalaStyle analysis for main and test classes'
 cobertura {
     coverageReportDir = file(project.ext.coberturaCoverageReportsDirName)
     cobertura.coverageExcludes = ['.*net.saliman.*']
-    totalLineCoverage = 50
+    totalLineCoverage = 70
     totalBranchCoverage = 50
 }
 

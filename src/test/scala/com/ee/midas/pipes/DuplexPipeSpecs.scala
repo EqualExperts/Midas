@@ -73,4 +73,5 @@ class DuplexPipeSpecs extends JUnitMustMatchers with Mockito {
         there was one(request).stop
         there was one(response).stop
       }
-}
+
+ }

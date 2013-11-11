@@ -18,6 +18,7 @@ Please do not checkin Eclipse or Intellij or any IDE specific files.  For Idea o
 can be generated using
 * `gradle eclipse`
 * `gradle idea`
+
 Note:
 Eclipse IDE might show the following error for groovy files:
 "Error compiling Groovy project. Either the Groovy-JDT patch is not installed or JavaBuilder is not being used."

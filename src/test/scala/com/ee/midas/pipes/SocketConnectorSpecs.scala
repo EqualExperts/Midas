@@ -13,8 +13,8 @@ object SocketConnectorSpecs extends Specification with Mockito {
 
     "Socket Connector" should {
        "Create simplex pipe from client to server " in {
-          val client:Socket = mock[Socket]
-          val server:Socket = mock[Socket]
+          val client : Socket = mock[Socket]
+          val server : Socket = mock[Socket]
           val pipe = client ==> server
           pipe.isInstanceOf[SimplexPipe]
        }

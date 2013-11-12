@@ -9,7 +9,7 @@ import com.ee.midas.pipes.SocketConnector._
 
 
 @RunWith(classOf[JUnitRunner])
-object SocketConnectorSpecs extends Specification with Mockito {
+class SocketConnectorSpecs extends Specification with Mockito {
 
     "Socket Connector" should {
        "Create simplex pipe from client to server " in {

@@ -1,9 +1,6 @@
 package com.ee.midas.pipes
 
-import java.io.{IOException, OutputStream, InputStream}
-import java.net.SocketException
-import scala.beans.BeanProperty
-import org.slf4j.LoggerFactory
+import java.io.{OutputStream, InputStream}
 import com.ee.midas.utils.Loggable
 
 class SimplexPipe(val name: String, val src: InputStream, val dest: OutputStream)

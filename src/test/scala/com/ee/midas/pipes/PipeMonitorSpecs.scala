@@ -7,7 +7,7 @@ import org.specs2.mock.Mockito
 import org.slf4j.{LoggerFactory, Logger}
 
 @RunWith(classOf[JUnitRunner])
-object PipeMonitorSpecs extends Specification with Mockito {
+class PipeMonitorSpecs extends Specification with Mockito {
 
      "pipes monitor component" should {
 

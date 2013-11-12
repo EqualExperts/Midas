@@ -4,7 +4,7 @@ import org.bson.io.Bits
 import java.nio.{ByteOrder, ByteBuffer}
 
 
-class MongoHeader {
+class MongoHeader(header: Array[Byte]) {
   var responseLength : Int = 0
   var id : Int = 0
   var responseTo : Int = 0
@@ -16,7 +16,7 @@ class MongoHeader {
   val MAX_LENGTH = ( 32 * 1024 * 1024 )
   var array : Array[Byte] = null
 
-  def MongoHeader(header: Array[Byte]) {
+
 
     this.array = header
 
@@ -51,7 +51,7 @@ class MongoHeader {
     numOfDocuments = Bits.readInt(header, pos)
     pos += 4
 
-  }
+
 
   def getResponseLength: Int = responseLength
 

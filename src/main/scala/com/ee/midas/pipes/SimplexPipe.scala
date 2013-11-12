@@ -19,10 +19,10 @@ class SimplexPipe(val name: String, val src: InputStream, val dest: OutputStream
     val data = new Array[Byte](1024 * 16)
     do {
       bytesRead = src.read(data)
-      log.info(name + ", Bytes Read = " + bytesRead)
+      log.info(name + " Bytes Read = " + bytesRead)
       if (bytesRead > 0) {
         dest.write(data, 0, bytesRead)
-        log.info(name + ", Bytes Written = " + bytesRead)
+        log.info(name + " Bytes Written = " + bytesRead)
         dest.flush
       }
     } while (bytesRead != EOF && !gracefulStop)

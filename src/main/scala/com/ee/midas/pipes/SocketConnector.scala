@@ -14,7 +14,7 @@ class SocketConnector private (source: Socket) {
   def <== (target: Socket) = {
     val tgtIn = target.getInputStream
     val srcOut = source.getOutputStream
-    new SimplexPipe("<==", tgtIn, srcOut)
+    new SimplexPipe("<==", DecoratorStream(tgtIn), srcOut)
   }
 }
 

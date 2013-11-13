@@ -24,11 +24,11 @@ object Main extends App with Loggable {
 
     import SocketConnector._
     while (true) {
-      val midasClient = waitForNewConnectionOn(midasSocket)
+      val application = waitForNewConnectionOn(midasSocket)
       log.info("New connection received...")
       //TODO: do something if Mongo is not available
-      val mongoSocket = new Socket(mongoHost, mongoPort)
-      val duplexPipe = midasClient <==> mongoSocket
+      val mongoDB = new Socket(mongoHost, mongoPort)
+      val duplexPipe = application <==> mongoDB
       duplexPipe.start
       log.info("Setup DataPipe = " + duplexPipe.toString)
       accumulate(duplexPipe)

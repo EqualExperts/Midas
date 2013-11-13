@@ -3,12 +3,12 @@ import spock.lang.*
 public class HelloWorldGroovySpecs extends Specification {
     def "says Hello"() {
         given: 'a world'
-            def greeter = new GroovyGreeter()
+            def greeting = "Hello"
 
-        when: 'I say hello'
-            def greetings = greeter.greet()
+        when: 'I say hello to'
+            def sayHelloTo = "World"
 
         then:
-            greetings == 'Hello World'
+            greeting + ' ' + sayHelloTo == 'Hello World'
     }
 }

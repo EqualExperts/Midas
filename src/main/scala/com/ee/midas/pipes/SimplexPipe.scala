@@ -1,9 +1,9 @@
 package com.ee.midas.pipes
 
 import java.io.{OutputStream, InputStream}
-import com.ee.midas.utils.Loggable
+import com.ee.midas.utils.{Interceptable, Loggable}
 
-class SimplexPipe(val name: String, val src: InputStream, val dest: OutputStream)
+class SimplexPipe(val name: String, val src: InputStream, val dest: OutputStream, val interceptable: Interceptable = Interceptable())
   extends Pipe with Runnable with Loggable {
   val EOF = -1
   private var gracefulStop = false
@@ -16,15 +16,8 @@ class SimplexPipe(val name: String, val src: InputStream, val dest: OutputStream
   override def run: Unit = {
     isRunning = true
     var bytesRead = 0
-    val data = new Array[Byte](1024 * 16)
     do {
-      bytesRead = src.read(data)
-      log.info(name + " Bytes Read = " + bytesRead)
-      if (bytesRead > 0) {
-        dest.write(data, 0, bytesRead)
-        log.info(name + " Bytes Written = " + bytesRead)
-        dest.flush
-      }
+      bytesRead = interceptable.intercept(src, dest)
     } while (bytesRead != EOF && !gracefulStop)
     isRunning = false
   }

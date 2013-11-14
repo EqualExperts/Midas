@@ -1,13 +1,10 @@
 package com.ee.midas.dsl.interpreter
 
-import com.ee.midas.dsl.interpreter.representation.Databases
+import com.ee.midas.dsl.interpreter.representation.Tree
 
-public class Parser {
-    private def databases = new Databases()
+class Parser {
+    private def databases = new Tree()
     private def dbContext
-
-    public Parser() {
-    }
 
     def getProperty(String name) {
         if(name == 'db') {
@@ -21,7 +18,7 @@ public class Parser {
         dbContext = db
     }
 
-    def Databases parse(Closure closure) {
+    public Tree parse(Closure closure) {
         def cloned = closure.clone()
         cloned.delegate = this
 //        cloned.resolveStrategy = Closure.DELEGATE_FIRST

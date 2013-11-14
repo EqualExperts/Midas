@@ -1,9 +1,9 @@
 package com.ee.midas.dsl.interpreter.representation
 
-public class Databases {
+public class Tree {
     private def dbs = [:]
 
-    public Databases() {
+    public Tree() {
 
     }
 

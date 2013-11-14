@@ -1,6 +1,6 @@
 package com.ee.midas.dsl.generator
 
-import com.ee.midas.dsl.interpreter.representation.Databases
+import com.ee.midas.dsl.interpreter.representation.Tree
 import static com.ee.midas.dsl.interpreter.representation.Transform.*
 
 public class ScalaGenerator implements Generator {
@@ -13,7 +13,7 @@ public class ScalaGenerator implements Generator {
     }
 
     @Override
-    public String generate(Databases databases) {
+    public String generate(Tree databases) {
         println("Generating Scala Code Midas-Snippets for each transformation...")
         databases.each(EXPANSION) { db, collection, version, operation, args ->
             println("Database and Collection Name = $db.$collection.$version.$operation.$args")

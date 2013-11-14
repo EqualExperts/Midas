@@ -1,30 +1,26 @@
-package com.ee.midas.dsl
+import com.ee.midas.dsl.Translator
 
-import com.ee.midas.dsl.generator.ScalaGenerator
-import com.ee.midas.dsl.interpreter.Parser
+def deltaFiles(File deltasDir) {
+    deltasDir.listFiles(new FilenameFilter() {
+        @Override
+        boolean accept(File dir, String name) {
+            name.endsWith '.delta'
+        }
+    }).sort()
+}
 
-def parser = new Parser()
-def representation = parser.parse {
-     //User writes these in a separate file
-//     using test
-//     db.things.add('[]')   //version 1
-//     db.things.add('{}')   //version 2
+// ---- Script starts here -----
+if(!args) {
+    println "Usage: Compile <deltas directory>"
+    return
+}
 
-     using transactions
-     db.orders.add('{ "field1" : 1, "field2" : 2.0, "field3": true, "field4": null}') //version 1
+def deltasDirname = new File(args[0])
+if(!deltasDirname.isDirectory()) {
+    println("Expected Directory, given Filename ${args[0]}")
+    return
+}
 
-     using test
-     db.things.remove('["field10"]')  //version 3
-
-     using transactions
-     db.orders.add('{ "field5": [], "field6": {} }') //version 2
-
-     using ee
-     db.people.add('{ "age" : 0 }')  //version 1
-
-//    use 'tester'
-
- }
-
-def generator = new ScalaGenerator()
-println generator.generate(representation)
+def sortedDeltaFiles = deltaFiles(deltasDirname)
+def translator = new Translator()
+println translator.translate(sortedDeltaFiles.toList())

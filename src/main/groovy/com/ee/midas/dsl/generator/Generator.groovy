@@ -1,7 +1,7 @@
 package com.ee.midas.dsl.generator
 
-import com.ee.midas.dsl.interpreter.representation.Databases
+import com.ee.midas.dsl.interpreter.representation.Tree
 
 public interface Generator {
-    String generate(Databases representation)
+    String generate(Tree representation)
 }

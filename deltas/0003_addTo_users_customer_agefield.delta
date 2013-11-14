@@ -1,4 +1,2 @@
 use users
 db.customer.add('{ "age" : 0 }')
-
-

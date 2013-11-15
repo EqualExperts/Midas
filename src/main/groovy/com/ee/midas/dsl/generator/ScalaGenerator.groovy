@@ -19,8 +19,17 @@ public class ScalaGenerator implements Generator {
 
     @Override
     public String generate(Tree tree) {
-        println("Generating Scala Code Midas-Snippets for each transformation...")
+        println('Generating Scala Code Midas-Snippets for each transformation...')
         produce {
+            code << 'import com.mongodb.util.JSON' << NEW_LINE
+            code << 'import org.bson.BSONObject' << NEW_LINE
+            code << 'import com.ee.midas.dsl.Transforms' << NEW_LINE
+            code << 'import com.ee.midas.dsl.DocumentOperations._' << NEW_LINE
+
+            code << NEW_LINE
+            code << '//WARNING: THIS IS A GENERATED FILE, DO NOT EDIT BY HAND!!' << NEW_LINE
+            code << NEW_LINE
+
             "object Transformations extends Transforms " {
                 def expansionSnippets = generateSnippets(EXPANSION, tree)
                 code << "${expansionSnippets.values().join(NEW_LINE)}"
@@ -50,7 +59,8 @@ public class ScalaGenerator implements Generator {
         if(args.length == 1 && args[0] instanceof Closure) {
             code << name << '{' << NEW_LINE
             args[0].delegate = this
-            args[0]() << NEW_LINE << '}'
+            args[0]() << NEW_LINE
+            code << '}'
         }
     }
 

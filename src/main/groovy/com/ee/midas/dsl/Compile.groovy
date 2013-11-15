@@ -19,8 +19,9 @@ def translate(deltaFiles) {
 }
 
 // ---- Script starts here -----
-if(!args) {
-    println "Usage: Compile <deltas directory>"
+def scalaFilename = 'Transformations.scala'
+if(args.length < 1) {
+    println "Usage: Compile <deltas-dir> [scala-filename=$scalaFilename]"
     return
 }
 
@@ -30,4 +31,12 @@ if(!deltasDir.isDirectory()) {
     return
 }
 
-println translate(sortedDeltaFiles(deltasDir))
+
+if(args.length == 2) {
+  scalaFilename = args[1]
+}
+def scalaFile = new File(scalaFilename)
+scalaFile.withWriter { writer ->
+    writer << translate(sortedDeltaFiles(deltasDir))
+}
+

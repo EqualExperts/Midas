@@ -1,0 +1,2 @@
+use users
+db.customers.add('{ "name" : "<Add Name>" }')

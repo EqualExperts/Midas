@@ -5,7 +5,7 @@ import groovy.transform.ToString
 @ToString
 class Database {
     final String name
-    def collections = [:]
+    private final def collections = [:]
 
     Database(String name) {
         this.name = name

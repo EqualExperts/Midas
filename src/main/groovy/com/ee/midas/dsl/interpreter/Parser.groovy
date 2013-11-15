@@ -3,14 +3,14 @@ package com.ee.midas.dsl.interpreter
 import com.ee.midas.dsl.interpreter.representation.Tree
 
 class Parser {
-    private def databases = new Tree()
+    private def tree = new Tree()
     private def dbContext
 
     def getProperty(String name) {
         if(name == 'db') {
             return dbContext
         }
-        databases.use(name)
+        tree.use(name)
     }
 
     def using(db) {
@@ -23,10 +23,10 @@ class Parser {
         cloned.delegate = this
 //        cloned.resolveStrategy = Closure.DELEGATE_FIRST
         cloned()
-        databases
+        tree
     }
 
     def ast() {
-        databases
+        tree
     }
 }

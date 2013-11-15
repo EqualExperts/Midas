@@ -6,8 +6,13 @@ import com.ee.midas.dsl.generator.ScalaGenerator
 
 
 class Translator {
-    private def reader = new Reader()
-    private Generator generator = new ScalaGenerator()
+    private final Reader reader
+    private final Generator generator
+
+    public Translator(reader, generator) {
+        this.reader = reader
+        this.generator = generator
+    }
 
     def translate(final List<File> deltaFiles) {
         def tree = reader.read(deltaFiles)

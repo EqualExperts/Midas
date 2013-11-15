@@ -1,4 +1,6 @@
 import com.ee.midas.dsl.Translator
+import com.ee.midas.dsl.interpreter.Reader
+import com.ee.midas.dsl.generator.ScalaGenerator
 
 def sortedDeltaFiles(File deltasDir) {
     deltasDir.listFiles(new FilenameFilter() {
@@ -10,13 +12,15 @@ def sortedDeltaFiles(File deltasDir) {
 }
 
 def translate(deltaFiles) {
-    def translator = new Translator()
+    def generator = new ScalaGenerator()
+    def reader = new Reader()
+    def translator = new Translator(reader, generator)
     translator.translate(deltaFiles)
 }
 
 // ---- Script starts here -----
 if(!args) {
-    println "Usage: Translate <deltas directory>"
+    println "Usage: Compile <deltas directory>"
     return
 }
 

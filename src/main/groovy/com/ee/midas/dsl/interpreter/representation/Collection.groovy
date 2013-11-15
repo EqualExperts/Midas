@@ -12,8 +12,8 @@ import groovy.transform.ToString
 class Collection {
     final String name
     private final jsonSlurper = new JsonSlurper()
-    private def expansions = [:]
-    private def contractions = [:]
+    private final def expansions = [:]
+    private final def contractions = [:]
     private Long currentVersion = 1
 
     Collection(String name) {

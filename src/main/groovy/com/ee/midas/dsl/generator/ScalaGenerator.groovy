@@ -6,6 +6,10 @@ import static com.ee.midas.dsl.interpreter.representation.Transform.*
 
 public class ScalaGenerator implements Generator {
 
+    private static final String NEW_LINE = '\n'
+
+    private StringBuilder code = new StringBuilder()
+
     public ScalaGenerator() {
     }
 
@@ -15,21 +19,57 @@ public class ScalaGenerator implements Generator {
 
     @Override
     public String generate(Tree tree) {
-        def snippets = []
         println("Generating Scala Code Midas-Snippets for each transformation...")
-        snippets << generateSnippets(EXPANSION, tree)
-        snippets << generateSnippets(CONTRACTION, tree)
-        snippets.flatten().join('\n')
+        produce {
+            "object Transformations extends Transforms " {
+                def expansionSnippets = generateSnippets(EXPANSION, tree)
+                code << "${expansionSnippets.values().join(NEW_LINE)}"
+                code << NEW_LINE
+                code << "override val expansions = ${expansionSnippets.keySet().join(' :: ')} :: Nil"
+                code << NEW_LINE
+                def contractionSnippets = generateSnippets(CONTRACTION, tree)
+                code << "${contractionSnippets.values().join(NEW_LINE)}"
+                code << NEW_LINE
+                code << "override val contractions = ${contractionSnippets.keySet().join(' :: ')} :: Nil"
+                code << NEW_LINE
+            }
+        }
+    }
+
+    def getProperty(String name) {
+       println("ScalaGenerator: getProperty Called for $name")
+        switch(name) {
+            case 'code': return code
+            case 'NEW_LINE': return NEW_LINE
+            default: return name
+        }
+    }
+
+    def invokeMethod(String name, Object args) {
+        println("ScalaGenerator: invokeMethod Called for $name with $args")
+        if(args.length == 1 && args[0] instanceof Closure) {
+            code << name << '{' << NEW_LINE
+            args[0].delegate = this
+            args[0]() << NEW_LINE << '}'
+        }
+    }
+
+    private String produce(closure) {
+        closure.delegate = this
+        def result = closure()
+        result.toString()
     }
 
     private def generateSnippets(Transform transform, Tree tree) {
-        def snippets = []
+        println("Started snippets generation for $transform Transform...")
+        def snippets = [:]
         tree.each(transform) { dbName, collectionName, version, operationName, args ->
             println("Database and Collection Name = $dbName.$collectionName.$version.$operationName.$args")
             def exprName = toExpressionName(dbName, collectionName, version, operationName)
             def snippet = "$operationName"(exprName, args[0])
-            snippets << snippet
+            snippets[exprName] = snippet
         }
+        println("Completed snippets generation for $transform Transform!")
         snippets
     }
 

@@ -2,8 +2,6 @@ package com.ee.midas.dsl
 
 import com.ee.midas.dsl.generator.Generator
 import com.ee.midas.dsl.interpreter.Reader
-import com.ee.midas.dsl.generator.ScalaGenerator
-
 
 class Translator {
     private final Reader reader

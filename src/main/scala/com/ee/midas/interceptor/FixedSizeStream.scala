@@ -11,25 +11,23 @@ class FixedSizeStream(in: InputStream, var limit: Int) extends InputStream {
 
   override def available(): Int = in.available()
 
-  def read() : Int =
-    limit <= 0 match {
-      case true => -1
-      case false => {
+  def read() : Int = {
+    if(limit <= 0) -1
+    else {
         val value: Int = in.read()
         limit -= 1
         value
-      }
     }
+  }
 
-  override def read(bytes: Array[Byte], off: Int, len: Int): Int =
-    limit <= 0 match {
-      case true => -1
-      case false => {
+  override def read(bytes: Array[Byte], off: Int, len: Int): Int = {
+    if(limit <= 0) -1
+    else {
         val bytesRead: Int = in.read(bytes, off, Math.min(limit, len))
         limit -= bytesRead
         bytesRead
-      }
     }
+  }
 
   override def close() = throw new RuntimeException("can't close this")
 

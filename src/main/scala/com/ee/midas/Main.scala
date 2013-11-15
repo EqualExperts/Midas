@@ -29,7 +29,7 @@ object Main extends App with Loggable {
       log.info("New connection received...")
       //TODO: do something if Mongo is not available
       val mongoSocket = new Socket(mongoHost, mongoPort)
-      val duplexPipe = midasClient <|===> (mongoSocket, Interceptor)
+      val duplexPipe = midasClient <|===> (mongoSocket, Interceptor())
       duplexPipe.start
       log.info("Setup DataPipe = " + duplexPipe.toString)
       accumulate(duplexPipe)

@@ -6,11 +6,9 @@ import DocumentConverter._
 import com.ee.midas.pipes.Interceptable
 
 
-class Interceptor (inputStream: InputStream, dst: OutputStream) {
+class Interceptor private extends Interceptable {
 
-  private var stop: Boolean  = false
-
-  def read(): Array[Byte] = {
+  private def read(inputStream: InputStream): Array[Byte] = {
     val header: MongoHeader = MongoHeader(inputStream)
     if(header.hasPayload) {
         val documents = extractDocumentsFrom(inputStream, header)
@@ -20,8 +18,8 @@ class Interceptor (inputStream: InputStream, dst: OutputStream) {
       else header.bytes
   }
 
-  private def constructResponseUsing(enrichedDocuments: List[BSONObject], header: MongoHeader): Array[Byte] = {
-    val payloadBytes = enrichedDocuments flatMap toBytes
+  private def constructResponseUsing(documents: List[BSONObject], header: MongoHeader): Array[Byte] = {
+    val payloadBytes = documents flatMap toBytes
     header.updateLength(payloadBytes.length)
     header.bytes ++ payloadBytes
   }
@@ -33,27 +31,20 @@ class Interceptor (inputStream: InputStream, dst: OutputStream) {
     documents.toList
   }
 
-  def start: Int = {
-      val response = read()
-      write(response)
+  override def intercept(src: InputStream, tgt: OutputStream): Int = {
+      val response = read(src)
+      write(response, tgt)
   }
 
-  def stopInterceptor = stop = true
-
-  private def write(data: Array[Byte]): Int = {
+  private def write(data: Array[Byte], tgt: OutputStream): Int = {
     val bytesToWrite = data.length
-    dst.write(data, 0, bytesToWrite)
-    dst.flush()
+    tgt.write(data, 0, bytesToWrite)
+    tgt.flush()
     bytesToWrite
   }
 }
 
-object Interceptor extends Interceptable {
-   def apply(): (InputStream, OutputStream) => Int = intercept
-
-  override def intercept(src: InputStream, tgt: OutputStream): Int = {
-    new Interceptor(src, tgt).start
-  }
-
+object Interceptor {
+  def apply(): Interceptor = new Interceptor()
 }
 

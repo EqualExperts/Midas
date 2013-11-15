@@ -3,7 +3,8 @@ package com.ee.midas.pipes
 import java.io.{OutputStream, InputStream}
 import com.ee.midas.utils.{Loggable}
 
-class SimplexPipe(val name: String, val src: InputStream, val tgt: OutputStream, val interceptable: Interceptable = Interceptable())
+class SimplexPipe(val name: String, val src: InputStream,
+                  val tgt: OutputStream, val interceptable: Interceptable = Interceptable())
   extends Pipe with Runnable with Loggable {
   val EOF = -1
   private var gracefulStop = false

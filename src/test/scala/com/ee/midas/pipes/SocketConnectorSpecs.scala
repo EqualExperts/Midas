@@ -9,27 +9,28 @@ import com.ee.midas.pipes.SocketConnector._
 
 
 @RunWith(classOf[JUnitRunner])
-object SocketConnectorSpecs extends Specification with Mockito {
+class SocketConnectorSpecs extends Specification with Mockito {
 
+  //TODO: Try mocking Interceptable trait
     "Socket Connector" should {
        "Create simplex pipe from client to server " in {
           val client : Socket = mock[Socket]
           val server : Socket = mock[Socket]
-          val pipe = client ==> server
+          val pipe = client ===> (server, Interceptable())
           pipe.isInstanceOf[SimplexPipe]
        }
 
       "Create simple pipe from server to client " in {
         val client:Socket = mock[Socket]
         val server:Socket = mock[Socket]
-        val pipe = client <== server
+        val pipe = client <=== (server, Interceptable())
         pipe.isInstanceOf[SimplexPipe]
       }
 
       "Create duplex pipe between client and server " in {
         val client:Socket = mock[Socket]
         val server:Socket = mock[Socket]
-        val pipe = client <==> server
+        val pipe = client <====> server
         pipe.isInstanceOf[DuplexPipe]
       }
     }

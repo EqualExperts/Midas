@@ -12,53 +12,53 @@ class SimplexPipeSpecs extends JUnitMustMatchers with Mockito {
 
   val pipeName = "test-pipe"
 
-   @Test
-   def transferDataFromSourceToDestination() {
-      //given
-      val data = "Hello World".getBytes()
-      val source = new ByteArrayInputStream(data)
-      val destination = new ByteArrayOutputStream()
-      val simplexPipe = new SimplexPipe(pipeName,source, destination)
+  @Test
+  def transferDataFromSourceToDestination() {
+    //given
+    val data = "Hello World".getBytes()
+    val source = new ByteArrayInputStream(data)
+    val destination = new ByteArrayOutputStream()
+    val simplexPipe = new SimplexPipe(pipeName, source, destination)
 
-      //when
-      simplexPipe.run()
+    //when
+    simplexPipe.run()
 
-      source.close()
-      destination.close()
+    source.close()
+    destination.close()
 
-      //then
-      destination.toByteArray() must beEqualTo(data)
-    }
+    //then
+    destination.toByteArray() must beEqualTo(data)
+  }
 
-   @Test
-   def closeOnForceStop() {
-      //given
-      val mockInputStream = mock[InputStream]
-      val mockOutputStream = mock[OutputStream]
-      val pipe = new SimplexPipe(pipeName, mockInputStream, mockOutputStream)
+  @Test
+  def closeOnForceStop() {
+    //given
+    val mockInputStream = mock[InputStream]
+    val mockOutputStream = mock[OutputStream]
+    val pipe = new SimplexPipe(pipeName, mockInputStream, mockOutputStream)
 
-      //when
-      pipe.forceStop
+    //when
+    pipe.forceStop
 
-      //then
-      there was one(mockInputStream).close()
-      there was one(mockOutputStream).close()
-    }
+    //then
+    there was one(mockInputStream).close()
+    there was one(mockOutputStream).close()
+  }
 
-   @Test
-   def stopGracefully() {
-      //given
-      val mockInputStream = mock[InputStream]
-      val mockOutputStream = mock[OutputStream]
-      val pipe = new SimplexPipe(pipeName, mockInputStream, mockOutputStream)
-      scheduleStopToRunAfter(pipe, 550)
+  @Test
+  def stopGracefully() {
+    //given
+    val mockInputStream = mock[InputStream]
+    val mockOutputStream = mock[OutputStream]
+    val pipe = new SimplexPipe(pipeName, mockInputStream, mockOutputStream)
+    scheduleStopToRunAfter(pipe, 550)
 
-      //when
-      pipe.run
+    //when
+    pipe.run
 
-      //then
-      pipe.isActive must beFalse
-    }
+    //then
+    pipe.isActive must beFalse
+  }
 
   def scheduleStopToRunAfter(pipe: SimplexPipe, time: Int):Unit = {
     new Thread  {

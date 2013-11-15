@@ -1,12 +1,10 @@
 package com.ee.midas.pipes
 
-import java.io.{IOException, OutputStream, InputStream}
-import java.net.SocketException
-import scala.beans.BeanProperty
-import org.slf4j.LoggerFactory
-import com.ee.midas.utils.Loggable
+import java.io.{OutputStream, InputStream}
+import com.ee.midas.utils.{Loggable}
 
-class SimplexPipe(val name: String, val src: InputStream, val dest: OutputStream)
+class SimplexPipe(val name: String, val src: InputStream,
+                  val tgt: OutputStream, val interceptable: Interceptable = Interceptable())
   extends Pipe with Runnable with Loggable {
   val EOF = -1
   private var gracefulStop = false
@@ -19,15 +17,8 @@ class SimplexPipe(val name: String, val src: InputStream, val dest: OutputStream
   override def run: Unit = {
     isRunning = true
     var bytesRead = 0
-    val data = new Array[Byte](1024 * 16)
     do {
-      bytesRead = src.read(data)
-      log.info(name + ", Bytes Read = " + bytesRead)
-      if (bytesRead > 0) {
-        dest.write(data, 0, bytesRead)
-        log.info(name + ", Bytes Written = " + bytesRead)
-        dest.flush
-      }
+      bytesRead = interceptable.intercept(src, tgt)
     } while (bytesRead != EOF && !gracefulStop)
     isRunning = false
   }
@@ -40,7 +31,7 @@ class SimplexPipe(val name: String, val src: InputStream, val dest: OutputStream
     val threadName = Thread.currentThread().getName()
     log.info("[" + threadName + "] " + toString + ": Closing Streams...")
     src.close()
-    dest.close()
+    tgt.close()
     log.info("[" + threadName + "] " + toString + ": Closing Streams Done")
   }
 

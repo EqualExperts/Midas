@@ -7,11 +7,11 @@ import org.bson.io.Bits
 class MongoHeader private(var bytes: Array[Byte]) {
 
   private var pos = 0
-
+  private val MAX_RESPONSE_LENGTH : Int = ( 32 * 1024 * 1024 )   //change this to response length later
   private var responseLength = Bits.readInt(bytes, pos)
   pos += 4
 
-  if (responseLength > MongoHeader.MAX_LENGTH) {
+  if (responseLength > MAX_RESPONSE_LENGTH) {
     throw new IllegalArgumentException("response too long: " + responseLength)
   }
 
@@ -40,7 +40,6 @@ class MongoHeader private(var bytes: Array[Byte]) {
 
 
 object MongoHeader {
-  private val MAX_LENGTH : Int = ( 32 * 1024 * 1024 )   //change this to response length later
   val SIZE = 36
   def apply(src: InputStream) = {
     val headerBuf = new Array[Byte](SIZE)

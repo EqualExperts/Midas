@@ -2,6 +2,11 @@ package com.ee.midas.interceptor
 
 import java.io.InputStream
 
+/**
+ * Code taken from mongo-driver and converted to scala.
+ * @param in
+ * @param limit
+ */
 class FixedSizeStream(in: InputStream, var limit: Int) extends InputStream {
 
   override def available(): Int = in.available()

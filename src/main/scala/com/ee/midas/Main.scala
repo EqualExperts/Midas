@@ -3,7 +3,7 @@ package com.ee.midas
 
 import com.ee.midas.pipes.{SocketConnector, DuplexPipe}
 import java.net.{Socket, InetAddress, ServerSocket}
-import com.ee.midas.utils.{Interceptable, Accumulator, Loggable}
+import com.ee.midas.utils.{Accumulator, Loggable}
 import com.ee.midas.interceptor.Interceptor
 
 

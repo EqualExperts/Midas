@@ -1,7 +1,7 @@
-package com.ee.midas.utils
+package com.ee.midas.pipes
 
-import com.ee.midas.pipes.Pipe
-import java.io.{InputStream, OutputStream}
+import com.ee.midas.utils.Loggable
+import java.io.{OutputStream, InputStream}
 
 trait Interceptable extends Loggable {
   //pipe: Pipe =>
@@ -26,7 +26,6 @@ trait Interceptable extends Loggable {
     bytesRead
   }
 }
-
 
 object Interceptable {
   def apply() = new Interceptable {}

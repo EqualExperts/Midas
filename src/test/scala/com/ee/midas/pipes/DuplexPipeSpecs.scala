@@ -6,7 +6,6 @@ import java.io.{ByteArrayOutputStream, ByteArrayInputStream}
 import org.mockito.runners.MockitoJUnitRunner
 import org.junit.Test
 import org.specs2.matcher.JUnitMustMatchers
-import com.ee.midas.utils.Interceptable
 
 /**
  * IMPORTANT NOTE:

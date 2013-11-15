@@ -6,7 +6,6 @@ import java.io.{OutputStream, InputStream, ByteArrayOutputStream, ByteArrayInput
 import org.mockito.runners.MockitoJUnitRunner
 import org.specs2.matcher.JUnitMustMatchers
 import org.junit.Test
-import com.ee.midas.utils.Interceptable
 
 @RunWith(classOf[MockitoJUnitRunner])
 class SimplexPipeSpecs extends JUnitMustMatchers with Mockito {

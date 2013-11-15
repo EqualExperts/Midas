@@ -1,9 +1,9 @@
 package com.ee.midas.pipes
 
 import java.io.{OutputStream, InputStream}
-import com.ee.midas.utils.{Interceptable, Loggable}
+import com.ee.midas.utils.{Loggable}
 
-class SimplexPipe(val name: String, val src: InputStream, val dest: OutputStream, val interceptable: Interceptable = Interceptable())
+class SimplexPipe(val name: String, val src: InputStream, val tgt: OutputStream, val interceptable: Interceptable = Interceptable())
   extends Pipe with Runnable with Loggable {
   val EOF = -1
   private var gracefulStop = false
@@ -17,7 +17,7 @@ class SimplexPipe(val name: String, val src: InputStream, val dest: OutputStream
     isRunning = true
     var bytesRead = 0
     do {
-      bytesRead = interceptable.intercept(src, dest)
+      bytesRead = interceptable.intercept(src, tgt)
     } while (bytesRead != EOF && !gracefulStop)
     isRunning = false
   }
@@ -30,7 +30,7 @@ class SimplexPipe(val name: String, val src: InputStream, val dest: OutputStream
     val threadName = Thread.currentThread().getName()
     log.info("[" + threadName + "] " + toString + ": Closing Streams...")
     src.close()
-    dest.close()
+    tgt.close()
     log.info("[" + threadName + "] " + toString + ": Closing Streams Done")
   }
 

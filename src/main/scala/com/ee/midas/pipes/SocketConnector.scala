@@ -1,9 +1,13 @@
 package com.ee.midas.pipes
 
 import java.net.Socket
-import com.ee.midas.utils.{OverridingInterceptable, Interceptable}
 
 class SocketConnector private (source: Socket) {
+
+  trait OverridingInterceptable {
+
+  }
+
   def <====> (target: Socket) = <|==|>(target)
   def <===|> (target: Socket, request: Interceptable)
                                                 = DuplexPipe(===> (target, request), <=== (target))
@@ -24,10 +28,9 @@ class SocketConnector private (source: Socket) {
   def <=== (target: Socket, newInterceptable: Interceptable = Interceptable()) = {
     val tgtIn = target.getInputStream
     val srcOut = source.getOutputStream
-    new SimplexPipe("<===", tgtIn, srcOut, newInterceptable)
-      /*with OverridingInterceptable {
+    new SimplexPipe("<===", tgtIn, srcOut) with OverridingInterceptable {
       override val interceptable = newInterceptable
-    }*/
+    }
   }
 }
 

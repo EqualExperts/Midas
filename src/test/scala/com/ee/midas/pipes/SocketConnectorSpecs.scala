@@ -6,32 +6,57 @@ import org.specs2.runner.JUnitRunner
 import java.net.Socket
 import org.specs2.mock.Mockito
 import com.ee.midas.pipes.SocketConnector._
+import com.ee.midas.utils.Interceptable
 
 
 @RunWith(classOf[JUnitRunner])
 class SocketConnectorSpecs extends Specification with Mockito {
 
-  //TODO: Try mocking Interceptable trait
-    "Socket Connector" should {
+   "Socket Connector" should {
        "Create simplex pipe from client to server " in {
           val client : Socket = mock[Socket]
           val server : Socket = mock[Socket]
-          val pipe = client ===> (server, Interceptable())
+          val pipe = client ===> server
           pipe.isInstanceOf[SimplexPipe]
        }
 
-      "Create simple pipe from server to client " in {
-        val client:Socket = mock[Socket]
-        val server:Socket = mock[Socket]
-        val pipe = client <=== (server, Interceptable())
+      "Create simplex pipe from server to client " in {
+        val client : Socket = mock[Socket]
+        val server : Socket = mock[Socket]
+        val pipe = client <=== server
         pipe.isInstanceOf[SimplexPipe]
       }
 
       "Create duplex pipe between client and server " in {
-        val client:Socket = mock[Socket]
-        val server:Socket = mock[Socket]
+        val client : Socket = mock[Socket]
+        val server : Socket = mock[Socket]
         val pipe = client <====> server
         pipe.isInstanceOf[DuplexPipe]
       }
-    }
+
+      "Create request intercepted duplex pipe between client and server " in {
+        val client : Socket = mock[Socket]
+        val server : Socket = mock[Socket]
+        val interceptable: Interceptable = mock[Interceptable]
+        val pipe = client <===|> (server, interceptable)
+        pipe.isInstanceOf[DuplexPipe]
+      }
+
+      "Create response intercepted duplex pipe between client and server " in {
+        val client : Socket = mock[Socket]
+        val server : Socket = mock[Socket]
+        val interceptable: Interceptable = mock[Interceptable]
+        val pipe = client <|===> (server, interceptable)
+        pipe.isInstanceOf[DuplexPipe]
+      }
+
+      "Create duplex pipe between client and server " in {
+        val client : Socket = mock[Socket]
+        val server : Socket = mock[Socket]
+        val interceptable: Interceptable = mock[Interceptable]
+        val pipe = client <|==|> (server, interceptable, interceptable)
+        pipe.isInstanceOf[DuplexPipe]
+      }
+
+  }
 }

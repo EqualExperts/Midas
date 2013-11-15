@@ -14,17 +14,28 @@ import com.ee.midas.transform.DocumentOperations._
 class DocumentConverterSpecs extends Specification {
 
     "Converter" should {
-        "Encode and Decode documents" in new setup {
+        "Encode documents" in new setup {
           var document = new BasicBSONObject("name", "midas")
+<<<<<<< HEAD
+          val encodedDocument = toBytes(document)
+          val expectedEncodedDocument = encoder.encode(document)
+          encodedDocument mustEqual expectedEncodedDocument
+        }
+=======
           val encodedDocuments : InputStream = new ByteArrayInputStream(document toBytes)
           val decodedDocument : BSONObject = toDocument(encodedDocuments)
+>>>>>>> integrateDSL
 
-          document mustEqual decodedDocument
+        "Decode documents" in new setup {
+          var document = new BasicBSONObject("name", "midas")
+          val encodedDocumentStream = new ByteArrayInputStream(encoder.encode(document))
+          val decodedDocument = toDocument(encodedDocumentStream)
+          decodedDocument mustEqual document
         }
     }
 }
 
 trait setup extends Scope {
-  val encoder : BSONEncoder = new BasicBSONEncoder()
-  val decoder : DBDecoder = new DefaultDBDecoder()
+    val encoder : BSONEncoder = new BasicBSONEncoder()
+    val decoder : DBDecoder = new DefaultDBDecoder()
 }

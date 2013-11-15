@@ -29,6 +29,6 @@ class FixedSizeStream(in: InputStream, var limit: Int) extends InputStream {
     }
   }
 
-  override def close() = throw new RuntimeException("can't close this")
+  override def close() : Unit = throw new RuntimeException("can't close this")
 
 }

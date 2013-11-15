@@ -1,4 +1,4 @@
-package com.ee.midas.dsl.ast
+package com.ee.midas.dsl.interpreter.ast
 
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.CodeVisitorSupport

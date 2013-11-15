@@ -1,6 +1,6 @@
 package com.ee.midas.dsl.interpreter
 
-import com.ee.midas.dsl.ast.StatementTransformation
+import com.ee.midas.dsl.interpreter.ast.StatementTransformation
 import com.ee.midas.dsl.interpreter.representation.Tree
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer

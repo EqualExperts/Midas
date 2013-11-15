@@ -85,4 +85,9 @@ class Collection {
         }
 
     }
+
+    def String toString() {
+        "${getClass().simpleName}: $name, Expansions $expansions, Contractions $contractions"
+    }
+
 }

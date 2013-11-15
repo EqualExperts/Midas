@@ -1,2 +1,2 @@
 use users
-db.customer.add('{ "age" : 0 }')
+db.customers.add('{ "age" : 0 }')

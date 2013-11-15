@@ -35,10 +35,10 @@ public class StatementTransformation implements ASTTransformation {
                 def name = expression.value
                 if (transformations.containsKey(name)) {
                     def newName = transformations[name]
-                    println("Transforming Name = $name to $newName")
+                    println("AST: Transforming Name => $name -> $newName")
                     expression.value = newName
                 } else {
-                    println("Skipping $name")
+                    println("AST: Skipping Name => $name")
                 }
             }
         })

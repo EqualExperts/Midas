@@ -13,12 +13,12 @@ class Database {
 
     def getProperty(String name) {
         println("Database: getProperty Collection with $name")
-        def found = collections[name]
-        if(!found)  {
-            found = collections[name] = new Collection(name)
+        if(collections.containsKey(name)) {
+            collections[name]
+        } else {
+            println("Database: Creating Collection $name")
+            collections[name] = new Collection(name)
         }
-        println("Database: $name, Returning Collection: $found")
-        found
     }
 
     def each(Transform transform, closure) {
@@ -26,5 +26,9 @@ class Database {
         collections.each { name, collection ->
             collection.each(transform, dbname, closure)
         }
+    }
+
+    def String toString() {
+        "${getClass().simpleName}: $name $collections"
     }
 }

@@ -1,62 +1,52 @@
 package com.ee.midas.dsl.generator
 
+import com.ee.midas.dsl.interpreter.representation.Transform
 import com.ee.midas.dsl.interpreter.representation.Tree
 import static com.ee.midas.dsl.interpreter.representation.Transform.*
 
 public class ScalaGenerator implements Generator {
 
-    def expansionSnippets = [:]
-    def contractionSnippets = [:]
-
-
     public ScalaGenerator() {
     }
 
+     private def toExpressionName(dbName, collectionName, version, operationName) {
+        "${dbName}_${collectionName}_${version}_${operationName}"
+     }
+
     @Override
-    public String generate(Tree databases) {
+    public String generate(Tree tree) {
+        def snippets = []
         println("Generating Scala Code Midas-Snippets for each transformation...")
-        databases.each(EXPANSION) { db, collection, version, operation, args ->
-            println("Database and Collection Name = $db.$collection.$version.$operation.$args")
-            def codeSnippet = "$operation"(args[0])
-            addExpansionSnippet("$db.$collection", version, codeSnippet)
-        }
-        databases.each(CONTRACTION) { db, collection, version, operation, args ->
-            println("Database and Collection Name = $db.$collection.$version.$operation.$args")
-            def codeSnippet = "$operation"(args[0])
-            addContractionSnippet("$db.$collection", version, codeSnippet)
-        }
+        snippets << generateSnippets(EXPANSION, tree)
+        snippets << generateSnippets(CONTRACTION, tree)
+        snippets.flatten().join('\n')
     }
 
-    private def addExpansionSnippet(String fqName, Long version, String snippet) {
-        def collection = expansionSnippets[fqName]
-        if(!collection) {
-            expansionSnippets[fqName] = [:]
+    private def generateSnippets(Transform transform, Tree tree) {
+        def snippets = []
+        tree.each(transform) { dbName, collectionName, version, operationName, args ->
+            println("Database and Collection Name = $dbName.$collectionName.$version.$operationName.$args")
+            def exprName = toExpressionName(dbName, collectionName, version, operationName)
+            def snippet = "$operationName"(exprName, args[0])
+            snippets << snippet
         }
-        expansionSnippets[version] = snippet
+        snippets
     }
 
-    private def addContractionSnippet(String fqName, Long version, String snippet) {
-        def collection = contractionSnippets[fqName]
-        if(!collection) {
-            contractionSnippets[fqName] = [:]
-        }
-        contractionSnippets[version] = snippet
-    }
-
-    private String remove(jsonString) {
+    private String remove(expressionName, jsonString) {
         """
-        def remove1 = (document: BSONObject) => {
-            val json = \"""$jsonString \"""
+        val ${expressionName} = (document: BSONObject) => {
+            val json = \"""$jsonString\"""
             val fields = JSON.parse(json).asInstanceOf[BSONObject]
             document - fields
         }
         """
     }
 
-    private String add(jsonString) {
+    private String add(expressionName, jsonString) {
         """
-        (document: BSONObject) => {
-            val json = \"""$jsonString \"""
+        val ${expressionName} = (document: BSONObject) => {
+            val json = \"""$jsonString\"""
             val fields = JSON.parse(json).asInstanceOf[BSONObject]
             document + fields
         }

@@ -8,12 +8,13 @@ public class Tree {
     }
 
     def use(name) {
-        def found = databases[name]
-        if(!found) {
-            println("Creating database $name")
-            found = databases[name] = new Database(name)
+        println("Tree: use database with $name")
+        if(databases.containsKey(name)){
+            databases[name]
+        }  else {
+            println("Tree: Creating Database $name")
+            databases[name] = new Database(name)
         }
-        found
     }
 
     def each(Transform transform, closure) {

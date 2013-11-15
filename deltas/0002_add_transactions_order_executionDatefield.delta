@@ -1,4 +1,2 @@
 use transactions
 db.orders.add('{ "executionDate" : "new Date(\'Jun 23, 1912\')" }')
-
-

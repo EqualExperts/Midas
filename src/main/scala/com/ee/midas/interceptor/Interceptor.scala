@@ -3,6 +3,7 @@ package com.ee.midas.interceptor
 import java.io.{OutputStream, InputStream}
 import org.bson.BSONObject
 import DocumentConverter._
+import com.ee.midas.transform.DocumentOperations._
 import com.ee.midas.pipes.Interceptable
 
 
@@ -19,7 +20,7 @@ class Interceptor private extends Interceptable {
   }
 
   private def constructResponseUsing(documents: List[BSONObject], header: MongoHeader): Array[Byte] = {
-    val payloadBytes = documents flatMap toBytes
+    val payloadBytes = documents flatMap (_.toBytes)
     header.updateLength(payloadBytes.length)
     header.bytes ++ payloadBytes
   }

@@ -8,6 +8,7 @@ import com.mongodb.{DefaultDBDecoder, DBDecoder}
 import java.io.{InputStream, ByteArrayInputStream}
 import org.specs2.specification.Scope
 import com.ee.midas.interceptor.DocumentConverter._
+import com.ee.midas.transform.DocumentOperations._
 
 @RunWith(classOf[JUnitRunner])
 class DocumentConverterSpecs extends Specification {
@@ -15,7 +16,7 @@ class DocumentConverterSpecs extends Specification {
     "Converter" should {
         "Encode and Decode documents" in new setup {
           var document = new BasicBSONObject("name", "midas")
-          val encodedDocuments : InputStream = new ByteArrayInputStream(toBytes(document))
+          val encodedDocuments : InputStream = new ByteArrayInputStream(document toBytes)
           val decodedDocument : BSONObject = toDocument(encodedDocuments)
 
           document mustEqual decodedDocument

@@ -19,9 +19,12 @@ def translate(deltaFiles) {
 }
 
 // ---- Script starts here -----
-def scalaFilename = 'Transformations.scala'
+def scalaTemplateURI = 'templates/Transformations.scala.template'
+ClassLoader loader = Thread.currentThread().getContextClassLoader()
+def scalaTemplateURL = loader.getResource(scalaTemplateURI)
+println ("Template URL = $scalaTemplateURL")
 if(args.length < 1) {
-    println "Usage: Compile <deltas-dir> [scala-filename=$scalaFilename]"
+    println "Usage: Compile <deltas-dir> [scala-template-url=$scalaTemplateURL] <output-uri>"
     return
 }
 
@@ -33,10 +36,22 @@ if(!deltasDir.isDirectory()) {
 
 
 if(args.length == 2) {
-  scalaFilename = args[1]
+  scalaTemplateURL = args[1]
 }
-def scalaFile = new File(scalaFilename)
+
+
+def scalaFileTemplate = new File(scalaTemplateURL.toURI())
+def scalaTemplateContents = scalaFileTemplate.text
+def translations = translate(sortedDeltaFiles(deltasDir))
+
+def scalaFileContents = scalaTemplateContents.replaceAll('###EXPANSIONS-CONTRACTIONS###', translations)
+println("SCALA FILE CONTENTS = \n$scalaFileContents")
+def outputURI = 'generated/scala'
+def outputURL = loader.getResource(outputURI)
+println("Writing generated output to $outputURL")
+def scalaFile = new File(outputURL.getPath() + '/Transformations.scala')
 scalaFile.withWriter { writer ->
-    writer << translate(sortedDeltaFiles(deltasDir))
+    writer << scalaFileContents
 }
+println("Completed writing generated output to $scalaFile.name")
 

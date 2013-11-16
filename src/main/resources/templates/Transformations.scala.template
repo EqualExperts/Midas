@@ -1,0 +1,11 @@
+package com.ee.midas.transform
+
+import com.mongodb.util.JSON
+import org.bson.BSONObject
+import com.ee.midas.transform.DocumentOperations._
+
+// WARNING: THIS FILE IS AUTO-GENERATED, DO NOT HAND-CODE HERE, IT WILL BE OVER-WRITTEN
+// UPON NEXT RE-GENERATION.
+object Transformations extends Transforms {
+    ###EXPANSIONS-CONTRACTIONS###
+}

@@ -1,12 +1,10 @@
 package com.ee.midas.interceptor
 
 import org.bson.BSONObject
+import com.ee.midas.transform.Transformations._
 
 object Transformer {
 
-  def transform(dbObject: BSONObject): BSONObject = {
-    dbObject.put("version", "1.0")
-    dbObject
-  }
+  def transform(document: BSONObject): BSONObject = map(document)
 
 }

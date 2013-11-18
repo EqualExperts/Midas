@@ -3,8 +3,10 @@ package com.ee.midas.interceptor
 import java.io.InputStream
 import java.nio.{ByteBuffer,ByteOrder}
 import org.bson.io.Bits
+import com.ee.midas.interceptor.MongoHeader.OpCode
 
 class MongoHeader private(var bytes: Array[Byte]) {
+
 
   private var pos = 0
   private val MAX_RESPONSE_LENGTH : Int = ( 32 * 1024 * 1024 )   //change this to response length later
@@ -15,7 +17,10 @@ class MongoHeader private(var bytes: Array[Byte]) {
     throw new IllegalArgumentException("response too long: " + responseLength)
   }
 
-  pos += 28
+  pos += 8
+  val opCode = OpCode(Bits.readInt(bytes, pos))
+
+  pos += 20
 
   val documentsCount = Bits.readInt(bytes, pos)
   pos += 4
@@ -38,8 +43,20 @@ class MongoHeader private(var bytes: Array[Byte]) {
 
 }
 
-
 object MongoHeader {
+  object OpCode extends Enumeration {
+    type OpCode = Value
+    val OP_REPLY = Value(1)
+    val OP_MSG = Value(1000)
+    val OP_UPDATE = Value(2001)
+    val OP_INSERT = Value(2002)
+    val RESERVED = Value(2003)
+    val OP_QUERY = Value(2004)
+    val OP_GET_MORE = Value(2005)
+    val OP_DELETE = Value(2006)
+    val OP_KILL_CURSORS = Value(2007)
+  }
+
   val SIZE = 36
   def apply(src: InputStream) = {
     val headerBuf = new Array[Byte](SIZE)

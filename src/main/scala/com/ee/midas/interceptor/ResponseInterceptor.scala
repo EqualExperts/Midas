@@ -7,17 +7,16 @@ import com.ee.midas.transform.DocumentOperations._
 import com.ee.midas.pipes.Interceptable
 
 
-class Interceptor private extends Interceptable {
+class ResponseInterceptor private extends Interceptable {
 
   private def read(inputStream: InputStream): Array[Byte] = {
     val header: MongoHeader = MongoHeader(inputStream)
-    if(header.hasPayload) {
-        val documents = extractDocumentsFrom(inputStream, header)
-        val enrichedDocuments = documents map Transformer.transform
-        constructResponseUsing(enrichedDocuments, header)
-      }
-      else header.bytes
+    if(header.hasPayload) extractPayload(inputStream, header) else header.bytes
   }
+
+  private def isHandshakeDocument(document: BSONObject): Boolean =
+    ((document containsField "you") || (document containsField "ok"))
+
 
   private def constructResponseUsing(documents: List[BSONObject], header: MongoHeader): Array[Byte] = {
     val payloadBytes = documents flatMap (_.toBytes)
@@ -25,7 +24,18 @@ class Interceptor private extends Interceptable {
     header.bytes ++ payloadBytes
   }
 
-  private def extractDocumentsFrom(inputStream: InputStream, header: MongoHeader ): List[BSONObject] = {
+  import MongoHeader.OpCode._
+  private def extractPayload(in: InputStream, header: MongoHeader) = {
+    val documents = extractDocumentsFrom(in, header)
+    val transformedDocuments = documents map Transformer.transform
+    header.opCode match {
+      case OP_REPLY => println(s"RESPONSE OP_REPLY ***** $documents")
+      case opCode => println(s"RESPONSE $opCode")
+    }
+    constructResponseUsing(transformedDocuments, header)
+  }
+  
+  private def extractDocumentsFrom(inputStream: InputStream, header: MongoHeader): List[BSONObject] = {
     val stream = new FixedSizeStream(inputStream, header.payloadSize)
     val totalDocuments = header.documentsCount
     val documents = 1 to totalDocuments map (n => toDocument(stream))
@@ -45,7 +55,7 @@ class Interceptor private extends Interceptable {
   }
 }
 
-object Interceptor {
-  def apply(): Interceptor = new Interceptor()
+object ResponseInterceptor {
+  def apply(): ResponseInterceptor = new ResponseInterceptor()
 }
 

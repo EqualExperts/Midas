@@ -4,8 +4,6 @@ import com.ee.midas.utils.Loggable
 import java.io.{OutputStream, InputStream}
 
 trait Interceptable extends Loggable {
-  //pipe: Pipe =>
-
   /**
    *  Default Interception does nothing, simply copies data from input to output.
    * @param src InputStream

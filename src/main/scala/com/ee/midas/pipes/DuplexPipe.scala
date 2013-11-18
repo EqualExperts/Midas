@@ -55,11 +55,12 @@ extends Pipe with Loggable {
     def uncaughtException(thread: Thread, t: Throwable) : Unit = {
       val threadName = Thread.currentThread().getName
       t match {
-        case e: IOException => {
-          log.error("[" + threadName + "] UncaughtExceptionHandler Received IOException in %s".format(e.getMessage))
-          log.error("[" + threadName + "] Closing pipe: " + pipe.name)
-        }
+        case e: IOException =>
+          log.error(s"[ $threadName UncaughtExceptionHandler Received IOException in ${e.getMessage}")
+        case _ =>
+          log.error(s"[ $threadName ] UncaughtExceptionHandler Received Exception:${t.getClass.getName} in ${t.getMessage}")
       }
+      log.error(s"[ $threadName ] Closing pipe: ${pipe.name}")
     }
   }
 }

@@ -4,7 +4,7 @@ package com.ee.midas
 import com.ee.midas.pipes.{SocketConnector, DuplexPipe}
 import java.net.{Socket, InetAddress, ServerSocket}
 import com.ee.midas.utils.{Accumulator, Loggable}
-import com.ee.midas.interceptor.{RequestInterceptor, ResponseInterceptor}
+import com.ee.midas.interceptor.{MessageTracker, RequestInterceptor, ResponseInterceptor}
 
 
 object Main extends App with Loggable {
@@ -30,8 +30,9 @@ object Main extends App with Loggable {
       //TODO: do something if Mongo is not available
 
       val mongoSocket = new Socket(mongoHost, mongoPort)
+      val tracker = new MessageTracker()
 //      val duplexPipe = application  <|===> (mongoSocket, ResponseInterceptor())
-      val duplexPipe = application  <|==|> (mongoSocket, RequestInterceptor(), ResponseInterceptor())
+      val duplexPipe = application  <|==|> (mongoSocket, tracker.requestInterceptable, tracker.responseInterceptable)
 
       duplexPipe.start
       log.info("Setup DataPipe = " + duplexPipe.toString)

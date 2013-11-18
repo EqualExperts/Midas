@@ -31,8 +31,11 @@ object Main extends App with Loggable {
 
       val mongoSocket = new Socket(mongoHost, mongoPort)
       val tracker = new MessageTracker()
-//      val duplexPipe = application  <|===> (mongoSocket, ResponseInterceptor())
-      val duplexPipe = application  <|==|> (mongoSocket, tracker.requestInterceptable, tracker.responseInterceptable)
+      val requestInterceptable = new RequestInterceptor(tracker)
+      val responseInterceptable = new ResponseInterceptor(tracker)
+
+      //      val duplexPipe = application  <|===> (mongoSocket, ResponseInterceptor())
+      val duplexPipe = application  <|==|> (mongoSocket, requestInterceptable, responseInterceptable)
 
       duplexPipe.start
       log.info("Setup DataPipe = " + duplexPipe.toString)

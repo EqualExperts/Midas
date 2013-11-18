@@ -38,7 +38,12 @@ class ResponseInterceptor (tracker: MessageTracker) extends MidasInterceptable {
     val headerBytes = header.bytes
     val requestId = header.responseTo 
     val payloadBytes = (tracker.fullCollectionNameFor(requestId)) match {
-      case Some(fullCollectionName) => modifyPayload(in, header)
+      case Some(fullCollectionName) =>
+        if (Transformer.canTransform(fullCollectionName)) {
+          modifyPayload(in, header)
+        } else {
+          payload(in, header)
+        }
       case None => payload(in, header)
     }
     tracker untrack requestId

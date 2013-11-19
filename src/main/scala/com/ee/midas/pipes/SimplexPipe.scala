@@ -1,7 +1,7 @@
 package com.ee.midas.pipes
 
 import java.io.{OutputStream, InputStream}
-import com.ee.midas.utils.{Loggable}
+import com.ee.midas.utils.Loggable
 
 class SimplexPipe(val name: String, val src: InputStream,
                   val tgt: OutputStream, val interceptable: Interceptable = Interceptable())

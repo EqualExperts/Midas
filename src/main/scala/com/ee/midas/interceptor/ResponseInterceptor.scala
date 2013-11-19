@@ -8,16 +8,25 @@ import com.ee.midas.interceptor.Transformer._
 
 class ResponseInterceptor (tracker: MessageTracker) extends MidasInterceptable {
 
-  def read(inputStream: InputStream): Array[Byte] = {
-    val header: MongoHeader = MongoHeader(inputStream)
+  def logHeader(header: MongoHeader) = {
     println(s"RESPONSE $header")
     println(s"RESPONSE MESSAGE LENGTH ${header.length}")
     println(s"RESPONSE PAYLOAD SIZE ${header.payloadSize}")
     println(s"RESPONSE ID ${header.requestID}")
     println(s"RESPONSE ResponseTo ${header.responseTo}")
     println(s"RESPONSE OPCODE ${header.opCode}")
-    if (header.hasPayload)
-      modifyPayloadIfRequired(inputStream, header)
+  }
+
+  def readHeader(inputStream: InputStream): BaseMongoHeader = {
+    val header = MongoHeader(inputStream)
+    logHeader(header)
+    header
+  }
+
+  def read(inputStream: InputStream, header: BaseMongoHeader): Array[Byte] = {
+    if (header.hasPayload) {
+      modifyPayloadIfRequired(inputStream, header.asInstanceOf[MongoHeader])
+    }
     else header.bytes
   }
   

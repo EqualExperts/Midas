@@ -5,7 +5,8 @@ import java.io.{InputStream, OutputStream}
 
 trait MidasInterceptable extends Interceptable {
   override def intercept(src: InputStream, tgt: OutputStream): Int = {
-    val inputData = read(src)
+    val header = readHeader(src)
+    val inputData = read(src, header)
     write(inputData, tgt)
   }
 
@@ -16,5 +17,7 @@ trait MidasInterceptable extends Interceptable {
     bytesToWrite
   }
   
-  def read(src: InputStream) : Array[Byte]
+  def read(src: InputStream, header: BaseMongoHeader) : Array[Byte]
+
+  def readHeader(src: InputStream) : BaseMongoHeader
 }

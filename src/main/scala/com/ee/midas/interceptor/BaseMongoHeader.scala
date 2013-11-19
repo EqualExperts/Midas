@@ -29,7 +29,7 @@ class BaseMongoHeader(val bytes : Array[Byte]) {
   def length: Int = messageLength
 
   def updateLength(newLength : Int): Int = {
-    messageLength = MongoHeader.SIZE + newLength
+    messageLength = bytes.length + newLength
     val newLengthBytes = asFourBytes(messageLength)
     for (i <- 0 until 4) {
       bytes(i) = newLengthBytes(i)

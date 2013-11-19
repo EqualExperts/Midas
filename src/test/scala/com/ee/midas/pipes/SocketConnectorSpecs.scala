@@ -6,8 +6,6 @@ import org.specs2.runner.JUnitRunner
 import java.net.Socket
 import org.specs2.mock.Mockito
 import com.ee.midas.pipes.SocketConnector._
-import com.ee.midas.utils.Interceptable
-
 
 @RunWith(classOf[JUnitRunner])
 class SocketConnectorSpecs extends Specification with Mockito {

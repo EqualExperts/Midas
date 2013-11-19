@@ -1,7 +1,6 @@
 package com.ee.midas.pipes
 
 import java.net.Socket
-import com.ee.midas.utils.Interceptable
 
 class SocketConnector private (source: Socket) {
 

@@ -1,0 +1,2 @@
+use users
+db.customers.add('{"city" : "Please Set City" }')

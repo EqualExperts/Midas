@@ -1,2 +1,2 @@
 use users
-db.customers.remove('[ "name"]')
+db.customers.remove('[ "age"]')

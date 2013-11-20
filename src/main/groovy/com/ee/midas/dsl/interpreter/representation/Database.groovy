@@ -22,9 +22,16 @@ class Database {
     }
 
     def each(Transform transform, closure) {
-        def dbname = this.name
-        collections.each { name, collection ->
-            collection.each(transform, dbname, closure)
+        def dbName = this.name
+        collections.each { name, Collection collection ->
+            collection.each(transform, dbName, closure)
+        }
+    }
+
+    def eachWithVersionedMap(Transform transform, closure) {
+        def dbName = this.name
+        collections.each { name, Collection collection ->
+            closure(dbName, name, collection.asVersionedMap(transform))
         }
     }
 

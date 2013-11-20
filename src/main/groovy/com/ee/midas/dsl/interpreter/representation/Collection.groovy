@@ -2,6 +2,8 @@ package com.ee.midas.dsl.interpreter.representation
 
 
 import com.ee.midas.dsl.grammar.*
+import groovy.transform.Immutable
+
 import static com.ee.midas.dsl.interpreter.representation.Transform.*
 import groovy.json.JsonException
 import groovy.json.JsonSlurper
@@ -12,9 +14,10 @@ import groovy.transform.ToString
 class Collection {
     final String name
     private final jsonSlurper = new JsonSlurper()
-    private final def expansions = [:]
-    private final def contractions = [:]
-    private Long currentVersion = 1
+    private final def versionedExpansions = [:]
+    private final def versionedContractions = [:]
+    private Long curExpansionVersion = 1
+    private Long curContractionVersion = 1
 
     Collection(String name) {
         this.name = name
@@ -31,12 +34,12 @@ class Collection {
 
             if (isExpansion(grammar)) {
                 println("Collection: ${this.name} Adding Expansion $grammar with $args")
-                expansions[currentVersion++] = [grammar, args]
+                versionedExpansions[curExpansionVersion++] = [grammar, args]
                 return
             }
             if (isContraction(grammar)) {
                 println("Collection: ${this.name} Adding Contraction $grammar with $args")
-                contractions[currentVersion++] = [grammar, args]
+                versionedContractions[curContractionVersion++] = [grammar, args]
                 return
             }
         }
@@ -69,25 +72,42 @@ class Collection {
     }
 
 
-    def each(transform, String dbname, closure) {
-        if(transform == EXPANSION || transform == ALL) {
-            expansions.each { version, grammarWithArgs ->
-                def (grammar, args) = grammarWithArgs
-                closure(dbname, name, version, grammar.name(), args)
-            }
+    def each(Transform transform, String dbName, closure) {
+        def versionedTransform = null
+        if(transform == EXPANSION) {
+            versionedTransform = versionedExpansions
         }
 
-        if(transform == CONTRACTION || transform == ALL) {
-            contractions.each { version, grammarWithArgs ->
-                def (grammar, args) = grammarWithArgs
-                closure(dbname, name, version, grammar.name(), args)
-            }
+        if(transform == CONTRACTION) {
+            versionedTransform = versionedContractions
         }
 
+        versionedTransform.each { version, grammarWithArgs ->
+            def (grammar, args) = grammarWithArgs
+            closure(dbName, name, version, grammar.name(), args)
+        }
+    }
+
+    def asVersionedMap(Transform transform) {
+        def versionedTransform = null
+        if(transform == EXPANSION) {
+            versionedTransform = versionedExpansions
+        }
+
+        if(transform == CONTRACTION) {
+            versionedTransform = versionedContractions
+        }
+
+        versionedTransform.collectEntries { entry ->
+            def grammarWithArgs = entry.value
+            def (grammar, args) = grammarWithArgs
+            def operation = ['name': grammar.name(), 'args': args]
+            ["$entry.key" : operation]
+        }
     }
 
     def String toString() {
-        "${getClass().simpleName}: $name, Expansions $expansions, Contractions $contractions"
+        "${getClass().simpleName}: $name, Expansions $versionedExpansions, Contractions $versionedContractions"
     }
 
 }

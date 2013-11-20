@@ -18,8 +18,14 @@ public class Tree {
     }
 
     def each(Transform transform, closure) {
-        databases.each { name, database ->
+        databases.each { name, Database database ->
             database.each(transform, closure)
+        }
+    }
+
+    def eachWithVersionedMap(Transform transform, closure) {
+        databases.each { name, Database database ->
+            database.eachWithVersionedMap(transform, closure)
         }
     }
 }

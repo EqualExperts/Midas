@@ -23,14 +23,14 @@ class RequestInterceptor (tracker: MessageTracker) extends MidasInterceptable {
     println(s"Remaining = ${remaining map (_.toChar) mkString}")
     import BaseMongoHeader.OpCode._
     header.opCode match {
-      case OP_QUERY => {
+      case OP_QUERY | OP_GET_MORE => {
         val fullCollectionName = toFullCollectionName(remaining)
         tracker.track(header.requestID, fullCollectionName)
       }
-      case OP_GET_MORE => {
+      /*case OP_GET_MORE => {
         val fullCollectionName = toFullCollectionName(remaining)
         tracker.track(header.requestID, fullCollectionName)
-      }
+      }*/
       case _ => ""
     }
     header.bytes ++ remaining

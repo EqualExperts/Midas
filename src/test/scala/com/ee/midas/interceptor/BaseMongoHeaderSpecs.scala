@@ -3,8 +3,10 @@ package com.ee.midas.interceptor
 import org.specs2.mutable.Specification
 import java.io.{ByteArrayInputStream, InputStream}
 import org.specs2.mock.Mockito
+import org.specs2.runner.JUnitRunner
+import org.junit.runner.RunWith
 
-
+@RunWith(classOf[JUnitRunner])
 class BaseMongoHeaderSpecs extends Specification with Mockito {
 
     "BaseMongoHeader" should {

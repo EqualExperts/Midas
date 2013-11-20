@@ -6,6 +6,7 @@ import org.specs2.runner.JUnitRunner
 import java.net.Socket
 import org.specs2.mock.Mockito
 import com.ee.midas.pipes.SocketConnector._
+import com.ee.midas.interceptor.MidasInterceptable
 
 @RunWith(classOf[JUnitRunner])
 class SocketConnectorSpecs extends Specification with Mockito {
@@ -35,7 +36,7 @@ class SocketConnectorSpecs extends Specification with Mockito {
       "Create request intercepted duplex pipe between client and server " in {
         val client : Socket = mock[Socket]
         val server : Socket = mock[Socket]
-        val interceptable: Interceptable = mock[Interceptable]
+        val interceptable: MidasInterceptable = mock[MidasInterceptable]
         val pipe = client <===|> (server, interceptable)
         pipe.isInstanceOf[DuplexPipe]
       }
@@ -43,7 +44,7 @@ class SocketConnectorSpecs extends Specification with Mockito {
       "Create response intercepted duplex pipe between client and server " in {
         val client : Socket = mock[Socket]
         val server : Socket = mock[Socket]
-        val interceptable: Interceptable = mock[Interceptable]
+        val interceptable: MidasInterceptable = mock[MidasInterceptable]
         val pipe = client <|===> (server, interceptable)
         pipe.isInstanceOf[DuplexPipe]
       }
@@ -51,7 +52,7 @@ class SocketConnectorSpecs extends Specification with Mockito {
       "Create duplex pipe between client and server " in {
         val client : Socket = mock[Socket]
         val server : Socket = mock[Socket]
-        val interceptable: Interceptable = mock[Interceptable]
+        val interceptable: MidasInterceptable = mock[MidasInterceptable]
         val pipe = client <|==|> (server, interceptable, interceptable)
         pipe.isInstanceOf[DuplexPipe]
       }

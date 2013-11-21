@@ -2,10 +2,13 @@ package com.ee.midas.interceptor
 
 import org.bson.BSONObject
 import com.ee.midas.transform.Transformations._
+import com.ee.midas.transform.TransformType
 
 object Transformer {
 
-  def canTransform(collectionName: String): Boolean = false
+  def canTransformDocuments(implicit fullCollectionName: String): Boolean = canBeApplied(fullCollectionName)
 
-  def transform(document: BSONObject): BSONObject = map(document)
+  def transform(document: BSONObject)(implicit fullCollectionName: String): BSONObject = map(fullCollectionName, document) {
+    TransformType.EXPANSION
+  }
 }

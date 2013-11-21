@@ -1,5 +1,6 @@
 package com.ee.midas.dsl.interpreter.representation
 
+import com.ee.midas.transform.TransformType
 import groovy.transform.ToString
 
 @ToString
@@ -21,17 +22,17 @@ class Database {
         }
     }
 
-    def each(Transform transform, closure) {
+    def each(TransformType transformType, closure) {
         def dbName = this.name
         collections.each { name, Collection collection ->
-            collection.each(transform, dbName, closure)
+            collection.each(transformType, dbName, closure)
         }
     }
 
-    def eachWithVersionedMap(Transform transform, closure) {
+    def eachWithVersionedMap(TransformType transformType, closure) {
         def dbName = this.name
         collections.each { name, Collection collection ->
-            closure(dbName, name, collection.asVersionedMap(transform))
+            closure(dbName, name, collection.asVersionedMap(transformType))
         }
     }
 

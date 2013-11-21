@@ -5,7 +5,7 @@ class MessageTracker {
 
   def track(id: Int, fullCollectionName: String) = ids.put(id, fullCollectionName)
 
-  def fullCollectionNameFor(id: Int) = ids.get(id)
+  def fullCollectionName(id: Int) = ids.get(id)
 
   def untrack(id: Int) = ids.remove(id)
 }

@@ -2,9 +2,9 @@ package com.ee.midas.dsl.interpreter.representation
 
 
 import com.ee.midas.dsl.grammar.*
-import groovy.transform.Immutable
+import com.ee.midas.transform.TransformType
 
-import static com.ee.midas.dsl.interpreter.representation.Transform.*
+import static com.ee.midas.transform.TransformType.*
 import groovy.json.JsonException
 import groovy.json.JsonSlurper
 import groovy.transform.ToString
@@ -72,33 +72,33 @@ class Collection {
     }
 
 
-    def each(Transform transform, String dbName, closure) {
-        def versionedTransform = null
-        if(transform == EXPANSION) {
-            versionedTransform = versionedExpansions
+    def each(TransformType transformType, String dbName, closure) {
+        def versionedTransforms = null
+        if(transformType == EXPANSION) {
+            versionedTransforms = versionedExpansions
         }
 
-        if(transform == CONTRACTION) {
-            versionedTransform = versionedContractions
+        if(transformType == CONTRACTION) {
+            versionedTransforms = versionedContractions
         }
 
-        versionedTransform.each { version, grammarWithArgs ->
+        versionedTransforms.each { version, grammarWithArgs ->
             def (grammar, args) = grammarWithArgs
             closure(dbName, name, version, grammar.name(), args)
         }
     }
 
-    def asVersionedMap(Transform transform) {
-        def versionedTransform = null
-        if(transform == EXPANSION) {
-            versionedTransform = versionedExpansions
+    def asVersionedMap(TransformType transformType) {
+        def versionedTransforms = null
+        if(transformType == EXPANSION) {
+            versionedTransforms = versionedExpansions
         }
 
-        if(transform == CONTRACTION) {
-            versionedTransform = versionedContractions
+        if(transformType == CONTRACTION) {
+            versionedTransforms = versionedContractions
         }
 
-        versionedTransform.collectEntries { entry ->
+        versionedTransforms.collectEntries { entry ->
             def grammarWithArgs = entry.value
             def (grammar, args) = grammarWithArgs
             def operation = ['name': grammar.name(), 'args': args]

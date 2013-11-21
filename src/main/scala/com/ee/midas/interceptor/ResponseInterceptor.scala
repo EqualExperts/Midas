@@ -4,6 +4,7 @@ import java.io.InputStream
 import org.bson.BSONObject
 import DocumentConverter._
 import com.ee.midas.transform.DocumentOperations._
+import com.ee.midas.interceptor.Transformer._
 
 class ResponseInterceptor (tracker: MessageTracker) extends MidasInterceptable {
 
@@ -20,9 +21,9 @@ class ResponseInterceptor (tracker: MessageTracker) extends MidasInterceptable {
     else header.bytes
   }
   
-  private def modifyPayload(in: InputStream, header: MongoHeader): Array[Byte] = {
+  private def modifyPayload(in: InputStream, header: MongoHeader)(implicit fullCollectionName: String): Array[Byte] = {
     val documents = extractDocumentsFrom(in, header)
-    val transformedDocuments = documents map Transformer.transform
+    val transformedDocuments = documents map transform
     val newPayloadBytes = transformedDocuments flatMap (_.toBytes)
     header.updateLength(newPayloadBytes.length)
     newPayloadBytes.toArray
@@ -37,9 +38,10 @@ class ResponseInterceptor (tracker: MessageTracker) extends MidasInterceptable {
   private def modifyPayloadIfRequired(in: InputStream, header: MongoHeader): Array[Byte] = {
     val headerBytes = header.bytes
     val requestId = header.responseTo 
-    val payloadBytes = (tracker.fullCollectionNameFor(requestId)) match {
-      case Some(fullCollectionName) =>
-        if (Transformer.canTransform(fullCollectionName)) {
+    val payloadBytes = (tracker.fullCollectionName(requestId)) match {
+      case Some(fcName) =>
+        implicit val fullCollectionName = fcName
+        if (canTransformDocuments) {
           modifyPayload(in, header)
         } else {
           payload(in, header)

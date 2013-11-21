@@ -1,22 +1,17 @@
 package com.ee.midas.dsl.generator
 
-import com.ee.midas.dsl.interpreter.representation.Transform
+import com.ee.midas.transform.TransformType
+
+import static com.ee.midas.transform.TransformType.*
 import com.ee.midas.dsl.interpreter.representation.Tree
-import static com.ee.midas.dsl.interpreter.representation.Transform.*
 
 public class ScalaGenerator implements Generator {
 
     private static final String NEW_LINE = '\n'
     private static final String TAB = '\t'
 
-//    private StringBuilder code = new StringBuilder()
-
     public ScalaGenerator() {
     }
-
-     private def toExpressionName(dbName, collectionName, version, operationName) {
-        "${dbName}_${collectionName}_${version}_${operationName}"
-     }
 
     @Override
     public String generate(Tree tree) {
@@ -48,22 +43,21 @@ public class ScalaGenerator implements Generator {
         "$dbName.$collectionName"
     }
 
-    private def generateSnippets(Transform transform, Tree tree) {
-        println("Started snippets generation for $transform Transform...")
+    private def generateSnippets(TransformType transform, Tree tree) {
+        println("Started snippets generation for $transform TransformType...")
         def snippets = [:]
         tree.eachWithVersionedMap(transform) { String dbName, String collectionName, versionedMap ->
             def versionedSnippets = versionedMap.collect { version, operation ->
                 def operationName = operation['name']
                 def args = operation['args']
                 println("Database and Collection Name = $dbName.$collectionName.$version.$operationName.$args")
-//                def exprName = toExpressionName(dbName, collectionName, version, operationName)
                 def snippet = "$operationName"(args[0])
                 "$version -> $snippet"
             }
             def fullCollectionName = toFullCollectionName(dbName, collectionName)
             snippets[fullCollectionName] = versionedSnippets
         }
-        println("Completed snippets generation for $transform Transform!")
+        println("Completed snippets generation for $transform TransformType!")
         snippets
     }
 

@@ -1,5 +1,7 @@
 package com.ee.midas.dsl.interpreter.representation
 
+import com.ee.midas.transform.TransformType
+
 public class Tree {
     private final def databases = [:]
 
@@ -17,15 +19,15 @@ public class Tree {
         }
     }
 
-    def each(Transform transform, closure) {
+    def each(TransformType transformType, closure) {
         databases.each { name, Database database ->
-            database.each(transform, closure)
+            database.each(transformType, closure)
         }
     }
 
-    def eachWithVersionedMap(Transform transform, closure) {
+    def eachWithVersionedMap(TransformType transformType, closure) {
         databases.each { name, Database database ->
-            database.eachWithVersionedMap(transform, closure)
+            database.eachWithVersionedMap(transformType, closure)
         }
     }
 }

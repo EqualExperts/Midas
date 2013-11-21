@@ -5,29 +5,30 @@ import DocumentOperations._
 
 trait Versioner {
 
-  val VERSION_FIELD = "_version"
-
-  def getVersion(document: BSONObject) =
-    if(document.containsField(VERSION_FIELD)) {
-      val version = document.get(VERSION_FIELD).asInstanceOf[Int]
+  def getVersion(document: BSONObject)(implicit transformType: TransformType) = {
+    val versionFieldName = transformType.versionFieldName()
+    if(document.containsField(versionFieldName)) {
+      val version = document.get(versionFieldName).asInstanceOf[Int]
       Some(version)
     } else {
       None
     }
+  }
 
-  def version (document: BSONObject) : BSONObject = {
+  def version (document: BSONObject)(implicit transformType: TransformType) : BSONObject = {
+    val versionFieldName = transformType.versionFieldName()
     getVersion(document) match {
       case Some(version) => {
         println("Current Version %d of Document %s".format(version, document))
         val nextVersion = version + 1
-        document + (VERSION_FIELD, nextVersion)
+        document + (versionFieldName, nextVersion)
         println("Updated Version to %d on Document %s\n".format(nextVersion, document))
         document
       }
       case None => {
         println("No Versioning found on Document %s".format(document))
         val version = 1
-        document + (VERSION_FIELD, version)
+        document + (versionFieldName, version)
         println("Added Version %d to Document %s\n".format(version, document))
         document
       }

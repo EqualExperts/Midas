@@ -1,6 +1,6 @@
 package com.ee.midas.transform
 
-import org.bson.{BasicBSONEncoder, BSONEncoder, BSONObject}
+import org.bson.{BasicBSONEncoder, BSONObject}
 import scala.collection.JavaConverters._
 
 class DocumentOperations private (document: BSONObject) {

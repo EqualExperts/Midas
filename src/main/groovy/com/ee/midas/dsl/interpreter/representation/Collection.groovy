@@ -1,13 +1,15 @@
 package com.ee.midas.dsl.interpreter.representation
 
-
-import com.ee.midas.dsl.grammar.*
+import com.ee.midas.dsl.grammar.Contraction
+import com.ee.midas.dsl.grammar.Expansion
+import com.ee.midas.dsl.grammar.Grammar
 import com.ee.midas.transform.TransformType
-
-import static com.ee.midas.transform.TransformType.*
 import groovy.json.JsonException
 import groovy.json.JsonSlurper
 import groovy.transform.ToString
+
+import static com.ee.midas.transform.TransformType.CONTRACTION
+import static com.ee.midas.transform.TransformType.EXPANSION
 
 
 @ToString

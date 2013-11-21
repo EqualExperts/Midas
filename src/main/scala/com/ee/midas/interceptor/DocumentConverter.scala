@@ -1,8 +1,8 @@
 package com.ee.midas.interceptor
 
 import java.io.InputStream
-import org.bson.{BSONEncoder, BSONObject, BasicBSONEncoder}
-import com.mongodb.{DBCollection, DBDecoder, DefaultDBDecoder}
+import org.bson.BSONObject
+import com.mongodb.{DBDecoder, DefaultDBDecoder}
 
 object DocumentConverter {
 

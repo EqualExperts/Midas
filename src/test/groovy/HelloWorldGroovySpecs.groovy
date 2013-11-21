@@ -1,4 +1,4 @@
-import spock.lang.*
+import spock.lang.Specification
 
 public class HelloWorldGroovySpecs extends Specification {
     def "says Hello"() {

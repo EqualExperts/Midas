@@ -1,6 +1,5 @@
 package com.ee.midas.pipes
 
-import org.slf4j.Logger
 import com.ee.midas.utils.Loggable
 
 

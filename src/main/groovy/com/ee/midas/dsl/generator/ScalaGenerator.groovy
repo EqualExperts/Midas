@@ -1,9 +1,10 @@
 package com.ee.midas.dsl.generator
 
+import com.ee.midas.dsl.interpreter.representation.Tree
 import com.ee.midas.transform.TransformType
 
-import static com.ee.midas.transform.TransformType.*
-import com.ee.midas.dsl.interpreter.representation.Tree
+import static com.ee.midas.transform.TransformType.CONTRACTION
+import static com.ee.midas.transform.TransformType.EXPANSION
 
 public class ScalaGenerator implements Generator {
 

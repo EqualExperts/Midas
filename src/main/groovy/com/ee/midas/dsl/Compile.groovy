@@ -1,6 +1,6 @@
 import com.ee.midas.dsl.Translator
-import com.ee.midas.dsl.interpreter.Reader
 import com.ee.midas.dsl.generator.ScalaGenerator
+import com.ee.midas.dsl.interpreter.Reader
 
 def sortedDeltaFiles(File deltasDir) {
     deltasDir.listFiles(new FilenameFilter() {

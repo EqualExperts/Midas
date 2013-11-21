@@ -4,7 +4,6 @@ import org.specs2.mutable.Specification
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 import org.specs2.mock.Mockito
-import org.slf4j.{LoggerFactory, Logger}
 
 @RunWith(classOf[JUnitRunner])
 class PipeMonitorSpecs extends Specification with Mockito {

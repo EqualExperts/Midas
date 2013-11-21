@@ -43,10 +43,10 @@ public class ScalaGenerator implements Generator {
         "$dbName.$collectionName"
     }
 
-    private def generateSnippets(TransformType transform, Tree tree) {
-        println("Started snippets generation for $transform TransformType...")
+    private def generateSnippets(TransformType transformType, Tree tree) {
+        println("Started snippets generation for $transformType TransformType...")
         def snippets = [:]
-        tree.eachWithVersionedMap(transform) { String dbName, String collectionName, versionedMap ->
+        tree.eachWithVersionedMap(transformType) { String dbName, String collectionName, versionedMap ->
             def versionedSnippets = versionedMap.collect { version, operation ->
                 def operationName = operation['name']
                 def args = operation['args']
@@ -57,7 +57,7 @@ public class ScalaGenerator implements Generator {
             def fullCollectionName = toFullCollectionName(dbName, collectionName)
             snippets[fullCollectionName] = versionedSnippets
         }
-        println("Completed snippets generation for $transform TransformType!")
+        println("Completed snippets generation for $transformType TransformType!")
         snippets
     }
 

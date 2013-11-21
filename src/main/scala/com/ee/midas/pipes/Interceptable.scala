@@ -12,9 +12,8 @@ trait Interceptable extends Loggable {
    */
   def intercept(src: InputStream, tgt: OutputStream): Int = {
     val name = getClass.getName
-    var bytesRead = 0
     val data = new Array[Byte](1024 * 16)
-    bytesRead = src.read(data)
+    val bytesRead = src.read(data)
     log.info(name + " Bytes Read = " + bytesRead)
     if (bytesRead > 0) {
       tgt.write(data, 0, bytesRead)

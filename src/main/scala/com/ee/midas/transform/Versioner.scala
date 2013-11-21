@@ -15,7 +15,7 @@ trait Versioner {
     }
   }
 
-  def version (document: BSONObject)(implicit transformType: TransformType) : BSONObject = {
+  def version (document: BSONObject)(implicit transformType: TransformType): BSONObject = {
     val versionFieldName = transformType.versionFieldName()
     getVersion(document) match {
       case Some(version) => {
@@ -33,6 +33,5 @@ trait Versioner {
         document
       }
     }
-    document
   }
 }

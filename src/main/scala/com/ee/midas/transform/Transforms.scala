@@ -13,7 +13,7 @@ trait Transforms extends Versioner {
   def canBeApplied(fullCollectionName: String): Boolean =
     expansions.keySet.contains(fullCollectionName) || contractions.keySet.contains(fullCollectionName)
 
-  def map(document: BSONObject)(implicit fullCollectionName: String, transformType : TransformType) : BSONObject =  {
+  def map(document: BSONObject)(implicit fullCollectionName: String, transformType: TransformType) : BSONObject =  {
     versionedSnippets match {
       case map if map.isEmpty => document
       case vs =>

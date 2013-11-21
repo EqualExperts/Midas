@@ -5,9 +5,9 @@ import org.bson.io.Bits
 
 class MongoHeader private(override val bytes: Array[Byte]) extends BaseMongoHeader(bytes.take(16)) {
   val flags = Bits.readInt(bytes, pos + (4 * 4))   //Int = 4 bytes
-  val cursor = Bits.readLong(bytes, pos + (4 * 6)) //Long = 8 bytes
-  val startingFrom = Bits.readInt(bytes, pos + (4 * 7))
-  val documentsCount = Bits.readInt(bytes, pos)
+  val cursor = Bits.readLong(bytes, pos + (4 * 5))
+  val startingFrom = Bits.readInt(bytes, pos + (4 * 7)) //Long = 8 bytes
+  val documentsCount = Bits.readInt(bytes, pos + (4 * 8))
 }
 
 object MongoHeader {

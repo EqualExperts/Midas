@@ -7,22 +7,20 @@ import com.ee.midas.interceptor.BaseMongoHeader.OpCode
 
 class BaseMongoHeader(val bytes : Array[Byte]) {
   private val MAX_MESSAGE_LENGTH : Int = ( 32 * 1024 * 1024 )   //change this to response length later
-  protected var pos = 0
+  protected val pos = 0
   private var messageLength = Bits.readInt(bytes, pos)
-  pos += 4
 
   if (messageLength > MAX_MESSAGE_LENGTH) {
-    throw new IllegalArgumentException("response too long: " + messageLength)
+    throw new IllegalArgumentException("message too long: " + messageLength)
   }
 
-  val requestID = Bits.readInt(bytes, pos)
-  pos += 4
+  if(messageLength == 0) {
+    throw new IllegalArgumentException("Message Length is ZERO ==> Interpreting it as TerminationMessage")
+  }
 
-  val responseTo = Bits.readInt(bytes, pos)
-  pos += 4
-
-  val opCode = OpCode(Bits.readInt(bytes, pos))
-  pos += 4
+  val requestID = Bits.readInt(bytes, pos + 4)  //Int = 4 bytes
+  val responseTo = Bits.readInt(bytes, pos + (4 * 2))
+  val opCode = OpCode(Bits.readInt(bytes, pos + (4 * 3)))
 
   def payloadSize: Int = messageLength - bytes.length
 

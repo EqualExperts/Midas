@@ -8,30 +8,28 @@ trait PipesMonitorComponent extends Startable with Stoppable with Loggable {
   pipe: Pipe =>
 
   val checkEveryMillis: Long
+  val pipesMonitor = new PipesMonitor
 
   abstract override def start: Unit = {
     log.info("Starting Pipe..." + pipe.name)
     //Start Target First
     super.start
-    val pipesMonitor = new PipesMonitor
     log.info("Starting PipesMonitor..." + pipesMonitor.toString)
     pipesMonitor.start
   }
 
   abstract override def stop: Unit = {
     log.info("Stopping Pipe..." + pipe.name)
-    //Start Target First
+    //Stop Target First
     super.stop
-    val pipesMonitor = new PipesMonitor
     log.info("Stopping PipesMonitor..." + pipesMonitor.toString)
     pipesMonitor.close
   }
 
   abstract override def forceStop: Unit = {
     log.info("Forcing Stop on Pipe..." + pipe.name)
-    //Start Target First
+    //ForceStop Target First
     super.forceStop
-    val pipesMonitor = new PipesMonitor
     log.info("Stopping PipesMonitor..." + pipesMonitor.toString)
     pipesMonitor.close
   }

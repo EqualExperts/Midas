@@ -56,11 +56,12 @@ extends Pipe with Loggable {
       val threadName = Thread.currentThread().getName
       t match {
         case e: IOException =>
-          log.error(s"[ $threadName UncaughtExceptionHandler Received IOException in ${e.getMessage}")
+          log.error(s"[ $threadName UncaughtExceptionHandler Received IOException in ${e.getMessage}", e)
         case _ =>
-          log.error(s"[ $threadName ] UncaughtExceptionHandler Received Exception:${t.getClass.getName} in ${t.getMessage}")
+          log.error(s"[ $threadName ] UncaughtExceptionHandler Received Exception:${t.getClass.getName} in ${t.getMessage}", t)
       }
       log.error(s"[ $threadName ] Closing pipe: ${pipe.name}")
+      pipe.forceStop
     }
   }
 }

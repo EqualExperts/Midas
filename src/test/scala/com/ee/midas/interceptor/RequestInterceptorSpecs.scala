@@ -26,7 +26,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
        there was one(mockSrc).read(any[Array[Byte]])
       }
 
-     "intercept opCode and requestId from header" in new setup {
+     /*"intercept OP_QUERY opCode and requestId from header" in new setup {
        //given
 
        val reqInterceptor = new RequestInterceptor(tracker)
@@ -39,12 +39,58 @@ class RequestInterceptorSpecs extends Specification with Mockito {
        there was one(header).requestID
      }
 
-     "add the requestId and collectionName to tracker" in new setup {
+     "intercept OP_GET_MORE opCode and requestId from header" in new setup {
+       //given
+       header.opCode returns BaseMongoHeader.OpCode.OP_GET_MORE
+       val reqInterceptor = new RequestInterceptor(tracker)
+
+       //when:
+       reqInterceptor.read(mockSrc, header)
+
+       //then
+       there was one(header).opCode
+       there was one(header).requestID
+     }*/
+
+     "ignores opCodes other than OP_QUERY and OP_GET_MORE" in new setup {
+
+       //given
+       val collectionBytes = collectionName.getBytes
+       header.opCode returns BaseMongoHeader.OpCode.OP_DELETE
+       val src = new ByteArrayInputStream(collectionBytes)
+       header.payloadSize returns collectionBytes.size
+       val reqInterceptor = new RequestInterceptor(tracker)
+
+       //when:
+       reqInterceptor.read(src, header)
+
+       //then
+       there was no(tracker).track(requestID, collectionName)
+     }
+
+     "intercept OP_GET_MORE request and track requestId and collectionName" in new setup {
        //given
 
        val collectionBytes = collectionName.getBytes
        val src = new ByteArrayInputStream(collectionBytes)
        header.payloadSize returns collectionBytes.size
+       header.opCode returns BaseMongoHeader.OpCode.OP_GET_MORE
+       val reqInterceptor = new RequestInterceptor(tracker)
+
+       //when:
+       reqInterceptor.read(src, header)
+
+       //then
+       there was one(tracker).track(requestID, collectionName)
+     }
+
+     "intercept OP_QUERY request and track requestId and collectionName" in new setup {
+       //given
+
+       val collectionBytes = collectionName.getBytes
+       val src = new ByteArrayInputStream(collectionBytes)
+       header.payloadSize returns collectionBytes.size
+       header.opCode returns BaseMongoHeader.OpCode.OP_QUERY
        val reqInterceptor = new RequestInterceptor(tracker)
 
        //when:

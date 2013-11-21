@@ -4,7 +4,7 @@ import org.bson.BSONObject
 import com.ee.midas.transform.Transformations._
 import com.ee.midas.transform.TransformType
 
-object Transformer {
+class Transformer {
 
   def canTransformDocuments(implicit fullCollectionName: String): Boolean =
     canBeApplied(fullCollectionName)

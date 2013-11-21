@@ -49,7 +49,7 @@ class SocketConnectorSpecs extends Specification with Mockito {
         pipe.isInstanceOf[DuplexPipe]
       }
 
-      "Create duplex pipe between client and server " in {
+      "Create intercepted duplex pipe between client and server " in {
         val client : Socket = mock[Socket]
         val server : Socket = mock[Socket]
         val interceptable: MidasInterceptable = mock[MidasInterceptable]

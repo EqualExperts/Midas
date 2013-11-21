@@ -1,6 +1,7 @@
-package com.ee.midas.utils
+package com.ee.midas.pipes
 
 import java.io.{OutputStream, InputStream}
+import com.ee.midas.utils.Loggable
 
 trait Interceptable extends Loggable {
   /**

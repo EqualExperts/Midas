@@ -25,6 +25,7 @@ class CrudSpecs extends Specification {
             read documents                   $read
             update documents                 $update
             delete documents                 $delete
+            drop database                    $drop
 
         Step 3: Close connection to Midas
             Disconnect                       $disconnect
@@ -66,7 +67,14 @@ class CrudSpecs extends Specification {
         result.getError == null
     }
 
-    val disconnect = {
+    val drop = {
+      val database:DB = application.getDB("midasSmokeTest")
+      database.dropDatabase()
+      true
+    }
+
+
+  val disconnect = {
         application.close()
         application.getConnector.isOpen must beFalse
     }

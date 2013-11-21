@@ -4,7 +4,7 @@ package com.ee.midas
 import com.ee.midas.pipes.{SocketConnector, DuplexPipe}
 import java.net.{Socket, InetAddress, ServerSocket}
 import com.ee.midas.utils.{Accumulator, Loggable}
-import com.ee.midas.interceptor.{MessageTracker, RequestInterceptor, ResponseInterceptor}
+import com.ee.midas.interceptor.{Transformer, MessageTracker, RequestInterceptor, ResponseInterceptor}
 
 
 object Main extends App with Loggable {
@@ -32,7 +32,7 @@ object Main extends App with Loggable {
       val mongoSocket = new Socket(mongoHost, mongoPort)
       val tracker = new MessageTracker()
       val requestInterceptable = new RequestInterceptor(tracker)
-      val responseInterceptable = new ResponseInterceptor(tracker)
+      val responseInterceptable = new ResponseInterceptor(tracker, new Transformer())
 
       //      val duplexPipe = application  <|===> (mongoSocket, ResponseInterceptor())
       val duplexPipe = application  <|==|> (mongoSocket, requestInterceptable, responseInterceptable)

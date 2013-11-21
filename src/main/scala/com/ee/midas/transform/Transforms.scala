@@ -14,7 +14,7 @@ trait Transforms extends Versioner {
     expansions.keySet.contains(fullCollectionName) || contractions.keySet.contains(fullCollectionName)
 
   def map(document: BSONObject)(implicit fullCollectionName: String, transformType : TransformType) : BSONObject =  {
-    versionedSnippets(fullCollectionName) match {
+    versionedSnippets match {
       case map if map.isEmpty => document
       case vs =>
         val version = getVersion(document) match {
@@ -26,7 +26,7 @@ trait Transforms extends Versioner {
     }
   }
 
-  def versionedSnippets(fullCollectionName: String)(implicit transformType: TransformType): VersionedSnippets =
+  def versionedSnippets(implicit fullCollectionName: String, transformType: TransformType): VersionedSnippets =
     if(transformType == EXPANSION)
       expansions(fullCollectionName)
     else if(transformType == CONTRACTION)

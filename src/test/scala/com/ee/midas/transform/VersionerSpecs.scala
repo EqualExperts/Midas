@@ -9,21 +9,38 @@ import org.specs2.runner.JUnitRunner
 class VersionerSpecs extends Specification with Versioner{
   "Versioner " should {
 
-    "add version field if it doesn't exist in a document" in {
+    "add version field for expansion if it doesn't exist in a document" in {
       val document = new BasicBSONObject("name", "midas")
 
-      version(document)
+      version(document)(TransformType.EXPANSION)
 
-      document.get(VERSION_FIELD) mustEqual 1
+      document.get(TransformType.EXPANSION.versionFieldName()) mustEqual 1
     }
 
-    "increment version if exists in a document" in {
+    "add version field for contraction if it doesn't exist in a document" in {
       val document = new BasicBSONObject("name", "midas")
-      document.put(VERSION_FIELD, 1)
 
-      version(document)
+      version(document)(TransformType.CONTRACTION)
 
-      document.get(VERSION_FIELD) mustEqual 2
+      document.get(TransformType.CONTRACTION.versionFieldName()) mustEqual 1
+    }
+
+    "increment expansion version if it exists in a document" in {
+      val document = new BasicBSONObject("name", "midas")
+      document.put(TransformType.EXPANSION.versionFieldName(), 1)
+
+      version(document)(TransformType.EXPANSION)
+
+      document.get(TransformType.EXPANSION.versionFieldName()) mustEqual 2
+    }
+
+    "increment contraction version if it exists in a document" in {
+      val document = new BasicBSONObject("name", "midas")
+      document.put(TransformType.CONTRACTION.versionFieldName(), 1)
+
+      version(document)(TransformType.CONTRACTION)
+
+      document.get(TransformType.CONTRACTION.versionFieldName()) mustEqual 2
     }
   }
 }

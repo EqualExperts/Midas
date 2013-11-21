@@ -7,52 +7,101 @@ import org.specs2.runner.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class TransformsSpecs extends Specification with Transforms {
-  def dummyExpansionFunc(bsonObj: BSONObject): BSONObject = {
-    bsonObj.put("expansion", "applied")
+
+  def dummyExpansionFunc1: Snippet  = (bsonObj: BSONObject) => {
+    bsonObj.put("expansion1", "applied")
     bsonObj
   }
 
-  def dummyContractionFunc(bsonObj: BSONObject): BSONObject = {
-    bsonObj.put("contraction", "applied")
+  def dummyExpansionFunc2: Snippet  = (bsonObj: BSONObject) => {
+    bsonObj.put("expansion2", "applied")
     bsonObj
   }
 
-  val dummyExpansion: Snippet = dummyExpansionFunc
-  val dummyContraction: Snippet = dummyContractionFunc
-  val expansions: List[Snippet] = List(dummyExpansion)
-  val contractions: List[Snippet] = List(dummyContraction)
+  def dummyContractionFunc1: Snippet = (bsonObj: BSONObject) => {
+    bsonObj.put("contraction1", "applied")
+    bsonObj
+  }
+
+  def dummyContractionFunc2: Snippet = (bsonObj: BSONObject) => {
+    bsonObj.put("contraction2", "applied")
+    bsonObj
+  }
+
+  val dummyVersionExpansion: VersionedSnippets = Map(1 -> dummyExpansionFunc1, 2 -> dummyExpansionFunc2)
+  val dummyVersionContraction: VersionedSnippets = Map(1 -> dummyContractionFunc1, 2 -> dummyContractionFunc2)
+
+  val expansions : Map[String, VersionedSnippets] = Map("someCollection" -> dummyVersionExpansion)
+  val contractions : Map[String, VersionedSnippets] = Map("someCollection" -> dummyVersionContraction)
+
+  /*val expansions: List[Snippet] = List(dummyExpansion)
+  val contractions: List[Snippet] = List(dummyContraction)*/
 
   "transforms trait" should {
-    "apply expansion and contraction snippets" in {
+    "apply expansion snippets" in {
       val document = new BasicBSONObject("name", "dummy")
 
       //when
-      val transformedDocument = map(document)
+      val transformedDocument = map(document)("someCollection", TransformType.EXPANSION)
 
       //then
-      transformedDocument.containsField("expansion") && transformedDocument.containsField("contraction")
+      transformedDocument.containsField("expansion1") && transformedDocument.containsField("expansion2")
     }
 
-    "add version to a virgin document" in {
+    "add expansion version to a virgin document" in {
       val document = new BasicBSONObject("name", "dummy")
 
       //when
-      val transformedDocument = map(document)
+      val transformedDocument = map(document)("someCollection", TransformType.EXPANSION)
 
       //then
-      transformedDocument.get("_version") must_== (expansions.size + contractions.size)
+      transformedDocument.get(TransformType.EXPANSION.versionFieldName()) must_== (dummyVersionExpansion.size)
     }
 
-    "update version of already transformed document" in {
+    "update expansion version of already transformed document" in {
       val initialVersion = 1
       val document = new BasicBSONObject("name", "dummy")
-      document.put("_version", initialVersion)
+      document.put(TransformType.EXPANSION.versionFieldName, initialVersion)
 
       //when
-      val transformedDocument = map(document)
+      val transformedDocument = map(document)("someCollection", TransformType.EXPANSION)
 
       //then
-      transformedDocument.get("_version") must_== (initialVersion + expansions.size + contractions.size)
+      !transformedDocument.containsField("expansion1") &&
+        (transformedDocument.get(TransformType.EXPANSION.versionFieldName) must_== dummyVersionExpansion.size)
+    }
+
+    "apply contraction snippets" in {
+      val document = new BasicBSONObject("name", "dummy")
+
+      //when
+      val transformedDocument = map(document)("someCollection", TransformType.CONTRACTION)
+
+      //then
+      transformedDocument.containsField("contraction1") && transformedDocument.containsField("contraction2")
+    }
+
+    "add contraction version to a virgin document" in {
+      val document = new BasicBSONObject("name", "dummy")
+
+      //when
+      val transformedDocument = map(document)("someCollection", TransformType.CONTRACTION)
+
+      //then
+      transformedDocument.get(TransformType.CONTRACTION.versionFieldName()) must_== (dummyVersionContraction.size)
+    }
+
+    "update contraction version of already transformed document" in {
+      val initialVersion = 1
+      val document = new BasicBSONObject("name", "dummy")
+      document.put(TransformType.CONTRACTION.versionFieldName, initialVersion)
+
+      //when
+      val transformedDocument = map(document)("someCollection", TransformType.CONTRACTION)
+
+      //then
+      !transformedDocument.containsField("expansion1") &&
+        (transformedDocument.get(TransformType.CONTRACTION.versionFieldName) must_== dummyVersionContraction.size)
     }
   }
 

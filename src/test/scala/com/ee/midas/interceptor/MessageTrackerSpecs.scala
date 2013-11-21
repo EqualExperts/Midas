@@ -22,7 +22,7 @@ class MessageTrackerSpecs extends Specification {
 
       tracker.track(id = 1 , fullCollectionName = "midas")
 
-      tracker.fullCollectionNameFor(id = 1) mustEqual Some("midas")
+      tracker.fullCollectionName(id = 1) mustEqual Some("midas")
     }
 
     "Untrack a given ID" in {

@@ -39,10 +39,10 @@ class ResponseInterceptorSpecs extends Specification with Mockito {
         header.responseTo returns responseID
         header.documentsCount returns 1
         header.payloadSize returns payloadBytes.length
-        tracker.fullCollectionNameFor(responseID) returns Option(collectionName)
+        tracker.fullCollectionName(responseID) returns Option(collectionName)
 
-        mockTransformer.canTransform(collectionName) returns true
-        mockTransformer.transform(payloadData) returns transformedPayload
+        mockTransformer.canTransformDocuments(collectionName) returns true
+        mockTransformer.transform(payloadData)(collectionName) returns transformedPayload
 
         //when:
         val readData = resInterceptor.read(src, header)
@@ -80,8 +80,8 @@ class ResponseInterceptorSpecs extends Specification with Mockito {
         header.hasPayload returns true
         header.responseTo returns responseID
         header.payloadSize returns payloadBytes.length
-        tracker.fullCollectionNameFor(responseID) returns Option(collectionName)
-        mockTransformer.canTransform(collectionName) returns false
+        tracker.fullCollectionName(responseID) returns Option(collectionName)
+        mockTransformer.canTransformDocuments(collectionName) returns false
 
         //when:
         val readData = resInterceptor.read(src, header)
@@ -96,7 +96,7 @@ class ResponseInterceptorSpecs extends Specification with Mockito {
         header.hasPayload returns true
         header.responseTo returns responseID
         header.payloadSize returns payloadBytes.length
-        tracker.fullCollectionNameFor(responseID) returns None
+        tracker.fullCollectionName(responseID) returns None
 
         //when:
         val readData = resInterceptor.read(src, header)

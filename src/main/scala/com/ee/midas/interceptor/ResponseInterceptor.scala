@@ -4,16 +4,18 @@ import java.io.InputStream
 import org.bson.BSONObject
 import DocumentConverter._
 import com.ee.midas.transform.DocumentOperations._
+import com.ee.midas.utils.Loggable
 
-class ResponseInterceptor (tracker: MessageTracker, transformer: Transformer) extends MidasInterceptable {
+class ResponseInterceptor (tracker: MessageTracker, transformer: Transformer)
+  extends MidasInterceptable with Loggable {
 
   def logHeader(header: MongoHeader) = {
-    println(s"RESPONSE $header")
-    println(s"RESPONSE MESSAGE LENGTH ${header.length}")
-    println(s"RESPONSE PAYLOAD SIZE ${header.payloadSize}")
-    println(s"RESPONSE ID ${header.requestID}")
-    println(s"RESPONSE ResponseTo ${header.responseTo}")
-    println(s"RESPONSE OPCODE ${header.opCode}")
+    log.info(s"RESPONSE $header")
+    log.info(s"RESPONSE MESSAGE LENGTH ${header.length}")
+    log.info(s"RESPONSE PAYLOAD SIZE ${header.payloadSize}")
+    log.info(s"RESPONSE ID ${header.requestID}")
+    log.info(s"RESPONSE ResponseTo ${header.responseTo}")
+    log.info(s"RESPONSE OPCODE ${header.opCode}")
   }
 
   def readHeader(inputStream: InputStream): BaseMongoHeader = {

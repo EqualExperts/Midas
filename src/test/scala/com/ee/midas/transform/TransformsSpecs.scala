@@ -59,7 +59,7 @@ class TransformsSpecs extends Specification with Transforms {
     }
 
     "update expansion version of already transformed document" in {
-      val initialVersion = 1
+      val initialVersion = 1d
       val document = new BasicBSONObject("name", "dummy")
       document.put(TransformType.EXPANSION.versionFieldName, initialVersion)
 
@@ -92,7 +92,7 @@ class TransformsSpecs extends Specification with Transforms {
     }
 
     "update contraction version of already transformed document" in {
-      val initialVersion = 1
+      val initialVersion = 1d
       val document = new BasicBSONObject("name", "dummy")
       document.put(TransformType.CONTRACTION.versionFieldName, initialVersion)
 

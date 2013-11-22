@@ -255,5 +255,9 @@ task run(description: "Runs $project.archivesBaseName", dependsOn: [distribute, 
     }
 }
 
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.8'
+}
+
 check.dependsOn << ['scalastyle']
 build.dependsOn = ['check', 'cobertura', 'coberturaCheck', 'distribute', 'smoke-tests']

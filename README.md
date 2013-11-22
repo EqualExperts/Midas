@@ -13,11 +13,10 @@
 <br>
 
 ## Build Info
-We are using Gradle 1.8 for our builds.  You can download it [here](http://services.gradle.org/distributions/gradle-1.8-bin.zip)
-Please do not checkin Eclipse or Intellij or any IDE specific files.  For Idea or Eclipse they
-can be generated using
-* `gradle eclipse`
-* `gradle idea`
+We are using Gradle 1.8 for our builds.  Please do not checkin Eclipse or Intellij or any IDE specific files.  
+For Idea or Eclipse they can be generated using
+* `gradlew eclipse`
+* `gradlew idea`
 
 Note:
 Eclipse IDE might show the following error for groovy files:

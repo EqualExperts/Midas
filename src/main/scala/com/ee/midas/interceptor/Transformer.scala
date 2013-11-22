@@ -10,5 +10,6 @@ class Transformer {
     canBeApplied(fullCollectionName)
 
   def transform(document: BSONObject)(implicit fullCollectionName: String): BSONObject =
+    //TODO: let the implicit come from midas mode
     map(document)(fullCollectionName, TransformType.EXPANSION)
 }

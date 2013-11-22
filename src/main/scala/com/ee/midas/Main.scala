@@ -34,7 +34,6 @@ object Main extends App with Loggable {
       val requestInterceptable = new RequestInterceptor(tracker)
       val responseInterceptable = new ResponseInterceptor(tracker, new Transformer())
 
-      //      val duplexPipe = application  <|===> (mongoSocket, ResponseInterceptor())
       val duplexPipe = application  <|==|> (mongoSocket, requestInterceptable, responseInterceptable)
 
       duplexPipe.start

@@ -28,8 +28,8 @@ class TransformsSpecs extends Specification with Transforms {
     bsonObj
   }
 
-  val dummyVersionExpansion: VersionedSnippets = Map(1 -> dummyExpansionFunc1, 2 -> dummyExpansionFunc2)
-  val dummyVersionContraction: VersionedSnippets = Map(1 -> dummyContractionFunc1, 2 -> dummyContractionFunc2)
+  val dummyVersionExpansion: VersionedSnippets = Map(1d -> dummyExpansionFunc1, 2d -> dummyExpansionFunc2)
+  val dummyVersionContraction: VersionedSnippets = Map(1d -> dummyContractionFunc1, 2d -> dummyContractionFunc2)
 
   val expansions : Map[String, VersionedSnippets] = Map("someCollection" -> dummyVersionExpansion)
   val contractions : Map[String, VersionedSnippets] = Map("someCollection" -> dummyVersionContraction)

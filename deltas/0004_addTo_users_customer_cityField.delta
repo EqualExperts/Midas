@@ -1,2 +1,5 @@
 use users
 db.customers.add('{"city" : "Please Set City" }')
+
+use transactions
+db.orders.add('{"dispatchDate" : "Some default"}')

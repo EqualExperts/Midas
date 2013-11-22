@@ -53,7 +53,7 @@ public class ScalaGenerator implements Generator {
                 def args = operation['args']
                 println("Database and Collection Name = $dbName.$collectionName.$version.$operationName.$args")
                 def snippet = "$operationName"(args[0])
-                "$version -> $snippet"
+                "${version}d -> $snippet"
             }
             def fullCollectionName = toFullCollectionName(dbName, collectionName)
             snippets[fullCollectionName] = versionedSnippets

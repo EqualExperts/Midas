@@ -6,7 +6,7 @@ import TransformType._
 trait Transforms extends Versioner {
   type Snippet = BSONObject => BSONObject
   type Snippets = Iterable[Snippet]
-  type VersionedSnippets = Map[Int, Snippet]
+  type VersionedSnippets = Map[Double, Snippet]
   val expansions : Map[String, VersionedSnippets]
   val contractions : Map[String, VersionedSnippets]
 
@@ -33,7 +33,7 @@ trait Transforms extends Versioner {
       contractions(fullCollectionName)
     else Map.empty
 
-  def snippetsFrom(version: Int, versionedSnippets: VersionedSnippets) =
+  def snippetsFrom(version: Double, versionedSnippets: VersionedSnippets) =
     versionedSnippets.filterKeys(v => v >= version).unzip._2
 
   def applySnippets(snippets: Snippets, document: BSONObject)(implicit transformType: TransformType): BSONObject =

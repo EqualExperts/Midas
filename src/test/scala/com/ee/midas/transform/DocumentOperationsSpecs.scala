@@ -3,16 +3,35 @@ package com.ee.midas.transform
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 import org.specs2.mutable.Specification
-import org.bson.{BasicBSONObject, BSONObject}
+import org.bson.{BasicBSONEncoder, BSONEncoder, BasicBSONObject, BSONObject}
 import org.specs2.specification.Scope
 import com.mongodb.util.JSON
+import java.io.ByteArrayInputStream
+import com.ee.midas.transform.DocumentOperations._
 
 @RunWith(classOf[JUnitRunner])
 class DocumentOperationsSpecs extends Specification {
 
     "Document Operations" should {
 
-       "Add a single field to the document" in new setup {
+      "Decode documents from input stream" in new setup {
+        val encodedDocumentStream = new ByteArrayInputStream(encoder.encode(document))
+        val decodedDocument : BSONObject = encodedDocumentStream
+        decodedDocument mustEqual document
+      }
+
+
+      "Encode documents to bytes" in new setup {
+
+        //When
+        val expectedEncodedDocument = document toBytes
+
+        //Then
+        expectedEncodedDocument == encoder.encode(document)
+      }
+
+
+      "Add a single field to the document" in new setup {
 
         //When
         val transformedDocument = documentOperations + ("version","1.0")
@@ -61,5 +80,7 @@ class DocumentOperationsSpecs extends Specification {
     document.put("removeMultiple", "fields")
 
     val documentOperations = DocumentOperations(document)
+    val encoder : BSONEncoder = new BasicBSONEncoder()
+//    val decoder : DBDecoder = new DefaultDBDecoder()
   }
 }

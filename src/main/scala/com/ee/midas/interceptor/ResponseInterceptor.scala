@@ -2,7 +2,6 @@ package com.ee.midas.interceptor
 
 import java.io.InputStream
 import org.bson.BSONObject
-import DocumentConverter._
 import com.ee.midas.transform.DocumentOperations._
 import com.ee.midas.utils.Loggable
 
@@ -65,7 +64,10 @@ class ResponseInterceptor (tracker: MessageTracker, transformer: Transformer)
   private def extractDocumentsFrom(inputStream: InputStream, header: MongoHeader): List[BSONObject] = {
     val stream = new FixedSizeStream(inputStream, header.payloadSize)
     val totalDocuments = header.documentsCount
-    val documents = 1 to totalDocuments map (n => toDocument(stream))
+    val documents = 1 to totalDocuments map { n =>
+      val document: BSONObject = stream
+      document
+    }
     documents.toList
   }
 }

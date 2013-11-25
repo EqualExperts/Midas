@@ -27,7 +27,7 @@ class VersionerSpecs extends Specification with Versioner{
 
     "increment expansion version if it exists in a document" in {
       val document = new BasicBSONObject("name", "midas")
-      document.put(TransformType.EXPANSION.versionFieldName(), 1)
+      document.put(TransformType.EXPANSION.versionFieldName(), 1d)
 
       version(document)(TransformType.EXPANSION)
 
@@ -36,7 +36,7 @@ class VersionerSpecs extends Specification with Versioner{
 
     "increment contraction version if it exists in a document" in {
       val document = new BasicBSONObject("name", "midas")
-      document.put(TransformType.CONTRACTION.versionFieldName(), 1)
+      document.put(TransformType.CONTRACTION.versionFieldName(), 1d)
 
       version(document)(TransformType.CONTRACTION)
 

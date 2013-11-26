@@ -103,7 +103,9 @@ task ('acceptance-tests', dependsOn: 'unzip') << {
 }
 
 task ('startMidas', dependsOn: ['killMidas', 'unzip']) << {
-    def command = """cmd /c midas.bat localhost 27020 localhost 27017"""
+    def os = System.getProperty("os.name")
+    def winCmd = """cmd /c midas.bat localhost 27020 localhost 27017"""
+    def command = os ==~ /Win.*/ ? "$winCmd" : 'sh midas.sh localhost 27020 localhost 27017'
     command.execute(null, new File(project.ext.explodedDir))
     println "started midas..."
 }

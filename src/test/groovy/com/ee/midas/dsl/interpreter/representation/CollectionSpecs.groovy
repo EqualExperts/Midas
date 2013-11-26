@@ -1,7 +1,6 @@
 package com.ee.midas.dsl.interpreter.representation
 
 import com.ee.midas.dsl.grammar.Grammar
-import com.ee.midas.dsl.interpreter.Parser
 import com.ee.midas.transform.TransformType
 import spock.lang.Specification
 

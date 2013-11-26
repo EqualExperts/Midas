@@ -5,15 +5,6 @@ import com.ee.midas.utils.Loggable
 
 class RequestInterceptor (tracker: MessageTracker) extends MidasInterceptable with Loggable {
 
-  def logHeader(header: BaseMongoHeader) = {
-    log.info(s"REQUEST $header")
-    log.info(s"REQUEST MESSAGE LENGTH ${header.length}")
-    log.info(s"REQUEST PAYLOAD SIZE ${header.payloadSize}")
-    log.info(s"REQUEST ID ${header.requestID}")
-    log.info(s"REQUEST ResponseTo ${header.responseTo}")
-    log.info(s"REQUEST OPCODE ${header.opCode}")
-  }
-
   private def toFullCollectionName(bytes: Array[Byte]): String =
     (bytes map (_.toChar) mkString) trim
 
@@ -34,7 +25,7 @@ class RequestInterceptor (tracker: MessageTracker) extends MidasInterceptable wi
 
   def readHeader(src: InputStream): BaseMongoHeader = {
     val header = BaseMongoHeader(src)
-    logHeader(header)
+    log.info(header.toString)
     header
   }
 }

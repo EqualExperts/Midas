@@ -7,6 +7,7 @@ class Parser {
     private def dbContext
 
     def getProperty(String name) {
+        println("property name is: $name")
         if(name == 'db') {
             return dbContext
         }

@@ -8,18 +8,9 @@ import com.ee.midas.utils.Loggable
 class ResponseInterceptor (tracker: MessageTracker, transformer: Transformer)
   extends MidasInterceptable with Loggable {
 
-  def logHeader(header: MongoHeader) = {
-    log.info(s"RESPONSE $header")
-    log.info(s"RESPONSE MESSAGE LENGTH ${header.length}")
-    log.info(s"RESPONSE PAYLOAD SIZE ${header.payloadSize}")
-    log.info(s"RESPONSE ID ${header.requestID}")
-    log.info(s"RESPONSE ResponseTo ${header.responseTo}")
-    log.info(s"RESPONSE OPCODE ${header.opCode}")
-  }
-
   def readHeader(inputStream: InputStream): BaseMongoHeader = {
     val header = MongoHeader(inputStream)
-    logHeader(header)
+    log.info(header.toString)
     header
   }
 

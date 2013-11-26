@@ -4,6 +4,7 @@ import org.bson.io.Bits
 import java.nio.{ByteOrder, ByteBuffer}
 import java.io.InputStream
 import com.ee.midas.interceptor.BaseMongoHeader.OpCode
+import com.ee.midas.utils.Loggable
 
 class BaseMongoHeader(val bytes : Array[Byte]) {
   private val MAX_MESSAGE_LENGTH : Int = ( 32 * 1024 * 1024 )   //change this to response length later
@@ -39,6 +40,14 @@ class BaseMongoHeader(val bytes : Array[Byte]) {
 
   private def asFourBytes(value: Int): Array[Byte] =
     ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(value).array()
+
+  override def toString  = {
+    "MESSAGE LENGTH " + length + "\n" +
+    "PAYLOAD SIZE " + payloadSize + "\n" +
+    "REQUEST ID " + requestID + "\n" +
+    "RESPONSE TO " + responseTo + "\n" +
+    "OPCODE " + opCode
+  }
 }
 
 object BaseMongoHeader {

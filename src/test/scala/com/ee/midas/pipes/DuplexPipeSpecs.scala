@@ -9,7 +9,6 @@ import org.specs2.matcher.JUnitMustMatchers
 
 /**
  * IMPORTANT NOTE:
- * ===============
  *
  * Specs are written in JUnit style because
  * 1) Conventional style causes the test cases to run multiple times, as described in the link below.
@@ -25,8 +24,8 @@ class DuplexPipeSpecs extends JUnitMustMatchers with Mockito {
       @Test
       def sendAndReceiveData() {
         // given
-        val request = "Hello World Request".getBytes()
-        val response = "Hello World Response".getBytes()
+        val request: Array[Byte] = "Hello World Request".getBytes()
+        val response: Array[Byte] = "Hello World Response".getBytes()
         val midasClientInputStream = new ByteArrayInputStream(request)
         val midasClientOutputStream = new ByteArrayOutputStream()
         val targetMongoInputStream = new ByteArrayInputStream(response)
@@ -40,8 +39,13 @@ class DuplexPipeSpecs extends JUnitMustMatchers with Mockito {
         duplexPipe.start
 
         //then
-        targetMongoOutputStream.toByteArray must beEqualTo(request)
-        midasClientOutputStream.toByteArray must beEqualTo(response)
+        Thread.sleep(1000)
+        (targetMongoOutputStream.toByteArray).mustEqual(request)
+        (midasClientOutputStream.toByteArray).mustEqual(response)
+        targetMongoOutputStream.close
+        midasClientOutputStream.close
+        targetMongoInputStream.close
+        midasClientInputStream.close
       }
 
       @Test

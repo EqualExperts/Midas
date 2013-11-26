@@ -2,12 +2,18 @@ package com.ee.midas.interceptor
 
 import java.io.InputStream
 import org.bson.io.Bits
+import com.ee.midas.utils.Loggable
 
 class MongoHeader private(override val bytes: Array[Byte]) extends BaseMongoHeader(bytes.take(16)) {
   val flags = Bits.readInt(bytes, pos + (4 * 4))   //Int = 4 bytes
   val cursor = Bits.readLong(bytes, pos + (4 * 5))
   val startingFrom = Bits.readInt(bytes, pos + (4 * 7)) //Long = 8 bytes
   val documentsCount = Bits.readInt(bytes, pos + (4 * 8))
+
+  override def toString  = {
+    super.toString  +
+      "\nDOCUMENT COUNT " + documentsCount
+  }
 }
 
 object MongoHeader {

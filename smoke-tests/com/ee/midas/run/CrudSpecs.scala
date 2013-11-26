@@ -11,7 +11,7 @@ class CrudSpecs extends Specification {
     var application: MongoClient = null
     var document:DBObject = null
 
-    def is = s2"""
+    def is = sequential ^ s2"""
     Narration:
     //TODO: write a story to represent CRUD.
     This is a specification to verify that midas behaves as a proxy
@@ -31,50 +31,50 @@ class CrudSpecs extends Specification {
             Disconnect                       $disconnect
                                                                """
 
-    val connect = {
+    def connect = {
        application = new MongoClient("localhost", 27020)
        application.getConnector.isOpen
     }
 
-    val insert = {
+    def insert = {
         document = new BasicDBObject("testName","midas is a proxy")
-        val database:DB = application.getDB("midasSmokeTest")
-        val collection:DBCollection = database.getCollection("tests")
-        val result:WriteResult = collection.insert(document)
+        def database:DB = application.getDB("midasSmokeTest")
+        def collection:DBCollection = database.getCollection("tests")
+        def result:WriteResult = collection.insert(document)
         result.getError == null
     }
 
-    val read = {
-        val database:DB = application.getDB("midasSmokeTest")
-        val collection:DBCollection = database.getCollection("tests")
-        val readDocument:DBObject = collection.findOne()
+    def read = {
+        def database:DB = application.getDB("midasSmokeTest")
+        def collection:DBCollection = database.getCollection("tests")
+        def readDocument:DBObject = collection.findOne()
         readDocument == document
     }
 
-    val update = {
-        val database:DB = application.getDB("midasSmokeTest")
-        val collection:DBCollection = database.getCollection("tests")
-        val document = collection.findOne
+    def update = {
+        def database:DB = application.getDB("midasSmokeTest")
+        def collection:DBCollection = database.getCollection("tests")
+        def document = collection.findOne
         document.put("version", 1)
-        val result:WriteResult = collection.update(collection.findOne, document)
+        def result:WriteResult = collection.update(collection.findOne, document)
         result.getError == null
     }
 
-    val delete = {
-        val database:DB = application.getDB("midasSmokeTest")
-        val collection:DBCollection = database.getCollection("tests")
-        val result:WriteResult = collection.remove(document)
+    def delete = {
+        def database:DB = application.getDB("midasSmokeTest")
+        def collection:DBCollection = database.getCollection("tests")
+        def result:WriteResult = collection.remove(document)
         result.getError == null
     }
 
-    val drop = {
-      val database:DB = application.getDB("midasSmokeTest")
+    def drop = {
+      def database:DB = application.getDB("midasSmokeTest")
       database.dropDatabase()
       true
     }
 
 
-  val disconnect = {
+  def disconnect = {
         application.close()
         application.getConnector.isOpen must beFalse
     }

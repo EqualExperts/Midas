@@ -39,7 +39,7 @@ class DuplexPipeSpecs extends JUnitMustMatchers with Mockito {
         duplexPipe.start
 
         //then
-        Thread.sleep(1000)
+        Thread.sleep(500)
         (targetMongoOutputStream.toByteArray).mustEqual(request)
         (midasClientOutputStream.toByteArray).mustEqual(response)
         targetMongoOutputStream.close

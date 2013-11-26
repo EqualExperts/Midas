@@ -11,8 +11,8 @@ public class TranslatorSpecs extends Specification {
     def "Translator Reads From Files"() {
 
         given: "a generator, reader and a translator"
-        def mockGenerator = Mock(Generator)
-        def mockReader = Mock(Reader)
+        Generator mockGenerator = Mock(Generator)
+        Reader mockReader = Mock(Reader)
         def tree = Stub(Tree)
         def translator = new Translator(mockReader, mockGenerator)
         def deltaFiles = Stub(List)

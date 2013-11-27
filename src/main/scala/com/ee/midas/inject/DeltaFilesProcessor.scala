@@ -18,7 +18,7 @@ object DeltaFilesProcessor extends App {
     translator.translate(sortedDeltaFiles.asJava)
   }
 
-  def applyTranslations(scalaTemplateFilename: String, translations: String): String = {
+  def fillTemplate(scalaTemplateFilename: String, translations: String): String = {
     val scalaTemplateContents = scala.io.Source.fromFile(scalaTemplateFilename).mkString
     val scalaFileContents = scalaTemplateContents.replaceAll("###EXPANSIONS-CONTRACTIONS###", translations)
     println("SCALA FILE CONTENTS = \n$scalaFileContents")
@@ -62,7 +62,7 @@ object DeltaFilesProcessor extends App {
 
     val compiler = new Compiler
     val deltasDir = loader.getResource(deltasDirURI)
-    val watcher = new DirectoryWatcher(deltasDir.getPath)
+    val watcher = new DirectoryWatcher(deltasDir.getFile)
     new Thread (new Runnable() {
       def run() = {
         watcher.start { e =>
@@ -70,7 +70,7 @@ object DeltaFilesProcessor extends App {
           val deltaFiles = new File(deltasDir.toURI).listFiles()
           println(s"Delta Files = $deltaFiles")
           val translations = translate(deltaFiles)
-          val code = applyTranslations(srcScalaTemplateFile.getPath, translations)
+          val code = fillTemplate(srcScalaTemplateFile.getPath, translations)
           println(s"Generated Code = $code")
           val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
           writeTo(srcScalaFile, code)
@@ -82,6 +82,5 @@ object DeltaFilesProcessor extends App {
 
     Thread.sleep(40 * 1000)
     watcher.stop
-
   }
 }

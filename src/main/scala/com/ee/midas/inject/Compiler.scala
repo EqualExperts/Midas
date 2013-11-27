@@ -16,8 +16,8 @@ class Compiler extends Loggable {
     log.info(s"Runtime Classpath = $runtimeClasspath")
     log.info(s"Inside Compile classpathDir = $classpathDir, outputDirURI = $outputDir, files to compile = $files")
     val settings = new Settings(error)
-    settings.outdir.value = outputDir
 
+    settings.outdir.value = outputDir
     settings.processArgumentString("-usejavacp")
     settings.classpath.value = classpathDir
 

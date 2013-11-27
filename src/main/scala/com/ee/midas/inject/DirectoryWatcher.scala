@@ -19,7 +19,7 @@ class DirectoryWatcher(dirURL: String) {
      watcher.close()
    }
   
-   def start(f: WatchEvent[_] => Unit): Unit = {
+   def start(callback: WatchEvent[_] => Unit): Unit = {
      var valid = true
      while(isRunning && valid) {
        try {
@@ -28,7 +28,7 @@ class DirectoryWatcher(dirURL: String) {
          val events = watchKey.pollEvents().asScala
          events.foreach { e =>
            println(s"Detected ${e.kind()}, Context = ${e.context()}}")
-           f(e)
+           callback(e)
          }
          valid = watchKey.reset()
        } catch {

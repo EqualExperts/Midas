@@ -62,7 +62,7 @@ object DeltaFilesProcessor extends App {
 
     val compiler = new Compiler
     val deltasDir = loader.getResource(deltasDirURI)
-    val watcher = new DirectoryWatcher(deltasDir.getFile)
+    val watcher = new DirectoryWatcher(deltasDir.getPath)
     new Thread (new Runnable() {
       def run() = {
         watcher.start { e =>

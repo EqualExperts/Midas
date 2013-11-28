@@ -11,8 +11,7 @@ apply plugin: 'pmd'
 
 idea {
     module {
-        testSourceDirs += file('acceptance-tests')
-        testSourceDirs += file('smoke-tests')
+       testSourceDirs += file('smoke-tests')
     }
 }
 defaultTasks 'clean', 'build'

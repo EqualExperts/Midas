@@ -1,3 +1,4 @@
+#!/bin/sh
 if [ -z "$MONGO_VERSIONS"]; then
  echo "Please set MONGO_VERSIONS in bashrc"
 else

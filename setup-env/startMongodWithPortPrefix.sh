@@ -1,3 +1,4 @@
+#!/bin/sh
 PORT_PREFIX=$1
 
 mongoData=~/mongodata

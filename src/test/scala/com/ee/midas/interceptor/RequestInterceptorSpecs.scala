@@ -26,36 +26,10 @@ class RequestInterceptorSpecs extends Specification with Mockito {
        there was one(mockSrc).read(any[Array[Byte]])
       }
 
-     /*"intercept OP_QUERY opCode and requestId from header" in new setup {
-       //given
-
-       val reqInterceptor = new RequestInterceptor(tracker)
-
-       //when:
-       reqInterceptor.read(mockSrc, header)
-
-       //then
-       there was one(header).opCode
-       there was one(header).requestID
-     }
-
-     "intercept OP_GET_MORE opCode and requestId from header" in new setup {
-       //given
-       header.opCode returns BaseMongoHeader.OpCode.OP_GET_MORE
-       val reqInterceptor = new RequestInterceptor(tracker)
-
-       //when:
-       reqInterceptor.read(mockSrc, header)
-
-       //then
-       there was one(header).opCode
-       there was one(header).requestID
-     }*/
-
      "ignores opCodes other than OP_QUERY and OP_GET_MORE" in new setup {
 
        //given
-       val collectionBytes = collectionName.getBytes
+       val collectionBytes = "flag".getBytes ++ collectionName.getBytes
        header.opCode returns BaseMongoHeader.OpCode.OP_DELETE
        val src = new ByteArrayInputStream(collectionBytes)
        header.payloadSize returns collectionBytes.size
@@ -71,7 +45,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
      "intercept OP_GET_MORE request and track requestId and collectionName" in new setup {
        //given
 
-       val collectionBytes = collectionName.getBytes
+       val collectionBytes = "flag".getBytes ++ collectionName.getBytes
        val src = new ByteArrayInputStream(collectionBytes)
        header.payloadSize returns collectionBytes.size
        header.opCode returns BaseMongoHeader.OpCode.OP_GET_MORE
@@ -87,7 +61,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
      "intercept OP_QUERY request and track requestId and collectionName" in new setup {
        //given
 
-       val collectionBytes = collectionName.getBytes
+       val collectionBytes = "flag".getBytes ++ collectionName.getBytes
        val src = new ByteArrayInputStream(collectionBytes)
        header.payloadSize returns collectionBytes.size
        header.opCode returns BaseMongoHeader.OpCode.OP_QUERY

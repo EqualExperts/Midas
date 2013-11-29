@@ -1,36 +1,68 @@
 package com.ee.midas.inject
 
-import java.io.{PrintWriter, File}
+import java.io._
 import com.ee.midas.dsl.Translator
 import com.ee.midas.dsl.interpreter.Reader
 import com.ee.midas.dsl.generator.ScalaGenerator
 import scala.collection.JavaConverters._
+import java.net.URL
+import com.ee.midas.utils.Loggable
+import java.nio.file._
 
-object DeltaFilesProcessor extends App {
+object DeltaFilesProcessor extends App with Loggable {
 
-
-  def translate(deltaFiles: Array[File]): String = {
+  private def convert(deltaFiles: Array[File]): String = {
     val sortedDeltaFiles = deltaFiles.filter(f => f.getName.endsWith(".delta")).sortBy(f => f.getName).toList
-    println(s"Filtered and Sorted Delta Files = $sortedDeltaFiles")
+    log.info(s"Filtered and Sorted Delta Files = $sortedDeltaFiles")
     val generator = new ScalaGenerator()
     val reader = new Reader()
     val translator = new Translator(reader, generator)
     translator.translate(sortedDeltaFiles.asJava)
   }
 
-  def fillTemplate(scalaTemplateFilename: String, translations: String): String = {
+  private def fillTemplate(scalaTemplateFilename: String, translations: String): String = {
     val scalaTemplateContents = scala.io.Source.fromFile(scalaTemplateFilename).mkString
+    log.info(s"Scala Template to fill = ${scalaTemplateContents}")
     val scalaFileContents = scalaTemplateContents.replaceAll("###EXPANSIONS-CONTRACTIONS###", translations)
-    println("SCALA FILE CONTENTS = \n$scalaFileContents")
     scalaFileContents
   }
 
-  def writeTo(outputFile: File, contents: String): Unit = {
-    println(s"Writing generated output to $outputFile")
+  private def writeTo(outputFile: File, contents: String): Unit = {
     val writer = new PrintWriter(outputFile)
     writer.write(contents)
     writer.close()
-    println(s"Completed writing generated output to $outputFile")
+  }
+
+  def translate(deltasDir: URL, scalaTemplateFilename: String, outputScalaFile: File) : Unit = {
+    val deltaFiles = new File(deltasDir.toURI).listFiles()
+    log.info(s"Got Delta Files = $deltaFiles")
+    val scalaSnippets = convert(deltaFiles)
+    log.info(s"Got Scala Snippets $scalaSnippets")
+    val scalaCode = fillTemplate(scalaTemplateFilename, scalaSnippets)
+    log.info(s"Filled Scala Template = $scalaCode")
+    log.info(s"Writing Scala Code --> $outputScalaFile")
+    writeTo(outputScalaFile, scalaCode)
+    log.info(s"Written Scala Code --> $outputScalaFile")
+  }
+
+  private def copy(fromDir: File, toDir: File): Unit = {
+    if(fromDir.isDirectory()){
+      if(!toDir.exists()){
+        toDir.mkdir()
+        log.info("Directory copied from " + fromDir + "  to " + toDir);
+      }
+      //list all the directory contents
+      val files = fromDir.list()
+      files.foreach { file: String =>
+        val src = new File(fromDir, file)
+        val dest = new File(toDir, file)
+        copy(src, dest)
+      }
+
+    } else {
+      Files.copy(Paths.get(fromDir.toURI), Paths.get(toDir.toURI), StandardCopyOption.REPLACE_EXISTING)
+      log.info("File copied from " + fromDir + " to " + toDir)
+    }
   }
 
   //0. Deltas Dir FileWatcher
@@ -39,48 +71,51 @@ object DeltaFilesProcessor extends App {
   //3. Deploy    (ByteCode -> JVM)
   override def main(args: Array[String]): Unit = {
     //All the uris below are relative to src/main/resources
-    val deltasDirURI = "deltas"
+    val deltasDirURI = "deltas/"
     val srcScalaTemplateURI = "templates/Transformations.scala.template"
-    val srcScalaDirURI = "generated/scala"
+    val srcScalaDirURI = "generated/scala/"
     val srcScalaFilename = "Transformations.scala"
-    val binDirURI = "generated/scala/bin"
+    val binDirURI = "generated/scala/bin/"
 
     val loader = Thread.currentThread().getContextClassLoader()
 
     val classpathURI = "."
     val classpathDir = loader.getResource(classpathURI)
-    println(s"classpathDir = $classpathDir")
+    log.info(s"classpathDir = $classpathDir")
 
     val binDir = loader.getResource(binDirURI)
-    println(s"output dir = $binDir")
+    log.info(s"output dir = $binDir")
 
     val srcScalaDir = loader.getResource(srcScalaDirURI)
-    println(s"Source Scala Dir = $srcScalaDir")
+    log.info(s"Source Scala Dir = $srcScalaDir")
 
     val srcScalaTemplateFile = loader.getResource(srcScalaTemplateURI)
-    println(s"Template Scala File = $srcScalaTemplateFile")
+    log.info(s"Template Scala File = $srcScalaTemplateFile")
 
-    val compiler = new Compiler
     val deltasDir = loader.getResource(deltasDirURI)
     val watcher = new DirectoryWatcher(deltasDir.getPath)
+    val compiler = new Compiler
+//    val deployer = new Deployer
+//    copy(new File(binDir.toURI), new File(classpathDir.toURI))
+
     new Thread (new Runnable() {
       def run() = {
         watcher.start { e =>
-          println(s"Received ${e.kind()}, Context = ${e.context()}}")
-          val deltaFiles = new File(deltasDir.toURI).listFiles()
-          println(s"Delta Files = $deltaFiles")
-          val translations = translate(deltaFiles)
-          val code = fillTemplate(srcScalaTemplateFile.getPath, translations)
-          println(s"Generated Code = $code")
+          log.info(s"Received ${e.kind()}, Context = ${e.context()}")
           val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
-          writeTo(srcScalaFile, code)
-          println(s"Compiling Delta Files...in ${deltasDir}")
+          translate(deltasDir, srcScalaTemplateFile.getPath, srcScalaFile)
+          log.info(s"Compiling Delta Files...in ${deltasDir}")
           compiler.compile(classpathDir.getPath, binDir.getPath, srcScalaFile.getPath)
+          val fromDir = new File(binDir.toURI)
+          val toDir = new File(classpathDir.toURI)
+          copy(fromDir, toDir)
+          log.info(s"Deploying Delta Files...in JVM")
+          Deployer.deploy(loader)
         }
       }
     }).start()
 
-    Thread.sleep(40 * 1000)
+    Thread.sleep(200 * 1000)
     watcher.stop
   }
 }

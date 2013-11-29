@@ -1,6 +1,6 @@
 package com.ee.midas.inject
 
-import java.nio.file.{Path, WatchEvent, FileSystems}
+import java.nio.file.{WatchEvent, FileSystems}
 import java.nio.file.StandardWatchEventKinds._
 import scala.collection.JavaConverters._
 

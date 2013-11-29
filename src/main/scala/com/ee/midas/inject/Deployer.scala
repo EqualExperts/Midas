@@ -1,22 +1,29 @@
 package com.ee.midas.inject
 
-object Deployer extends App {
+import com.ee.midas.utils.Loggable
+import com.ee.midas.transform.{Transformations, TransformationsHolder}
 
-  override def main(args: Array[String]): Unit = {
-    val loader: ClassLoader = Thread.currentThread().getContextClassLoader()
-    val classpathURI = "."
-    val classpathDir = loader.getResource(classpathURI)
-    println(s"classpathDir = $classpathDir")
+object Deployer extends Loggable with App {
 
-    val binDirURI = "generated/scala/bin"
-    val binDir = loader.getResource(binDirURI)
-    println(s"output dir = $binDir")
+  def deploy(loader: ClassLoader): Unit = {
+    val clazzName = "com.ee.midas.transform.Transformations"
+    log.info(s"Loading Class = ${clazzName}")
+    val clazz = loader.loadClass(clazzName)
+    log.info(s"Loaded Class = ${clazz.getName}")
+    log.info(s"Instantiating Class = ${clazz.getName}")
+    val newInstance = clazz.newInstance().asInstanceOf[Transformations]
+    log.info(s"Instantiated Class = ${clazz.getName}")
 
-    val srcScalaURI = "generated/scala/Transformations.scala"
-    val srcScalaFile = loader.getResource(srcScalaURI)
-    println(s"generated Scala File = $srcScalaFile")
-    val compiler = new Compiler
-    compiler.compile(classpathDir.getPath, binDir.getPath, srcScalaFile.getPath)
+    log.info(s"All Transformations BEFORE = $TransformationsHolder")
+    val oldInstance = TransformationsHolder.get
+    log.info(s"Old Instance = $oldInstance")
+    TransformationsHolder.set(newInstance)
+    val newlySetInstance = TransformationsHolder.get
+    log.info(s"New Instance = $newlySetInstance")
+    log.info(s"All Transformations AFTER = $TransformationsHolder")
   }
 
+  override def main(args: Array[String]): Unit = {
+    deploy(Thread.currentThread().getContextClassLoader)
+  }
 }

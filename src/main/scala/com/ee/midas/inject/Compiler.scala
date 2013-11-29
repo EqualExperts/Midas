@@ -28,8 +28,8 @@ class Compiler extends Loggable {
     run compile files
     log.info(s"*** Completed Compilation of $files")
 //    reporter.printSummary()
-//    if(reporter.hasErrors || reporter.WARNING.count > 0) {
-//
-//    }
+    if(reporter.hasErrors) {
+      throw new RuntimeException(s"Compilation Failed!")
+    }
   }
 }

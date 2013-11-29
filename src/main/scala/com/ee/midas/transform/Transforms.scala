@@ -40,4 +40,10 @@ trait Transforms extends Versioner {
     snippets.foldLeft(document) {
       case (document, snippet) => (snippet andThen version)(document)
     }
+
+  override def toString = {
+    val allExpansions = if (expansions.size == 0) "None" else expansions mkString "::"
+    val allContractions = if (contractions.size == 0) "None" else contractions mkString "::"
+    s"Expansions = $allExpansions, Contractions = $allContractions"
+  }
 }

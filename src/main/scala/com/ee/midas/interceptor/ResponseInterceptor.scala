@@ -41,9 +41,12 @@ class ResponseInterceptor (tracker: MessageTracker, transformer: Transformer)
     val payloadBytes = (tracker.fullCollectionName(requestId)) match {
       case Some(fcName) =>
         implicit val fullCollectionName = fcName
+        //println(" Inside some block . collection Name : "+fullCollectionName)
         if (transformer.canTransformDocuments) {
+          //println(" Inside can transform ")
           modifyPayload(in, header)
         } else {
+         // println(" Inside else")
           payload(in, header)
         }
       case None => payload(in, header)

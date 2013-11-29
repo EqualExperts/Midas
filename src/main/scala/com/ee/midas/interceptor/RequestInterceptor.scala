@@ -2,11 +2,16 @@ package com.ee.midas.interceptor
 
 import java.io.InputStream
 import com.ee.midas.utils.Loggable
+import scala.util.control.Breaks.break
 
 class RequestInterceptor (tracker: MessageTracker) extends MidasInterceptable with Loggable {
 
-  private def toFullCollectionName(bytes: Array[Byte]): String =
-    (bytes map (_.toChar) mkString) trim
+  private def toFullCollectionName(bytes: Array[Byte]): String = {
+
+    val result : Array[Byte] = bytes.drop(4).takeWhile( _ != 0)
+    (result map (_.toChar) mkString)
+ }
+
 
   def read(src: InputStream, header: BaseMongoHeader): Array[Byte] = {
     val remaining = new Array[Byte](header.payloadSize)

@@ -7,7 +7,6 @@ import scala.util.control.Breaks.break
 class RequestInterceptor (tracker: MessageTracker) extends MidasInterceptable with Loggable {
 
   private def toFullCollectionName(bytes: Array[Byte]): String = {
-
     val result : Array[Byte] = bytes.drop(4).takeWhile( _ != 0)
     (result map (_.toChar) mkString)
  }

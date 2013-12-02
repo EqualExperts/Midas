@@ -106,7 +106,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
      "Read header" in {
        val headerBytes: Array[Byte] = Array(0x45.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x1d.toByte, 0x00.toByte,
          0x00.toByte, 0x00.toByte, 0x21.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x01.toByte, 0x00.toByte, 0x00.toByte,
-         0x00.toByte, 0x08.toByte, 0x00.toByte)
+         0x00.toByte, 0x08.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte)
        val inputStream: InputStream = new ByteArrayInputStream(headerBytes)
        val tracker = mock[MessageTracker]
        val reqInterceptor = new RequestInterceptor(tracker)

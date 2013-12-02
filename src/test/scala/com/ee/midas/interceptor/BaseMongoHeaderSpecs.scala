@@ -14,7 +14,7 @@ class BaseMongoHeaderSpecs extends Specification with Mockito {
       "Create a Base Mongo Header" in {
         val headerBytes: Array[Byte] = Array(0x45.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x1d.toByte, 0x00.toByte,
           0x00.toByte, 0x00.toByte, 0x21.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x01.toByte, 0x00.toByte, 0x00.toByte,
-          0x00.toByte, 0x08.toByte, 0x00.toByte)
+          0x00.toByte, 0x08.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte)
         val inputStream: InputStream = new ByteArrayInputStream(headerBytes)
         val baseMongoHeader = BaseMongoHeader(inputStream)
         baseMongoHeader.isInstanceOf[BaseMongoHeader]
@@ -23,7 +23,7 @@ class BaseMongoHeaderSpecs extends Specification with Mockito {
       "Check for payload" in {
         val headerBytes: Array[Byte] = Array(0x45.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x1d.toByte, 0x00.toByte,
           0x00.toByte, 0x00.toByte, 0x21.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x01.toByte, 0x00.toByte, 0x00.toByte,
-          0x00.toByte, 0x08.toByte, 0x00.toByte)
+          0x00.toByte, 0x08.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte)
         val inputStream: InputStream = new ByteArrayInputStream(headerBytes)
         val baseMongoHeader = BaseMongoHeader(inputStream)
 
@@ -34,10 +34,10 @@ class BaseMongoHeaderSpecs extends Specification with Mockito {
       "Return payload size" in {
         val headerBytes: Array[Byte] = Array(0x45.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x1d.toByte, 0x00.toByte,
           0x00.toByte, 0x00.toByte, 0x21.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x01.toByte, 0x00.toByte, 0x00.toByte,
-          0x00.toByte, 0x08.toByte, 0x00.toByte)
+          0x00.toByte, 0x08.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte)
         val inputStream: InputStream = new ByteArrayInputStream(headerBytes)
         val baseMongoHeader = BaseMongoHeader(inputStream)
-        val expectedPayloadLength = 53
+        val expectedPayloadLength = 49
 
         baseMongoHeader.payloadSize mustEqual expectedPayloadLength
       }
@@ -45,7 +45,7 @@ class BaseMongoHeaderSpecs extends Specification with Mockito {
       "Return message length" in {
         val headerBytes: Array[Byte] = Array(0x45.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x1d.toByte, 0x00.toByte,
           0x00.toByte, 0x00.toByte, 0x21.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x01.toByte, 0x00.toByte, 0x00.toByte,
-          0x00.toByte, 0x08.toByte, 0x00.toByte)
+          0x00.toByte, 0x08.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte)
         val inputStream: InputStream = new ByteArrayInputStream(headerBytes)
         val baseMongoHeader = BaseMongoHeader(inputStream)
         val expectedMessageLength = 69
@@ -56,7 +56,7 @@ class BaseMongoHeaderSpecs extends Specification with Mockito {
       "Update message length" in {
         val headerBytes: Array[Byte] = Array(0x45.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x1d.toByte, 0x00.toByte,
           0x00.toByte, 0x00.toByte, 0x21.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x01.toByte, 0x00.toByte, 0x00.toByte,
-          0x00.toByte, 0x08.toByte, 0x00.toByte)
+          0x00.toByte, 0x08.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte)
         val inputStream: InputStream = new ByteArrayInputStream(headerBytes)
         val baseMongoHeader = BaseMongoHeader(inputStream)
         val newLength = 50

@@ -11,12 +11,28 @@ import com.mongodb.{DefaultDBDecoder, DBDecoder}
 
 @RunWith(classOf[JUnitRunner])
 class RequestInterceptorSpecs extends Specification with Mockito {
+  trait setup extends Scope {
+    val requestID = 1
+    val payloadSize = 10
+    val bytes =  new Array[Byte](20)
+    val collectionName = "randomCollection"
 
-   "Request Interceptor" should {
+    val tracker = mock[MessageTracker]
+
+    val mockSrc = mock[InputStream]
+
+    val header = mock[BaseMongoHeader]
+    header.opCode returns BaseMongoHeader.OpCode.OP_QUERY
+    header.requestID returns requestID
+    header.payloadSize returns payloadSize
+    header.bytes returns bytes
+
+  }
+
+  "Request Interceptor" should {
 
      "read request from source" in new setup {
        //given
-
        val reqInterceptor = new RequestInterceptor(tracker)
 
        //when:
@@ -29,7 +45,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
      "ignores opCodes other than OP_QUERY and OP_GET_MORE" in new setup {
 
        //given
-       val collectionBytes = "flag".getBytes ++ collectionName.getBytes
+       val collectionBytes = collectionName.getBytes
        header.opCode returns BaseMongoHeader.OpCode.OP_DELETE
        val src = new ByteArrayInputStream(collectionBytes)
        header.payloadSize returns collectionBytes.size
@@ -45,7 +61,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
      "intercept OP_GET_MORE request and track requestId and collectionName" in new setup {
        //given
 
-       val collectionBytes = "flag".getBytes ++ collectionName.getBytes
+       val collectionBytes = collectionName.getBytes
        val src = new ByteArrayInputStream(collectionBytes)
        header.payloadSize returns collectionBytes.size
        header.opCode returns BaseMongoHeader.OpCode.OP_GET_MORE
@@ -60,8 +76,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
 
      "intercept OP_QUERY request and track requestId and collectionName" in new setup {
        //given
-
-       val collectionBytes = "flag".getBytes ++ collectionName.getBytes
+       val collectionBytes = collectionName.getBytes
        val src = new ByteArrayInputStream(collectionBytes)
        header.payloadSize returns collectionBytes.size
        header.opCode returns BaseMongoHeader.OpCode.OP_QUERY
@@ -99,23 +114,5 @@ class RequestInterceptorSpecs extends Specification with Mockito {
        header.isInstanceOf[BaseMongoHeader]
      }
    }
-
-  trait setup extends Scope {
-    val requestID = 1
-    val payloadSize = 10
-    val bytes =  new Array[Byte](20)
-    val collectionName = "randomCollection"
-
-    val tracker = mock[MessageTracker]
-
-    val mockSrc = mock[InputStream]
-
-    val header = mock[BaseMongoHeader]
-    header.opCode returns BaseMongoHeader.OpCode.OP_QUERY
-    header.requestID returns requestID
-    header.payloadSize returns payloadSize
-    header.bytes returns bytes
-
-  }
 
 }

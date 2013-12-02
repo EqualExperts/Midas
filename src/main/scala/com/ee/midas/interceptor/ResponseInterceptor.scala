@@ -53,6 +53,7 @@ class ResponseInterceptor (tracker: MessageTracker, transformer: Transformer)
   }
   
   private def extractDocumentsFrom(inputStream: InputStream, header: MongoHeader): List[BSONObject] = {
+    log.info(s"Payload Size")
     val stream = new FixedSizeStream(inputStream, header.payloadSize)
     val totalDocuments = header.documentsCount
     val documents = 1 to totalDocuments map { n =>

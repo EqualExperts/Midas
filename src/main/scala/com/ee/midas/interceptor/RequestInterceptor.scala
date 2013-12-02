@@ -6,8 +6,10 @@ import scala.util.control.Breaks.break
 
 class RequestInterceptor (tracker: MessageTracker) extends MidasInterceptable with Loggable {
 
+  private val CSTRING_TERMINATION_DELIM = 0
+
   private def toFullCollectionName(bytes: Array[Byte]): String = {
-    val result : Array[Byte] = bytes.drop(4).takeWhile( _ != 0)
+    val result : Array[Byte] = bytes.takeWhile( _ != CSTRING_TERMINATION_DELIM)
     (result map (_.toChar) mkString)
  }
 

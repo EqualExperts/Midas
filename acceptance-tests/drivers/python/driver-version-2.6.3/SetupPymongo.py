@@ -6,7 +6,7 @@ platform = sys.platform
 if platform == 'nt':
     os.system("easy_install pymongo")
 elif (platform == 'linux2'):
-    os.system("pip install pymongo==2.6.3")
+    os.system("sudo pip install pymongo==2.6.3")
 elif(platform == 'darwin'):
     os.system("sudo python -m easy_install pymongo")
 else:

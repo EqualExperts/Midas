@@ -3,7 +3,7 @@ import os
 
 print("Platform = " + sys.platform)
 platform = sys.platform
-if platform == 'nt':
+if (platform == 'win32'):
     os.system("easy_install pymongo")
 elif (platform == 'linux2'):
     os.system("sudo pip install pymongo==2.6.3")

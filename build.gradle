@@ -1,3 +1,5 @@
+import org.apache.tools.ant.BuildException
+
 apply plugin: 'java'
 apply plugin: 'groovy'
 apply plugin: 'scala'
@@ -67,6 +69,12 @@ project.ext {
     DEFAULT_PORT_PREFIX = 270
     portPrefix = System.getProperty('mongoVersion', "$DEFAULT_PORT_PREFIX")
 
+    DEFAULT_LANGUAGE = 'java'
+    language = System.getProperty('language', "$DEFAULT_LANGUAGE")
+
+    DEFAULT_OS = System.getProperty("os.name")
+    os = System.getProperty('os', "$DEFAULT_OS")
+
     MIDAS_SERVER = 'localhost'
     midasServer = System.getProperty('midasServer', "$MIDAS_SERVER")
 
@@ -77,6 +85,8 @@ project.ext {
     acceptanceTestReportsDir = "$reporting.baseDir/acceptance-tests"
     smokeTestsDir = "smoke-tests"
     smokeTestReportsDir = "$reporting.baseDir/smoke-tests"
+
+    pythonTestsDir = "$acceptanceTestDir/drivers/python/driver-version-2.6.3"
 }
 
 sourceSets {
@@ -93,7 +103,8 @@ test {
 
 task ('smoke-tests', dependsOn: 'unzip') << {
     println "Running smoke tests..."
-    runAcceptanceTests(project.ext.smokeTestsDir, project.ext.smokeTestReportsDir)
+    project.ext.language == 'python'? runPythonTests() :
+        runAcceptanceTests(project.ext.smokeTestsDir, project.ext.smokeTestReportsDir)
 }
 
 task ('acceptance-tests', dependsOn: 'unzip') << {
@@ -133,6 +144,21 @@ def runAcceptanceTests(String srcFolder, String reportsFolder) {
         main = 'org.specs2.files'
         classpath = runtimeClasspath
         args = ['html', 'filesrunner.verbose', 'filesrunner.pattern', '.*Specs']
+    }
+}
+
+def runPythonTests() {
+    def os = System.getProperty("os.name")
+    println "running python tests"
+    def winCmd = """cmd /c python MidasWithPythonDriverTest.py"""
+    def command = os ==~ /Win.*/ ? "$winCmd" : "python MidasWithPythonDriverTest.py"
+    def process = command.execute(null, new File(project.ext.pythonTestsDir))
+    println "available bytes: " + process.in.available()
+
+    process.err.eachLine { line ->
+        if(line.contains('FAILED')) {
+            throw new BuildException("python acceptance tests failed.")
+        }
     }
 }
 

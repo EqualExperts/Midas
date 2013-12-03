@@ -72,9 +72,6 @@ project.ext {
     DEFAULT_LANGUAGE = 'java'
     language = System.getProperty('language', "$DEFAULT_LANGUAGE")
 
-    DEFAULT_OS = System.getProperty("os.name")
-    os = System.getProperty('os', "$DEFAULT_OS")
-
     MIDAS_SERVER = 'localhost'
     midasServer = System.getProperty('midasServer', "$MIDAS_SERVER")
 
@@ -103,13 +100,13 @@ test {
 
 task ('smoke-tests', dependsOn: 'unzip') << {
     println "Running smoke tests..."
-    project.ext.language == 'python'? runPythonTests() :
-        runAcceptanceTests(project.ext.smokeTestsDir, project.ext.smokeTestReportsDir)
+    runAcceptanceTests(project.ext.smokeTestsDir, project.ext.smokeTestReportsDir)
 }
 
 task ('acceptance-tests', dependsOn: 'unzip') << {
     println "Running acceptance tests..."
-    runAcceptanceTests(project.ext.acceptanceTestDir, project.ext.acceptanceTestReportsDir)
+    project.ext.language == 'python'? runPythonTests() :
+        runAcceptanceTests(project.ext.acceptanceTestDir, project.ext.acceptanceTestReportsDir)
 }
 
 task ('startMidas', dependsOn: ['killMidas', 'unzip']) << {

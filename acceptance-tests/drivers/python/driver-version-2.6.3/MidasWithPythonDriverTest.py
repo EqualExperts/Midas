@@ -3,16 +3,11 @@ import pymongo
 import bson
 from bson import objectid
 from pymongo import MongoClient
-from pymongo import Connection
 
 class MidasWithPythonDriverTest(unittest.TestCase):
     def setUp(self):
         self.client = MongoClient('localhost', 27020)
         self.document = {"_id":objectid.ObjectId() ,"name":"pythonTest"}
-        connection = Connection('localhost',27020)
-        db = connection['testDatabase']
-        collection = db['testCollection']
-        connection.close()
 
     def connect(self):
         assert self.client.alive() , 'Mongo Client is not connected'
@@ -49,7 +44,8 @@ class MidasWithPythonDriverTest(unittest.TestCase):
         result = self.client.disconnect()
         assert result != 'None' , 'Cannot disconnect from mongo'
 
-
+    def tearDown(self):
+        self.client.close()
 
 MidasWithPythonDriverSuite = unittest.TestSuite()
 MidasWithPythonDriverSuite.addTest(MidasWithPythonDriverTest("connect"))

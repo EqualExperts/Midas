@@ -153,7 +153,7 @@ def runPythonTests() {
     println "available bytes: " + process.in.available()
 
     process.err.eachLine { line ->
-        if(line.contains('FAILED')) {
+        if(line.contains('FAILED') || line.contains("Error") || line.contains("Exception")) {
             throw new BuildException("python acceptance tests failed.")
         }
     }

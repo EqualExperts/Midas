@@ -44,7 +44,8 @@ class MidasWithPythonDriverTest(unittest.TestCase):
         result = self.client.disconnect()
         assert result != 'None' , 'Cannot disconnect from mongo'
 
-
+    def tearDown(self):
+        self.client.close()
 
 MidasWithPythonDriverSuite = unittest.TestSuite()
 MidasWithPythonDriverSuite.addTest(MidasWithPythonDriverTest("connect"))

@@ -149,6 +149,8 @@ def runAcceptanceTests(String srcFolder, String reportsFolder) {
 }
 
 def runPythonTests() {
+    println "cleaning reports directory..."
+    cleanDir(project.ext.pythonTestReportsDir)
     def os = System.getProperty("os.name")
     println "running python tests"
     def winCmd = """cmd /c python MidasWithPythonDriverTest.py  ${project.ext.pythonTestReportsDir}"""
@@ -161,6 +163,11 @@ def runPythonTests() {
             throw new BuildException("python acceptance tests failed.")
         }
     }
+}
+
+def cleanDir(String directory){
+    File dir = new File(directory)
+    dir.exists()? dir.deleteDir() : println("exists = ${dir.exists()}")
 }
 
 // Apply External Plugins

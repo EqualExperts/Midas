@@ -78,7 +78,7 @@ project.ext {
     MONGODB_SERVER = 'localhost'
     mongoDB = System.getProperty('mongoDB', "$MONGODB_SERVER")
 
-    acceptanceTestDir = 'acceptance-tests'
+    acceptanceTestDir = 'acceptance-tests/drivers/java/driver-version-2.11.3'
     acceptanceTestReportsDir = "$reporting.baseDir/acceptance-tests"
     smokeTestsDir = "smoke-tests"
     smokeTestReportsDir = "$reporting.baseDir/smoke-tests"

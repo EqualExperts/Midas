@@ -1,10 +1,12 @@
+package com.ee.midas
+
 import com.mongodb._
 import org.junit.runner.RunWith
 import org.specs2.Specification
 import org.specs2.runner.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class MidasWithJavaDriverTest extends Specification {
+class MidasWithJavaDriverSpecs extends Specification {
 
   var application: MongoClient = null
   var document:DBObject = null

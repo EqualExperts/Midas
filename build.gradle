@@ -141,9 +141,10 @@ def runAcceptanceTests(String srcFolder, String reportsFolder) {
     javaexec {
         systemProperties['specs2.srcTestDir'] = srcFolder
         systemProperties['specs2.outDir'] = reportsFolder
+        systemProperties['specs2.junit.outDir'] = reportsFolder
         main = 'org.specs2.files'
         classpath = runtimeClasspath
-        args = ['html', 'filesrunner.verbose', 'filesrunner.pattern', '.*Specs']
+        args = ['html', 'junitxml', 'filesrunner.verbose', 'filesrunner.pattern', '.*Specs']
     }
 }
 

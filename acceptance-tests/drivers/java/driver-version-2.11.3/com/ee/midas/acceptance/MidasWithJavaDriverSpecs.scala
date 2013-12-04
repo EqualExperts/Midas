@@ -1,4 +1,4 @@
-package com.ee.midas
+package com.ee.midas.acceptance
 
 import com.mongodb._
 import org.junit.runner.RunWith

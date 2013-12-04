@@ -98,7 +98,7 @@ sourceSets {
 }
 
 test {
-    exclude '**/run/*.class', '**/sample/*.class'
+    exclude '**/run/*.class', '**/sample/*.class', '**/acceptance/*.class'
 }
 
 task ('smoke-tests', dependsOn: 'unzip') << {

@@ -78,12 +78,15 @@ project.ext {
     MONGODB_SERVER = 'localhost'
     mongoDB = System.getProperty('mongoDB', "$MONGODB_SERVER")
 
-    acceptanceTestDir = 'acceptance-tests/drivers/java/driver-version-2.11.3'
+    acceptanceTestDir = 'acceptance-tests/drivers'
     acceptanceTestReportsDir = "$reporting.baseDir/acceptance-tests"
     smokeTestsDir = "smoke-tests"
     smokeTestReportsDir = "$reporting.baseDir/smoke-tests"
 
-    pythonTestsDir = "$acceptanceTestDir/drivers/python/driver-version-2.6.3"
+    javaTestDir = "$acceptanceTestDir/java/driver-version-2.11.3"
+    javaTestReportsDir = "$acceptanceTestReportsDir/java"
+    pythonTestDir = "$acceptanceTestDir/python/driver-version-2.6.3"
+    pythonTestReportsDir = "$acceptanceTestReportsDir/python"
 }
 
 sourceSets {
@@ -106,7 +109,7 @@ task ('smoke-tests', dependsOn: 'unzip') << {
 task ('acceptance-tests', dependsOn: 'unzip') << {
     println "Running acceptance tests..."
     project.ext.language == 'python'? runPythonTests() :
-        runAcceptanceTests(project.ext.acceptanceTestDir, project.ext.acceptanceTestReportsDir)
+        runAcceptanceTests(project.ext.javaTestDir, project.ext.javaTestReportsDir)
 }
 
 task ('startMidas', dependsOn: ['killMidas', 'unzip']) << {
@@ -147,9 +150,9 @@ def runAcceptanceTests(String srcFolder, String reportsFolder) {
 def runPythonTests() {
     def os = System.getProperty("os.name")
     println "running python tests"
-    def winCmd = """cmd /c python MidasWithPythonDriverTest.py"""
-    def command = os ==~ /Win.*/ ? "$winCmd" : "python MidasWithPythonDriverTest.py"
-    def process = command.execute(null, new File(project.ext.pythonTestsDir))
+    def winCmd = """cmd /c python MidasWithPythonDriverTest.py  ${project.ext.pythonTestReportsDir}"""
+    def command = os ==~ /Win.*/ ? "$winCmd" : "python MidasWithPythonDriverTest.py ${project.ext.pythonTestReportsDir}"
+    def process = command.execute(null, new File(project.ext.pythonTestDir))
     println "available bytes: " + process.in.available()
 
     process.err.eachLine { line ->

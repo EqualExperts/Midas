@@ -3,6 +3,8 @@ import pymongo
 import bson
 from bson import objectid
 from pymongo import MongoClient
+import xmlrunner
+import sys
 
 class MidasWithPythonDriverTest(unittest.TestCase):
     def setUp(self):
@@ -56,5 +58,5 @@ MidasWithPythonDriverSuite.addTest(MidasWithPythonDriverTest("delete"))
 MidasWithPythonDriverSuite.addTest(MidasWithPythonDriverTest("drop"))
 MidasWithPythonDriverSuite.addTest(MidasWithPythonDriverTest("disconnect"))
 
-runner = unittest.TextTestRunner()
+runner = xmlrunner.XMLTestRunner(output=sys.argv[1])
 runner.run(MidasWithPythonDriverSuite)

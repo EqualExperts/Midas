@@ -58,5 +58,6 @@ MidasWithPythonDriverSuite.addTest(MidasWithPythonDriverTest("delete"))
 MidasWithPythonDriverSuite.addTest(MidasWithPythonDriverTest("drop"))
 MidasWithPythonDriverSuite.addTest(MidasWithPythonDriverTest("disconnect"))
 
-runner = xmlrunner.XMLTestRunner(output=sys.argv[1])
+reportDir = sys.argv[1]
+runner = xmlrunner.XMLTestRunner(output = reportDir)
 runner.run(MidasWithPythonDriverSuite)

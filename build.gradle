@@ -103,13 +103,13 @@ test {
 
 task ('smoke-tests', dependsOn: 'unzip') << {
     println "Running smoke tests..."
-    runAcceptanceTests(project.ext.smokeTestsDir, project.ext.smokeTestReportsDir)
+    runJVMAcceptanceTests(project.ext.smokeTestsDir, project.ext.smokeTestReportsDir)
 }
 
 task ('acceptance-tests', dependsOn: 'unzip') << {
     println "Running acceptance tests..."
-    project.ext.language == 'python'? runPythonTests() :
-        runAcceptanceTests(project.ext.javaTestDir, project.ext.javaTestReportsDir)
+    project.ext.language == 'python'? runPythonTests(project.ext.pythonTestDir, project.ext.pythonTestReportsDir) :
+        runJVMAcceptanceTests(project.ext.javaTestDir, project.ext.javaTestReportsDir)
 }
 
 task ('startMidas', dependsOn: ['killMidas', 'unzip']) << {
@@ -124,7 +124,7 @@ task ('killMidas') << {
     killFirst("com.ee.midas.Main")
 }
 
-def runAcceptanceTests(String srcFolder, String reportsFolder) {
+def runJVMAcceptanceTests(String srcFolder, String reportsFolder) {
     def zipFile = file("${project.distsDir}/${project.archivesBaseName}.zip")
     if(!zipFile.exists()) {
         throw new RuntimeException(">>> Please run gradle to build the binary distributable ${project.archivesBaseName}.zip first!")
@@ -148,14 +148,14 @@ def runAcceptanceTests(String srcFolder, String reportsFolder) {
     }
 }
 
-def runPythonTests() {
+def runPythonTests(String srcFolder, String reportsFolder) {
     println "cleaning reports directory..."
-    cleanDir(project.ext.pythonTestReportsDir)
+    cleanDir(reportsFolder)
     def os = System.getProperty("os.name")
     println "running python tests"
-    def winCmd = """cmd /c python MidasWithPythonDriverTest.py  ${project.ext.pythonTestReportsDir}"""
-    def command = os ==~ /Win.*/ ? "$winCmd" : "python MidasWithPythonDriverTest.py ${project.ext.pythonTestReportsDir}"
-    def process = command.execute(null, new File(project.ext.pythonTestDir))
+    def winCmd = """cmd /c python MidasWithPythonDriverTest.py  ${reportsFolder}"""
+    def command = os ==~ /Win.*/ ? "$winCmd" : "python MidasWithPythonDriverTest.py ${reportsFolder}"
+    def process = command.execute(null, new File(srcFolder))
     println "available bytes: " + process.in.available()
 
     process.err.eachLine { line ->
@@ -208,6 +208,14 @@ jar {
             into "$libsDir"
         }
     }
+}
+
+task ('createTestJar', type: Jar) {
+    baseName = "${project.archivesBaseName}-test"
+    destinationDir = project.distsDir
+    includes = ['**/acceptance/*.class']
+    includeEmptyDirs = false
+    from sourceSets.test.output
 }
 
 //FindBugs Configuration
@@ -338,4 +346,4 @@ def killFirst(def processName) {
 }
 
 check.dependsOn << ['scalastyle']
-build.dependsOn = ['check', 'cobertura', 'coberturaCheck', 'distribute']
+build.dependsOn = ['check', 'cobertura', 'coberturaCheck', 'createTestJar', 'distribute']

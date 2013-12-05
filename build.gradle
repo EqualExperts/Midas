@@ -106,7 +106,7 @@ task ('smoke-tests', dependsOn: 'unzip') << {
     runJVMAcceptanceTests(project.ext.smokeTestsDir, project.ext.smokeTestReportsDir)
 }
 
-task ('acceptance-tests', dependsOn: 'unzip') << {
+task ('acceptance-tests', dependsOn: ['unzip', 'cleanAcceptanceReportsDir']) << {
     println "Running acceptance tests..."
     project.ext.language == 'python'? runPythonTests(project.ext.pythonTestDir, project.ext.pythonTestReportsDir) :
         runJVMAcceptanceTests(project.ext.javaTestDir, project.ext.javaTestReportsDir)
@@ -150,7 +150,6 @@ def runJVMAcceptanceTests(String srcFolder, String reportsFolder) {
 
 def runPythonTests(String srcFolder, String reportsFolder) {
     println "cleaning reports directory..."
-    cleanDir(reportsFolder)
     def os = System.getProperty("os.name")
     println "running python tests"
     def winCmd = """cmd /c python MidasWithPythonDriverTest.py  ${reportsFolder}"""
@@ -165,8 +164,8 @@ def runPythonTests(String srcFolder, String reportsFolder) {
     }
 }
 
-def cleanDir(String directory){
-    File dir = new File(directory)
+task ('cleanAcceptanceReportsDir') {
+    File dir = new File(project.ext.acceptanceTestReportsDir)
     dir.exists()? dir.deleteDir() : println("exists = ${dir.exists()}")
 }
 

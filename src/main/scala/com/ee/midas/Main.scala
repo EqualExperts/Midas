@@ -2,7 +2,7 @@ package com.ee.midas
 
 
 import com.ee.midas.pipes.{SocketConnector, DuplexPipe}
-import java.net.{Socket, InetAddress, ServerSocket}
+import java.net.{ConnectException, Socket, InetAddress, ServerSocket}
 import com.ee.midas.utils.{Accumulator, Loggable}
 import com.ee.midas.interceptor.{Transformer, MessageTracker, RequestInterceptor, ResponseInterceptor}
 
@@ -28,17 +28,21 @@ object Main extends App with Loggable {
       val application = waitForNewConnectionOn(midasSocket)
       log.info("New connection received...")
       //TODO: do something if Mongo is not available
+      try{
+        val mongoSocket = new Socket(mongoHost, mongoPort)
+        val tracker = new MessageTracker()
+        val requestInterceptable = new RequestInterceptor(tracker)
+        val responseInterceptable = new ResponseInterceptor(tracker, new Transformer())
 
-      val mongoSocket = new Socket(mongoHost, mongoPort)
-      val tracker = new MessageTracker()
-      val requestInterceptable = new RequestInterceptor(tracker)
-      val responseInterceptable = new ResponseInterceptor(tracker, new Transformer())
-
-      val duplexPipe = application  <|==|> (mongoSocket, requestInterceptable, responseInterceptable)
-
-      duplexPipe.start
-      log.info("Setup DataPipe = " + duplexPipe.toString)
-      accumulate(duplexPipe)
+        val duplexPipe = application  <|==|> (mongoSocket, requestInterceptable, responseInterceptable)
+        duplexPipe.start
+        log.info("Setup DataPipe = " + duplexPipe.toString)
+        accumulate(duplexPipe)
+      }
+      catch {
+        case e: ConnectException  => println("Error : Mongo is not available")
+                                     application.close()
+      }
     }
   }
 

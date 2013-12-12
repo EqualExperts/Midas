@@ -32,10 +32,10 @@ public class ScalaGenerator implements Generator {
         }.join(', ')
 
         """
-        override lazy val expansions: Map[String, VersionedSnippets] =
+        override var expansions: Map[String, VersionedSnippets] =
             Map(${expansionEntries})
 
-        override lazy val contractions: Map[String, VersionedSnippets] =
+        override var contractions: Map[String, VersionedSnippets] =
             Map(${contractionEntries})
         """.stripMargin()
     }

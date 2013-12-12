@@ -7,8 +7,13 @@ trait Transforms extends Versioner {
   type Snippet = BSONObject => BSONObject
   type Snippets = Iterable[Snippet]
   type VersionedSnippets = Map[Double, Snippet]
-  val expansions : Map[String, VersionedSnippets]
-  val contractions : Map[String, VersionedSnippets]
+  var expansions : Map[String, VersionedSnippets]
+  var contractions : Map[String, VersionedSnippets]
+
+  def copy(transforms: Transforms) = {
+    this.expansions = transforms.expansions
+    this.contractions = transforms.contractions
+  }
 
   def canBeApplied(fullCollectionName: String): Boolean =
     expansions.keySet.contains(fullCollectionName) || contractions.keySet.contains(fullCollectionName)

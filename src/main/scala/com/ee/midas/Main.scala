@@ -5,6 +5,7 @@ import com.ee.midas.pipes.{SocketConnector, DuplexPipe}
 import java.net.{Socket, InetAddress, ServerSocket}
 import com.ee.midas.utils.{Accumulator, Loggable}
 import com.ee.midas.interceptor.{Transformer, MessageTracker, RequestInterceptor, ResponseInterceptor}
+import com.ee.midas.inject.DeltaFilesProcessor
 
 
 object Main extends App with Loggable {

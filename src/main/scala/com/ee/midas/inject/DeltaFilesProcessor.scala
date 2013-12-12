@@ -8,6 +8,7 @@ import scala.collection.JavaConverters._
 import java.net.URL
 import com.ee.midas.utils.Loggable
 import java.nio.file._
+import com.ee.midas.transform.TransformsHolder
 
 object DeltaFilesProcessor extends App with Loggable {
 
@@ -77,7 +78,11 @@ object DeltaFilesProcessor extends App with Loggable {
     val srcScalaFilename = "Transformations.scala"
     val binDirURI = "generated/scala/bin/"
 
-    val loader = Thread.currentThread().getContextClassLoader()
+//    val loader = Thread.currentThread().getContextClassLoader()
+    val loader = DeltaFilesProcessor.getClass.getClassLoader
+
+
+    log.info(s"ORIGINAL TRANSFORMATIONS = ${TransformsHolder.get}")
 
     val classpathURI = "."
     val classpathDir = loader.getResource(classpathURI)
@@ -106,11 +111,11 @@ object DeltaFilesProcessor extends App with Loggable {
           translate(deltasDir, srcScalaTemplateFile.getPath, srcScalaFile)
           log.info(s"Compiling Delta Files...in ${deltasDir}")
           compiler.compile(classpathDir.getPath, binDir.getPath, srcScalaFile.getPath)
-          val fromDir = new File(binDir.toURI)
-          val toDir = new File(classpathDir.toURI)
-          copy(fromDir, toDir)
+          val fromBinDir = new File(binDir.toURI)
+          val toClasspathDir = new File(classpathDir.toURI)
+          copy(fromBinDir, toClasspathDir)
           log.info(s"Deploying Delta Files...in JVM")
-          Deployer.deploy(loader)
+          Deployer.deploy(loader, Array(binDir))
         }
       }
     }).start()

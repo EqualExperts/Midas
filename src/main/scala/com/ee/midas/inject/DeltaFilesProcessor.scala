@@ -34,7 +34,7 @@ object DeltaFilesProcessor extends App with Loggable {
     writer.close()
   }
 
-  def translate(deltasDir: URL, scalaTemplateFilename: String, outputScalaFile: File) : Unit = {
+  private def translate(deltasDir: URL, scalaTemplateFilename: String, outputScalaFile: File): Unit = {
     val deltaFiles = new File(deltasDir.toURI).listFiles()
     log.info(s"Got Delta Files = $deltaFiles")
     val scalaSnippets = convert(deltaFiles)
@@ -47,17 +47,18 @@ object DeltaFilesProcessor extends App with Loggable {
   }
 
   private def copy(fromDir: File, toDir: File): Unit = {
-    if(fromDir.isDirectory()){
-      if(!toDir.exists()){
+    if (fromDir.isDirectory()) {
+      if (!toDir.exists()) {
         toDir.mkdir()
         log.info("Directory copied from " + fromDir + "  to " + toDir);
       }
       //list all the directory contents
       val files = fromDir.list()
-      files.foreach { file: String =>
-        val src = new File(fromDir, file)
-        val dest = new File(toDir, file)
-        copy(src, dest)
+      files.foreach {
+        file: String =>
+          val src = new File(fromDir, file)
+          val dest = new File(toDir, file)
+          copy(src, dest)
       }
 
     } else {
@@ -67,21 +68,18 @@ object DeltaFilesProcessor extends App with Loggable {
   }
 
   //0. Deltas Dir FileWatcher
-  //1. Translate (Delta -> Scala) 
+  //1. Translate (Delta -> Scala)
   //2. Compile   (Scala -> ByteCode)
   //3. Deploy    (ByteCode -> JVM)
-  override def main(args: Array[String]): Unit = {
-    //All the uris below are relative to src/main/resources
-    val deltasDirURI = "deltas/"
-    val srcScalaTemplateURI = "templates/Transformations.scala.template"
-    val srcScalaDirURI = "generated/scala/"
-    val srcScalaFilename = "Transformations.scala"
-    val binDirURI = "generated/scala/bin/"
+  def process(deltasDirURI: String, srcScalaTemplateURI: String, srcScalaDirURI: String, srcScalaFilename: String, binDirURI: String, clazzName: String) = {
+//    val deltasDirURI = "deltas/"
+//    val srcScalaTemplateURI = "templates/Transformations.scala.template"
+//    val srcScalaDirURI = "generated/scala/"
+//    val srcScalaFilename = "Transformations.scala"
+//    val binDirURI = "generated/scala/bin/"
+//    val clazzName = "com.ee.midas.transform.Transformations"
 
-//    val loader = Thread.currentThread().getContextClassLoader()
     val loader = DeltaFilesProcessor.getClass.getClassLoader
-
-
     log.info(s"ORIGINAL TRANSFORMATIONS = ${TransformsHolder.get}")
 
     val classpathURI = "."
@@ -100,27 +98,27 @@ object DeltaFilesProcessor extends App with Loggable {
     val deltasDir = loader.getResource(deltasDirURI)
     val watcher = new DirectoryWatcher(deltasDir.getPath)
     val compiler = new Compiler
-//    val deployer = new Deployer
-//    copy(new File(binDir.toURI), new File(classpathDir.toURI))
+    val deployer = new Deployer
 
-    new Thread (new Runnable() {
+    new Thread(new Runnable() {
       def run() = {
-        watcher.start { e =>
-          log.info(s"Received ${e.kind()}, Context = ${e.context()}")
-          val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
-          translate(deltasDir, srcScalaTemplateFile.getPath, srcScalaFile)
-          log.info(s"Compiling Delta Files...in ${deltasDir}")
-          compiler.compile(classpathDir.getPath, binDir.getPath, srcScalaFile.getPath)
-          val fromBinDir = new File(binDir.toURI)
-          val toClasspathDir = new File(classpathDir.toURI)
-          copy(fromBinDir, toClasspathDir)
-          log.info(s"Deploying Delta Files...in JVM")
-          Deployer.deploy(loader, Array(binDir))
+        watcher.start {
+          e =>
+            log.info(s"Received ${e.kind()}, Context = ${e.context()}")
+            val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
+            translate(deltasDir, srcScalaTemplateFile.getPath, srcScalaFile)
+            log.info(s"Compiling Delta Files...in ${deltasDir}")
+            compiler.compile(classpathDir.getPath, binDir.getPath, srcScalaFile.getPath)
+            //          val fromBinDir = new File(binDir.toURI)
+            //          val toClasspathDir = new File(classpathDir.toURI)
+            //          copy(fromBinDir, toClasspathDir)
+            log.info(s"Deploying Delta Files...in JVM")
+            deployer.deploy(loader, Array(binDir), clazzName)
         }
       }
     }).start()
 
     Thread.sleep(200 * 1000)
-    watcher.stop
+//    watcher.stop
   }
 }

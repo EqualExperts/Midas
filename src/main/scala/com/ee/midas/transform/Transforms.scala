@@ -10,7 +10,7 @@ trait Transforms extends Versioner {
   var expansions : Map[String, VersionedSnippets]
   var contractions : Map[String, VersionedSnippets]
 
-  def copy(transforms: Transforms) = {
+  def update(transforms: Transforms) = {
     this.expansions = transforms.expansions
     this.contractions = transforms.contractions
   }

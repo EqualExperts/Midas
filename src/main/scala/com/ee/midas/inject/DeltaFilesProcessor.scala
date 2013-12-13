@@ -118,7 +118,7 @@ object DeltaFilesProcessor extends App with Loggable {
       }
     }).start()
 
-    Thread.sleep(200 * 1000)
+//    Thread.sleep(200 * 1000)
 //    watcher.stop
   }
 }

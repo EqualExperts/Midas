@@ -20,8 +20,8 @@ defaultTasks 'clean', 'build'
 
 clean.dependsOn = ['killMidas']
 
-sourceCompatibility = '1.6'
-targetCompatibility = '1.6'
+sourceCompatibility = '1.7'
+targetCompatibility = '1.7'
 
 project.ext {
     //App Config
@@ -35,6 +35,7 @@ project.ext {
     mongoDriver = 'org.mongodb:mongo-java-driver:2.11.3'
     groovy = 'org.codehaus.groovy:groovy-all:2.1.8'
     scala = 'org.scala-lang:scala-library:2.10.2'
+    scalaCompiler = 'org.scala-lang:scala-compiler:2.10.2'
     junit = 'junit:junit:4.8.1'
     mockito = 'org.mockito:mockito-all:1.9.5'
     specs2 = 'org.specs2:specs2_2.10:2.2.2'
@@ -192,7 +193,7 @@ repositories {
 }
 
 dependencies {
-    compile(project.ext.mongoDriver, project.ext.groovy, project.ext.scala, project.ext.scalaStyle, project.ext.slf4j, project.ext.log4jBinding, project.ext.cglib)
+    compile(project.ext.mongoDriver, project.ext.groovy, project.ext.scala, project.ext.scalaCompiler, project.ext.scalaStyle, project.ext.slf4j, project.ext.log4jBinding, project.ext.cglib)
     testCompile(project.ext.junit, project.ext.specs2, project.ext.mockito, project.ext.spock, project.ext.pegdown)
 }
 

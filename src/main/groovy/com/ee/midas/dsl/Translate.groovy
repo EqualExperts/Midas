@@ -18,6 +18,21 @@ def translate(deltaFiles) {
     translator.translate(deltaFiles)
 }
 
+def applyTranslations(scalaTemplateFile, translations) {
+    def scalaTemplateContents = scalaTemplateFile.text
+    def scalaFileContents = scalaTemplateContents.replaceAll('###EXPANSIONS-CONTRACTIONS###', translations)
+    println("SCALA FILE CONTENTS = \n$scalaFileContents")
+    scalaFileContents
+}
+
+def writeTo(outputFile, contents) {
+    println("Writing generated output to $outputFile.name")
+    outputFile.withWriter { writer ->
+        writer << contents
+    }
+    println("Completed writing generated output to $outputFile.name")
+}
+
 // ---- Script starts here -----
 def scalaTemplateURI = 'templates/Transformations.scala.template'
 ClassLoader loader = Thread.currentThread().getContextClassLoader()
@@ -39,19 +54,18 @@ if(args.length == 2) {
   scalaTemplateURL = args[1]
 }
 
-
-def scalaFileTemplate = new File(scalaTemplateURL.toURI())
-def scalaTemplateContents = scalaFileTemplate.text
+def scalaTemplateFile = new File(scalaTemplateURL.toURI())
 def translations = translate(sortedDeltaFiles(deltasDir))
+def content = applyTranslations(scalaTemplateFile, translations)
+def srcCodeURI = 'generated/scala'
+def srcCodeURL = loader.getResource(srcCodeURI)
+def generatedScalaFile = new File(srcCodeURL.getPath() + '/Transformations.scala')
+writeTo(generatedScalaFile, content)
 
-def scalaFileContents = scalaTemplateContents.replaceAll('###EXPANSIONS-CONTRACTIONS###', translations)
-println("SCALA FILE CONTENTS = \n$scalaFileContents")
-def outputURI = 'generated/scala'
-def outputURL = loader.getResource(outputURI)
-println("Writing generated output to $outputURL")
-def scalaFile = new File(outputURL.getPath() + '/Transformations.scala')
-scalaFile.withWriter { writer ->
-    writer << scalaFileContents
-}
-println("Completed writing generated output to $scalaFile.name")
+def classpathURI = '.'
+def classpathDir = loader.getResource(classpathURI)
+println("classpathDir = $classpathDir")
+def binDirURI = "$srcCodeURI/bin"
+def binDir = loader.getResource(binDirURI)
+println("Compiled Scala dir = $binDir")
 

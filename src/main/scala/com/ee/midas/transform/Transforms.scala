@@ -7,8 +7,13 @@ trait Transforms extends Versioner {
   type Snippet = BSONObject => BSONObject
   type Snippets = Iterable[Snippet]
   type VersionedSnippets = Map[Double, Snippet]
-  val expansions : Map[String, VersionedSnippets]
-  val contractions : Map[String, VersionedSnippets]
+  var expansions : Map[String, VersionedSnippets]
+  var contractions : Map[String, VersionedSnippets]
+
+  def update(transforms: Transforms) = {
+    this.expansions = transforms.expansions
+    this.contractions = transforms.contractions
+  }
 
   def canBeApplied(fullCollectionName: String): Boolean =
     expansions.keySet.contains(fullCollectionName) || contractions.keySet.contains(fullCollectionName)
@@ -40,4 +45,10 @@ trait Transforms extends Versioner {
     snippets.foldLeft(document) {
       case (document, snippet) => (snippet andThen version)(document)
     }
+
+  override def toString = {
+    val allExpansions = if (expansions.size == 0) "None" else expansions mkString "::"
+    val allContractions = if (contractions.size == 0) "None" else contractions mkString "::"
+    s"Expansions = $allExpansions, Contractions = $allContractions"
+  }
 }

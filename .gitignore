@@ -1,7 +1,7 @@
 .get
 build
 .gradle
-bin
+/bin
 *.iml
 *.ipr
 *.iws

@@ -31,8 +31,8 @@ class TransformsSpecs extends Specification with Transforms {
   val dummyVersionExpansion: VersionedSnippets = Map(1d -> dummyExpansionFunc1, 2d -> dummyExpansionFunc2)
   val dummyVersionContraction: VersionedSnippets = Map(1d -> dummyContractionFunc1, 2d -> dummyContractionFunc2)
 
-  val expansions : Map[String, VersionedSnippets] = Map("someCollection" -> dummyVersionExpansion)
-  val contractions : Map[String, VersionedSnippets] = Map("someCollection" -> dummyVersionContraction)
+  var expansions : Map[String, VersionedSnippets] = Map("someCollection" -> dummyVersionExpansion)
+  var contractions : Map[String, VersionedSnippets] = Map("someCollection" -> dummyVersionContraction)
 
   /*val expansions: List[Snippet] = List(dummyExpansion)
   val contractions: List[Snippet] = List(dummyContraction)*/

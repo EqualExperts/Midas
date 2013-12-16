@@ -7,6 +7,10 @@ import com.ee.midas.utils.{DirectoryWatcher, Accumulator, Loggable}
 import com.ee.midas.interceptor.{Transformer, MessageTracker, RequestInterceptor, ResponseInterceptor}
 import java.nio.file.WatchEvent
 import com.ee.midas.hotdeploy.DeltaFilesProcessor
+import com.ee.midas.dsl.generator.ScalaGenerator
+import com.ee.midas.dsl.interpreter.Reader
+import com.ee.midas.dsl.Translator
+import java.io.{PrintWriter, File}
 
 
 object Main extends App with Loggable {
@@ -23,18 +27,25 @@ object Main extends App with Loggable {
     val srcScalaFilename = "Transformations.scala"
     val binDirURI = "generated/scala/bin/"
     val clazzName = "com.ee.midas.transform.Transformations"
-    val deltasProcessor = new DeltaFilesProcessor
+
+    val deltasProcessor = new DeltaFilesProcessor(new Translator(new Reader(), new ScalaGenerator()))
 
     log.info(s"Processing Delta Files...")
-    deltasProcessor.process(deltasDirURI, srcScalaTemplateURI, srcScalaDirURI, srcScalaFilename, binDirURI, clazzName)
+    val loader = Main.getClass.getClassLoader
+    val srcScalaDir = loader.getResource(srcScalaDirURI)
+    log.info(s"Source Scala Dir = $srcScalaDir")
+    val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
+    val srcScalaWriter = new PrintWriter(srcScalaFile, "utf-8")
+    deltasProcessor.process(deltasDirURI, srcScalaTemplateURI, srcScalaWriter, srcScalaFile, binDirURI, clazzName)
     log.info(s"Completed...Processing Delta Files!")
 
-    val loader = Main.getClass.getClassLoader
     val deltasDir = loader.getResource(deltasDirURI)
     log.info(s"Setting up Directory Watcher...")
     val watcher = watch(deltasDir) { watchEvent =>
       log.info(s"Received ${watchEvent.kind()}, Context = ${watchEvent.context()}")
-      deltasProcessor.process(deltasDirURI, srcScalaTemplateURI, srcScalaDirURI, srcScalaFilename, binDirURI, clazzName)
+      val writer = new PrintWriter(srcScalaFile, "utf-8")
+      deltasProcessor.process(deltasDirURI, srcScalaTemplateURI, writer, srcScalaFile, binDirURI, clazzName)
+      writer.close()
     }
 
     log.info(s"Starting Midas Server...")

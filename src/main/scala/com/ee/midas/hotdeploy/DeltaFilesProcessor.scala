@@ -10,14 +10,11 @@ import com.ee.midas.utils.Loggable
 import com.ee.midas.transform.TransformsHolder
 import scala.Array
 
-class DeltaFilesProcessor extends Loggable with Compilable with Deployable {
+class DeltaFilesProcessor(val translator: Translator) extends Loggable with Compilable with Deployable {
 
   private def convert(deltaFiles: Array[File]): String = {
     val sortedDeltaFiles = deltaFiles.filter(f => f.getName.endsWith(".delta")).sortBy(f => f.getName).toList
     log.info(s"Filtered and Sorted Delta Files = $sortedDeltaFiles")
-    val generator = new ScalaGenerator()
-    val reader = new Reader()
-    val translator = new Translator(reader, generator)
     translator.translate(sortedDeltaFiles.asJava)
   }
 
@@ -28,28 +25,27 @@ class DeltaFilesProcessor extends Loggable with Compilable with Deployable {
     scalaFileContents
   }
 
-  private def writeTo(outputFile: File, contents: String): Unit = {
-    val writer = new PrintWriter(outputFile, "utf-8")
+  private def writeTo(writer: Writer, contents: String): Unit = {
     writer.write(contents)
-    writer.close()
+    writer.flush()
   }
 
-  private def translate(deltasDir: URL, scalaTemplateFilename: String, outputScalaFile: File): Unit = {
+  private def translate(deltasDir: URL, scalaTemplateFilename: String, writer: Writer): Unit = {
     val deltaFiles = new File(deltasDir.toURI).listFiles()
     log.info(s"Got Delta Files = $deltaFiles")
     val scalaSnippets = convert(deltaFiles)
     log.info(s"Got Scala Snippets $scalaSnippets")
     val scalaCode = fillTemplate(scalaTemplateFilename, scalaSnippets)
     log.info(s"Filled Scala Template = $scalaCode")
-    log.info(s"Writing Scala Code --> $outputScalaFile")
-    writeTo(outputScalaFile, scalaCode)
-    log.info(s"Written Scala Code --> $outputScalaFile")
+    log.info(s"Writing Scala Code using $writer")
+    writeTo(writer, scalaCode)
+    log.info(s"Written Scala Code.")
   }
 
   //1. Translate (Delta -> Scala)
   //2. Compile   (Scala -> ByteCode)
   //3. Deploy    (ByteCode -> JVM)
-  def process(deltasDirURI: String, srcScalaTemplateURI: String, srcScalaDirURI: String, srcScalaFilename: String,
+  def process(deltasDirURI: String, srcScalaTemplateURI: String, srcScalaWriter: Writer, srcScalaFile: File,
               binDirURI: String, clazzName: String): Unit = {
     val loader = getClass.getClassLoader
     log.info(s"ORIGINAL TRANSFORMATIONS = ${TransformsHolder.get}")
@@ -61,19 +57,18 @@ class DeltaFilesProcessor extends Loggable with Compilable with Deployable {
     val binDir = loader.getResource(binDirURI)
     log.info(s"output dir = $binDir")
 
-    val srcScalaDir = loader.getResource(srcScalaDirURI)
-    log.info(s"Source Scala Dir = $srcScalaDir")
-
     val srcScalaTemplateFile = loader.getResource(srcScalaTemplateURI)
     log.info(s"Template Scala File = $srcScalaTemplateFile")
 
     val deltasDir = loader.getResource(deltasDirURI)
-    val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
-    translate(deltasDir, srcScalaTemplateFile.getPath, srcScalaFile)
+    translate(deltasDir, srcScalaTemplateFile.getPath, srcScalaWriter)
+
     log.info(s"Compiling Delta Files...in ${deltasDir}")
     compile(classpathDir.getPath, binDir.getPath, srcScalaFile.getPath)
+
     log.info(s"Deploying Delta Files...in JVM")
     val deployedInstance = deploy(loader, Array(binDir), clazzName)
+
     //TODO: replace with actor model
     log.info(s"All Transformations BEFORE = $TransformsHolder")
     TransformsHolder.set(deployedInstance)

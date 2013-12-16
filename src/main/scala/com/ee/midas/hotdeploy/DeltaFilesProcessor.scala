@@ -45,28 +45,23 @@ class DeltaFilesProcessor(val translator: Translator) extends Loggable with Comp
   //1. Translate (Delta -> Scala)
   //2. Compile   (Scala -> ByteCode)
   //3. Deploy    (ByteCode -> JVM)
-  def process(deltasDirURI: String, srcScalaTemplateURI: String, srcScalaWriter: Writer, srcScalaFile: File,
-              binDirURI: String, clazzName: String): Unit = {
-    val loader = getClass.getClassLoader
-    log.info(s"ORIGINAL TRANSFORMATIONS = ${TransformsHolder.get}")
+  def process(deltasDir: URL, srcScalaTemplate: URL, srcScalaWriter: Writer, srcScalaFile: File,
+              binDir: URL, clazzName: String, classpathDir: URL): Unit = {
+    log.info(
+    s"""
+     deltasDir = $deltasDir
+     classpathDir = $classpathDir
+     binDir = $binDir
+     Template Scala File = $srcScalaTemplate
+    """.stripMargin)
+    log.info(s"Translating Delta Files...in ${deltasDir}")
+    translate(deltasDir, srcScalaTemplate.getPath, srcScalaWriter)
 
-    val classpathURI = "."
-    val classpathDir = loader.getResource(classpathURI)
-    log.info(s"classpathDir = $classpathDir")
-
-    val binDir = loader.getResource(binDirURI)
-    log.info(s"output dir = $binDir")
-
-    val srcScalaTemplateFile = loader.getResource(srcScalaTemplateURI)
-    log.info(s"Template Scala File = $srcScalaTemplateFile")
-
-    val deltasDir = loader.getResource(deltasDirURI)
-    translate(deltasDir, srcScalaTemplateFile.getPath, srcScalaWriter)
-
-    log.info(s"Compiling Delta Files...in ${deltasDir}")
+    log.info(s"Compiling Delta Files...")
     compile(classpathDir.getPath, binDir.getPath, srcScalaFile.getPath)
 
     log.info(s"Deploying Delta Files...in JVM")
+    val loader = getClass.getClassLoader
     val deployedInstance = deploy(loader, Array(binDir), clazzName)
 
     //TODO: replace with actor model

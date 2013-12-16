@@ -32,19 +32,23 @@ object Main extends App with Loggable {
 
     log.info(s"Processing Delta Files...")
     val loader = Main.getClass.getClassLoader
+    val classpathURI = "."
+    val classpathDir = loader.getResource(classpathURI)
+    val binDir = loader.getResource(binDirURI)
+    val deltasDir = loader.getResource(deltasDirURI)
+    val srcScalaTemplate = loader.getResource(srcScalaTemplateURI)
     val srcScalaDir = loader.getResource(srcScalaDirURI)
     log.info(s"Source Scala Dir = $srcScalaDir")
     val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
     val srcScalaWriter = new PrintWriter(srcScalaFile, "utf-8")
-    deltasProcessor.process(deltasDirURI, srcScalaTemplateURI, srcScalaWriter, srcScalaFile, binDirURI, clazzName)
+    deltasProcessor.process(deltasDir, srcScalaTemplate, srcScalaWriter, srcScalaFile, binDir, clazzName, classpathDir)
     log.info(s"Completed...Processing Delta Files!")
 
-    val deltasDir = loader.getResource(deltasDirURI)
     log.info(s"Setting up Directory Watcher...")
     val watcher = watch(deltasDir) { watchEvent =>
       log.info(s"Received ${watchEvent.kind()}, Context = ${watchEvent.context()}")
       val writer = new PrintWriter(srcScalaFile, "utf-8")
-      deltasProcessor.process(deltasDirURI, srcScalaTemplateURI, writer, srcScalaFile, binDirURI, clazzName)
+      deltasProcessor.process(deltasDir, srcScalaTemplate, writer, srcScalaFile, binDir, clazzName, classpathDir)
       writer.close()
     }
 
@@ -63,7 +67,6 @@ object Main extends App with Loggable {
     while (true) {
       val application = waitForNewConnectionOn(midasSocket)
       log.info("New connection received...")
-      //TODO: do something if Mongo is not available
       try{
         val mongoSocket = new Socket(mongoHost, mongoPort)
         val tracker = new MessageTracker()
@@ -76,8 +79,10 @@ object Main extends App with Loggable {
         accumulate(duplexPipe)
       }
       catch {
-        case e: ConnectException  => println("Error : Mongo is not available")
-                                     application.close()
+        case e: ConnectException  =>
+          println(s"Error : MongoDB on $mongoHost:$mongoPort is not available")
+          log.error(s"MongoDB on $mongoHost:$mongoPort is not available")
+          application.close()
       }
     }
   }

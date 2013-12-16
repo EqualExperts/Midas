@@ -12,12 +12,6 @@ import scala.Array
 
 class DeltaFilesProcessor(val translator: Translator) extends Loggable with Compilable with Deployable {
 
-  private def convert(deltaFiles: Array[File]): String = {
-    val sortedDeltaFiles = deltaFiles.filter(f => f.getName.endsWith(".delta")).sortBy(f => f.getName).toList
-    log.info(s"Filtered and Sorted Delta Files = $sortedDeltaFiles")
-    translator.translate(sortedDeltaFiles.asJava)
-  }
-
   private def fillTemplate(scalaTemplateFilename: String, translations: String): String = {
     val scalaTemplateContents = scala.io.Source.fromFile(scalaTemplateFilename).mkString
     log.info(s"Scala Template to fill = ${scalaTemplateContents}")
@@ -32,11 +26,13 @@ class DeltaFilesProcessor(val translator: Translator) extends Loggable with Comp
 
   private def translate(deltasDir: URL, scalaTemplateFilename: String, writer: Writer): Unit = {
     val deltaFiles = new File(deltasDir.toURI).listFiles()
-    log.info(s"Got Delta Files = $deltaFiles")
-    val scalaSnippets = convert(deltaFiles)
-    log.info(s"Got Scala Snippets $scalaSnippets")
+    log.debug(s"Got Delta Files $deltaFiles")
+    val sortedDeltaFiles = deltaFiles.filter(f => f.getName.endsWith(".delta")).sortBy(f => f.getName).toList
+    log.info(s"Filtered and Sorted Delta Files $sortedDeltaFiles")
+    val scalaSnippets = translator.translate(sortedDeltaFiles.asJava)
+    log.info(s"Delta Files as Scala Snippets $scalaSnippets")
     val scalaCode = fillTemplate(scalaTemplateFilename, scalaSnippets)
-    log.info(s"Filled Scala Template = $scalaCode")
+    log.info(s"Filled Scala Template $scalaCode")
     log.info(s"Writing Scala Code using $writer")
     writeTo(writer, scalaCode)
     log.info(s"Written Scala Code.")
@@ -47,7 +43,7 @@ class DeltaFilesProcessor(val translator: Translator) extends Loggable with Comp
   //3. Deploy    (ByteCode -> JVM)
   def process(deltasDir: URL, srcScalaTemplate: URL, srcScalaWriter: Writer, srcScalaFile: File,
               binDir: URL, clazzName: String, classpathDir: URL): Unit = {
-    log.info(
+    log.debug(
     s"""
      deltasDir = $deltasDir
      classpathDir = $classpathDir

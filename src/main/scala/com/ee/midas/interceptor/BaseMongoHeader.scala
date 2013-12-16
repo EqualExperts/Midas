@@ -43,11 +43,13 @@ class BaseMongoHeader(val bytes : Array[Byte]) {
     ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(value).array()
 
   override def toString  = {
-    "MESSAGE LENGTH " + length + "\n" +
-    "PAYLOAD SIZE " + payloadSize + "\n" +
-    "REQUEST ID " + requestID + "\n" +
-    "RESPONSE TO " + responseTo + "\n" +
-    "OPCODE " + opCode
+    s"""
+       Message Length = $length
+       Payload Size = $payloadSize
+       Request ID = $requestID
+       Response To = $responseTo
+       OpCode = $opCode
+    """.stripMargin
   }
 }
 

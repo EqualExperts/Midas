@@ -29,7 +29,7 @@ class DeltaFilesProcessor extends Loggable with Compilable with Deployable {
   }
 
   private def writeTo(outputFile: File, contents: String): Unit = {
-    val writer = new PrintWriter(outputFile)
+    val writer = new PrintWriter(outputFile, "utf-8")
     writer.write(contents)
     writer.close()
   }
@@ -49,7 +49,8 @@ class DeltaFilesProcessor extends Loggable with Compilable with Deployable {
   //1. Translate (Delta -> Scala)
   //2. Compile   (Scala -> ByteCode)
   //3. Deploy    (ByteCode -> JVM)
-  def process(deltasDirURI: String, srcScalaTemplateURI: String, srcScalaDirURI: String, srcScalaFilename: String, binDirURI: String, clazzName: String): Unit = {
+  def process(deltasDirURI: String, srcScalaTemplateURI: String, srcScalaDirURI: String, srcScalaFilename: String,
+              binDirURI: String, clazzName: String): Unit = {
     val loader = getClass.getClassLoader
     log.info(s"ORIGINAL TRANSFORMATIONS = ${TransformsHolder.get}")
 
@@ -72,14 +73,10 @@ class DeltaFilesProcessor extends Loggable with Compilable with Deployable {
     log.info(s"Compiling Delta Files...in ${deltasDir}")
     compile(classpathDir.getPath, binDir.getPath, srcScalaFile.getPath)
     log.info(s"Deploying Delta Files...in JVM")
-    val newInstance = deploy(loader, Array(binDir), clazzName)
+    val deployedInstance = deploy(loader, Array(binDir), clazzName)
     //TODO: replace with actor model
     log.info(s"All Transformations BEFORE = $TransformsHolder")
-    val oldInstance = TransformsHolder.get
-    log.info(s"Old Instance = $oldInstance")
-    TransformsHolder.set(newInstance)
-    val newlySetInstance = TransformsHolder.get
-    log.info(s"New Instance = $newlySetInstance")
+    TransformsHolder.set(deployedInstance)
     log.info(s"All Transformations AFTER = $TransformsHolder")
   }
 }

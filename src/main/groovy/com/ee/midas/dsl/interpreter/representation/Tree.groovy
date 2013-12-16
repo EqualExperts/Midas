@@ -12,10 +12,10 @@ public class Tree {
 
     def use(name) {
         if(databases.containsKey(name)){
-            log.info("Tree: Using database $name")
+            log.info("Using database $name")
             databases[name]
         }  else {
-            log.info("Tree: Creating Database $name")
+            log.info("Creating Database $name")
             databases[name] = new Database(name)
         }
     }

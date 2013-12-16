@@ -17,7 +17,7 @@ class Parser {
     }
 
     def using(db) {
-        log.info "Parser: Setting db context to ${db.toString()}"
+        log.info "Setting db context to ${db.toString()}"
         dbContext = db
     }
 

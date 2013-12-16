@@ -28,7 +28,7 @@ class Collection {
     }
 
     def invokeMethod(String name, args) {
-        log.debug("Collection: ${this.name} invokeMethod: Operation $name with $args")
+        log.debug("${this.name} invokeMethod: Operation $name with $args")
 
         if(args) {
             Grammar grammar = validateGrammar(name)
@@ -37,12 +37,12 @@ class Collection {
             validateJson(jsonString)
 
             if (isExpansion(grammar)) {
-                log.info("Collection: ${this.name} Adding Expansion $grammar with $args")
+                log.info("${this.name} Adding Expansion $grammar with $args")
                 versionedExpansions[curExpansionVersion++] = [grammar, args]
                 return
             }
             if (isContraction(grammar)) {
-                log.info("Collection: ${this.name} Adding Contraction $grammar with $args")
+                log.info("${this.name} Adding Contraction $grammar with $args")
                 versionedContractions[curContractionVersion++] = [grammar, args]
                 return
             }

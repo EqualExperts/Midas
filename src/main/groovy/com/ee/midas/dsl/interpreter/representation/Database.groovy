@@ -15,11 +15,11 @@ class Database {
     }
 
     def getProperty(String name) {
-        log.debug("Database: getProperty Collection with $name")
         if(collections.containsKey(name)) {
+            log.debug("Using Collection with $name")
             collections[name]
         } else {
-            log.info("Database: Creating Collection $name")
+            log.info("Creating Collection $name")
             collections[name] = new Collection(name)
         }
     }

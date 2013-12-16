@@ -23,9 +23,10 @@ object Main extends App with Loggable {
     val srcScalaFilename = "Transformations.scala"
     val binDirURI = "generated/scala/bin/"
     val clazzName = "com.ee.midas.transform.Transformations"
+    val deltasProcessor = new DeltaFilesProcessor
+
     log.info(s"Processing Delta Files...")
-    val deltaFilesProcessor = new DeltaFilesProcessor
-    deltaFilesProcessor.process(deltasDirURI, srcScalaTemplateURI, srcScalaDirURI, srcScalaFilename, binDirURI, clazzName)
+    deltasProcessor.process(deltasDirURI, srcScalaTemplateURI, srcScalaDirURI, srcScalaFilename, binDirURI, clazzName)
     log.info(s"Completed...Processing Delta Files!")
 
     val loader = Main.getClass.getClassLoader
@@ -33,7 +34,7 @@ object Main extends App with Loggable {
     log.info(s"Setting up Directory Watcher...")
     val watcher = watch(deltasDir) { watchEvent =>
       log.info(s"Received ${watchEvent.kind()}, Context = ${watchEvent.context()}")
-      deltaFilesProcessor.process(deltasDirURI, srcScalaTemplateURI, srcScalaDirURI, srcScalaFilename, binDirURI, clazzName)
+      deltasProcessor.process(deltasDirURI, srcScalaTemplateURI, srcScalaDirURI, srcScalaFilename, binDirURI, clazzName)
     }
 
     log.info(s"Starting Midas Server...")

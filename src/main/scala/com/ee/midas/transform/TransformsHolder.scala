@@ -3,10 +3,15 @@ package com.ee.midas.transform
 object TransformsHolder {
   private val transforms = new Transformations
 
-  def get = transforms
+  def get =
+    this.synchronized {
+      transforms
+    }
 
-  def set(transforms: Transforms) =
-     this.transforms.update(transforms.asInstanceOf[Transforms])
+  def set(newTransforms: Transforms) =
+    this.synchronized {
+      this.transforms.update(newTransforms)
+    }
 
   override def toString =
     s"""

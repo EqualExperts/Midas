@@ -1,5 +1,6 @@
 package com.ee.midas.dsl.interpreter.ast
 
+import groovy.util.logging.Slf4j
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.CodeVisitorSupport
 import org.codehaus.groovy.ast.ModuleNode
@@ -12,6 +13,7 @@ import org.codehaus.groovy.transform.ASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
 
 @GroovyASTTransformation
+@Slf4j
 public class StatementTransformation implements ASTTransformation {
     private def transformations = ['use' : 'using']
 
@@ -26,7 +28,7 @@ public class StatementTransformation implements ASTTransformation {
 
     @Override
     void visit(ASTNode[] nodes, SourceUnit source) {
-        println("Source name = ${source.name}")
+        log.info("Source name = ${source.name}")
         ModuleNode ast = source.ast
         def blockStatement = ast.statementBlock
 
@@ -35,10 +37,10 @@ public class StatementTransformation implements ASTTransformation {
                 def name = expression.value
                 if (transformations.containsKey(name)) {
                     def newName = transformations[name]
-                    println("AST: Transforming Name => $name -> $newName")
+                    log.debug("AST: Transforming Name => $name -> $newName")
                     expression.value = newName
                 } else {
-                    println("AST: Skipping Name => $name")
+                    log.debug("AST: Skipping Name => $name")
                 }
             }
         })

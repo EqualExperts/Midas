@@ -7,12 +7,14 @@ import com.ee.midas.transform.TransformType
 import groovy.json.JsonException
 import groovy.json.JsonSlurper
 import groovy.transform.ToString
+import groovy.util.logging.Slf4j
 
 import static com.ee.midas.transform.TransformType.CONTRACTION
 import static com.ee.midas.transform.TransformType.EXPANSION
 
 
 @ToString
+@Slf4j
 class Collection {
     final String name
     private final jsonSlurper = new JsonSlurper()
@@ -26,7 +28,7 @@ class Collection {
     }
 
     def invokeMethod(String name, args) {
-        println("Collection: ${this.name} invokeMethod: Operation $name with $args")
+        log.debug("Collection: ${this.name} invokeMethod: Operation $name with $args")
 
         if(args) {
             Grammar grammar = validateGrammar(name)
@@ -35,12 +37,12 @@ class Collection {
             validateJson(jsonString)
 
             if (isExpansion(grammar)) {
-                println("Collection: ${this.name} Adding Expansion $grammar with $args")
+                log.info("Collection: ${this.name} Adding Expansion $grammar with $args")
                 versionedExpansions[curExpansionVersion++] = [grammar, args]
                 return
             }
             if (isContraction(grammar)) {
-                println("Collection: ${this.name} Adding Contraction $grammar with $args")
+                log.info("Collection: ${this.name} Adding Contraction $grammar with $args")
                 versionedContractions[curContractionVersion++] = [grammar, args]
                 return
             }
@@ -64,13 +66,13 @@ class Collection {
     }
 
     private void validateJson(jsonString) {
-        println("Parsing Input JSON...$jsonString")
+        log.debug("Parsing Input JSON...$jsonString")
         try {
             jsonSlurper.parseText(jsonString)
         } catch (JsonException je) {
             throw new InvalidGrammar("MidasCompiler: Error: $je.message")
         }
-        println("Parsed Input JSON Successfully")
+        log.debug("Parsed Input JSON Successfully")
     }
 
 

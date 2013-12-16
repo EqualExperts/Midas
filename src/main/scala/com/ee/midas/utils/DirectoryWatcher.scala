@@ -1,15 +1,15 @@
-package com.ee.midas.inject
+package com.ee.midas.utils
 
 import java.nio.file.{WatchEvent, FileSystems}
 import java.nio.file.StandardWatchEventKinds._
 import scala.collection.JavaConverters._
 
-class DirectoryWatcher(dirURL: String) {
+class DirectoryWatcher(dirURL: String) extends Loggable {
   private val fileSystem = FileSystems.getDefault
   private val watcher = fileSystem.newWatchService()
   private val os = System.getProperty("os.name")
 
-  println(s"Dir to Watch = $dirURL, OS = ${os}")
+  log.info(s"Dir to Watch = $dirURL, OS = ${os}")
   //Compensate for the bug that causes fileSystem.getPath to crash in Windows for dirURL
   private val path = if (os.contains("Win"))
                         fileSystem.getPath(dirURL.substring(1))
@@ -17,32 +17,33 @@ class DirectoryWatcher(dirURL: String) {
                         fileSystem.getPath(dirURL)
 
   path.register(watcher, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE)
-  println(s"Will Watch dir ${dirURL} for Creation, Modification and Deletion of Files...")
+  log.info(s"Will Watch dir ${dirURL} for Creation, Modification and Deletion of Files...")
   
   var isRunning = true
   
-   def stop = {
-     println(s"Stopping Watch on ${dirURL}")
+   def stopWatching = {
+     log.info(s"Stopping Watch on ${dirURL}")
      isRunning = false
      watcher.close()
    }
   
-   def start(callback: WatchEvent[_] => Unit): Unit = {
+   def watch(onEvent: WatchEvent[_] => Unit): Unit = {
      var valid = true
      while(isRunning && valid) {
        try {
-         println(s"Watching ${dirURL}...")
+         log.info(s"Watching ${dirURL}...")
          val watchKey = watcher.take()
          val events = watchKey.pollEvents().asScala
          events.foreach { e =>
-           println(s"Detected ${e.kind()}, Context = ${e.context()}}")
-           callback(e)
+           log.info(s"Detected ${e.kind()}, Context = ${e.context()}}")
+           onEvent(e)
          }
          valid = watchKey.reset()
        } catch {
          case e: Exception => watcher.close()
        }
      }
-     println(s"Completed Watch on ${dirURL}")
+     isRunning = false
+     log.info(s"Completed Watch on ${dirURL}")
    }
 }

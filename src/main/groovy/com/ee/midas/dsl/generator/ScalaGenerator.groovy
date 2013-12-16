@@ -2,10 +2,12 @@ package com.ee.midas.dsl.generator
 
 import com.ee.midas.dsl.interpreter.representation.Tree
 import com.ee.midas.transform.TransformType
+import groovy.util.logging.Slf4j
 
 import static com.ee.midas.transform.TransformType.CONTRACTION
 import static com.ee.midas.transform.TransformType.EXPANSION
 
+@Slf4j
 public class ScalaGenerator implements Generator {
 
     private static final String NEW_LINE = '\n'
@@ -16,7 +18,7 @@ public class ScalaGenerator implements Generator {
 
     @Override
     public String generate(Tree tree) {
-        println('Generating Scala Code Midas-Snippets for each transformation...')
+        log.info('Generating Scala Code Midas-Snippets for each transformation...')
         def expansionSnippets = generateSnippets(EXPANSION, tree)
         def contractionSnippets = generateSnippets(CONTRACTION, tree)
 
@@ -45,20 +47,20 @@ public class ScalaGenerator implements Generator {
     }
 
     private def generateSnippets(TransformType transformType, Tree tree) {
-        println("Started snippets generation for $transformType TransformType...")
+        log.info("Started snippets generation for $transformType TransformType...")
         def snippets = [:]
         tree.eachWithVersionedMap(transformType) { String dbName, String collectionName, versionedMap ->
             def versionedSnippets = versionedMap.collect { version, operation ->
                 def operationName = operation['name']
                 def args = operation['args']
-                println("Database and Collection Name = $dbName.$collectionName.$version.$operationName.$args")
+                log.info("Generating Snippet for... $dbName.$collectionName => Version = $version, Operation = $operationName, Args = $args")
                 def snippet = "$operationName"(args[0])
                 "${version}d -> $snippet"
             }
             def fullCollectionName = toFullCollectionName(dbName, collectionName)
             snippets[fullCollectionName] = versionedSnippets
         }
-        println("Completed snippets generation for $transformType TransformType!")
+        log.info("Completed snippets generation for $transformType TransformType!")
         snippets
     }
 

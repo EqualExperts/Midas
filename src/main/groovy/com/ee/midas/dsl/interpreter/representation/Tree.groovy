@@ -1,20 +1,21 @@
 package com.ee.midas.dsl.interpreter.representation
 
 import com.ee.midas.transform.TransformType
+import groovy.util.logging.Slf4j
 
+@Slf4j
 public class Tree {
     private final def databases = [:]
 
     public Tree() {
-
     }
 
     def use(name) {
-        println("Tree: use database with $name")
         if(databases.containsKey(name)){
+            log.info("Tree: Using database $name")
             databases[name]
         }  else {
-            println("Tree: Creating Database $name")
+            log.info("Tree: Creating Database $name")
             databases[name] = new Database(name)
         }
     }

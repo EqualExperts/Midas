@@ -1,7 +1,9 @@
 package com.ee.midas.dsl.interpreter
 
 import com.ee.midas.dsl.interpreter.representation.Tree
+import groovy.util.logging.Slf4j
 
+@Slf4j
 class Parser {
     private def tree = new Tree()
     private def dbContext
@@ -14,14 +16,14 @@ class Parser {
     }
 
     def using(db) {
-        println "Parser: Setting db context to ${db.toString()}"
+        log.info "Parser: Setting db context to ${db.toString()}"
         dbContext = db
     }
 
     public Tree parse(Closure closure) {
         def cloned = closure.clone()
         cloned.delegate = this
-//        cloned.resolveStrategy = Closure.DELEGATE_FIRST
+        cloned.resolveStrategy = Closure.DELEGATE_FIRST
         cloned()
         tree
     }

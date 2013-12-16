@@ -1,4 +1,4 @@
-package com.ee.midas.inject
+package com.ee.midas.hotdeploy
 
 import java.io._
 import com.ee.midas.dsl.Translator
@@ -7,10 +7,10 @@ import com.ee.midas.dsl.generator.ScalaGenerator
 import scala.collection.JavaConverters._
 import java.net.URL
 import com.ee.midas.utils.Loggable
-import java.nio.file._
 import com.ee.midas.transform.TransformsHolder
+import scala.Array
 
-object DeltaFilesProcessor extends App with Loggable {
+class DeltaFilesProcessor extends Loggable with Compilable with Deployable {
 
   private def convert(deltaFiles: Array[File]): String = {
     val sortedDeltaFiles = deltaFiles.filter(f => f.getName.endsWith(".delta")).sortBy(f => f.getName).toList
@@ -46,40 +46,11 @@ object DeltaFilesProcessor extends App with Loggable {
     log.info(s"Written Scala Code --> $outputScalaFile")
   }
 
-  private def copy(fromDir: File, toDir: File): Unit = {
-    if (fromDir.isDirectory()) {
-      if (!toDir.exists()) {
-        toDir.mkdir()
-        log.info("Directory copied from " + fromDir + "  to " + toDir);
-      }
-      //list all the directory contents
-      val files = fromDir.list()
-      files.foreach {
-        file: String =>
-          val src = new File(fromDir, file)
-          val dest = new File(toDir, file)
-          copy(src, dest)
-      }
-
-    } else {
-      Files.copy(Paths.get(fromDir.toURI), Paths.get(toDir.toURI), StandardCopyOption.REPLACE_EXISTING)
-      log.info("File copied from " + fromDir + " to " + toDir)
-    }
-  }
-
-  //0. Deltas Dir FileWatcher
   //1. Translate (Delta -> Scala)
   //2. Compile   (Scala -> ByteCode)
   //3. Deploy    (ByteCode -> JVM)
-  def process(deltasDirURI: String, srcScalaTemplateURI: String, srcScalaDirURI: String, srcScalaFilename: String, binDirURI: String, clazzName: String) = {
-//    val deltasDirURI = "deltas/"
-//    val srcScalaTemplateURI = "templates/Transformations.scala.template"
-//    val srcScalaDirURI = "generated/scala/"
-//    val srcScalaFilename = "Transformations.scala"
-//    val binDirURI = "generated/scala/bin/"
-//    val clazzName = "com.ee.midas.transform.Transformations"
-
-    val loader = DeltaFilesProcessor.getClass.getClassLoader
+  def process(deltasDirURI: String, srcScalaTemplateURI: String, srcScalaDirURI: String, srcScalaFilename: String, binDirURI: String, clazzName: String): Unit = {
+    val loader = getClass.getClassLoader
     log.info(s"ORIGINAL TRANSFORMATIONS = ${TransformsHolder.get}")
 
     val classpathURI = "."
@@ -96,29 +67,19 @@ object DeltaFilesProcessor extends App with Loggable {
     log.info(s"Template Scala File = $srcScalaTemplateFile")
 
     val deltasDir = loader.getResource(deltasDirURI)
-    val watcher = new DirectoryWatcher(deltasDir.getPath)
-    val compiler = new Compiler
-    val deployer = new Deployer
-
-    new Thread(new Runnable() {
-      def run() = {
-        watcher.start {
-          e =>
-            log.info(s"Received ${e.kind()}, Context = ${e.context()}")
-            val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
-            translate(deltasDir, srcScalaTemplateFile.getPath, srcScalaFile)
-            log.info(s"Compiling Delta Files...in ${deltasDir}")
-            compiler.compile(classpathDir.getPath, binDir.getPath, srcScalaFile.getPath)
-            //          val fromBinDir = new File(binDir.toURI)
-            //          val toClasspathDir = new File(classpathDir.toURI)
-            //          copy(fromBinDir, toClasspathDir)
-            log.info(s"Deploying Delta Files...in JVM")
-            deployer.deploy(loader, Array(binDir), clazzName)
-        }
-      }
-    }).start()
-
-//    Thread.sleep(200 * 1000)
-//    watcher.stop
+    val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
+    translate(deltasDir, srcScalaTemplateFile.getPath, srcScalaFile)
+    log.info(s"Compiling Delta Files...in ${deltasDir}")
+    compile(classpathDir.getPath, binDir.getPath, srcScalaFile.getPath)
+    log.info(s"Deploying Delta Files...in JVM")
+    val newInstance = deploy(loader, Array(binDir), clazzName)
+    //TODO: replace with actor model
+    log.info(s"All Transformations BEFORE = $TransformsHolder")
+    val oldInstance = TransformsHolder.get
+    log.info(s"Old Instance = $oldInstance")
+    TransformsHolder.set(newInstance)
+    val newlySetInstance = TransformsHolder.get
+    log.info(s"New Instance = $newlySetInstance")
+    log.info(s"All Transformations AFTER = $TransformsHolder")
   }
 }

@@ -4,8 +4,10 @@ import com.ee.midas.dsl.grammar.Contraction
 import com.ee.midas.dsl.grammar.Expansion
 import com.ee.midas.dsl.grammar.Grammar
 import com.ee.midas.transform.TransformType
+import com.mongodb.util.JSON
 import groovy.json.JsonException
 import groovy.json.JsonSlurper
+import groovy.transform.CompileStatic
 import groovy.transform.ToString
 import groovy.util.logging.Slf4j
 
@@ -17,9 +19,9 @@ import static com.ee.midas.transform.TransformType.EXPANSION
 @Slf4j
 class Collection {
     final String name
-    private final jsonSlurper = new JsonSlurper()
-    private final def versionedExpansions = [:]
-    private final def versionedContractions = [:]
+    private JsonSlurper jsonSlurper = new JsonSlurper()
+    private final Map<Long, Tuple> versionedExpansions = [:]
+    private final Map<Long, Tuple> versionedContractions = [:]
     private Long curExpansionVersion = 1
     private Long curContractionVersion = 1
 
@@ -33,7 +35,7 @@ class Collection {
         if(args) {
             Grammar grammar = validateGrammar(name)
 
-            def jsonString = args[0].toString()
+            String jsonString = args[0].toString()
             validateJson(jsonString)
 
             if (isExpansion(grammar)) {
@@ -49,14 +51,17 @@ class Collection {
         }
     }
 
+    @CompileStatic
     private boolean isExpansion(Grammar grammar) {
         Grammar.class.getDeclaredField(grammar.name()).getAnnotation(Expansion.class) != null
     }
 
+    @CompileStatic
     private boolean isContraction(Grammar grammar) {
         Grammar.class.getDeclaredField(grammar.name()).getAnnotation(Contraction.class) != null
     }
 
+    @CompileStatic
     private Grammar validateGrammar(String token) {
         try {
             Grammar.valueOf(token)
@@ -64,19 +69,18 @@ class Collection {
             throw new InvalidGrammar("Sorry!! Midas Compiler doesn't understand $token")
         }
     }
-
-    private void validateJson(jsonString) {
-        log.debug("Parsing Input JSON...$jsonString")
+    @CompileStatic
+    private void validateJson(String jsonString) {
         try {
+            log.debug("Parsing Input JSON...$jsonString")
             jsonSlurper.parseText(jsonString)
+            log.debug("Parsed Input JSON Successfully")
         } catch (JsonException je) {
             throw new InvalidGrammar("MidasCompiler: Error: $je.message")
         }
-        log.debug("Parsed Input JSON Successfully")
     }
 
-
-    def each(TransformType transformType, String dbName, closure) {
+    def each(TransformType transformType, String dbName, Closure closure) {
         def versionedTransforms = null
         if(transformType == EXPANSION) {
             versionedTransforms = versionedExpansions
@@ -92,8 +96,9 @@ class Collection {
         }
     }
 
+    @CompileStatic
     def asVersionedMap(TransformType transformType) {
-        def versionedTransforms = null
+        Map<Long, Tuple> versionedTransforms = null
         if(transformType == EXPANSION) {
             versionedTransforms = versionedExpansions
         }
@@ -102,9 +107,10 @@ class Collection {
             versionedTransforms = versionedContractions
         }
 
-        versionedTransforms.collectEntries { entry ->
-            def grammarWithArgs = entry.value
-            def (grammar, args) = grammarWithArgs
+        versionedTransforms.collectEntries { Map.Entry entry ->
+            Tuple grammarWithArgs = (Tuple) entry.value
+            Grammar grammar = Grammar.valueOf(grammarWithArgs[0] as String)
+            def args = grammarWithArgs[1]
             def operation = ['name': grammar.name(), 'args': args]
             ["$entry.key" : operation]
         }

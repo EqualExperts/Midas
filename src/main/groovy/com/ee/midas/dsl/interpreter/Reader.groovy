@@ -2,6 +2,7 @@ package com.ee.midas.dsl.interpreter
 
 import com.ee.midas.dsl.interpreter.ast.StatementTransformation
 import com.ee.midas.dsl.interpreter.representation.Tree
+import groovy.transform.CompileStatic
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer
 import org.codehaus.groovy.control.customizers.SecureASTCustomizer

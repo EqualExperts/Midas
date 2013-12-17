@@ -14,8 +14,8 @@ class TreeSpecs extends Specification {
         LinkedHashMap expectedDatabases = ['testDB' :database1 , 'secondDB' : database2]
 
         when : "added a database to the tree"
-        tree.use("testDB")
-        tree.use("secondDB")
+        tree.using("testDB")
+        tree.using("secondDB")
         def databases = tree.@databases
 
         then : "databases are added to the tree"
@@ -28,10 +28,10 @@ class TreeSpecs extends Specification {
         given : "A Tree "
         Tree tree = new Tree()
         Integer noOfDatabaseExcecuted = 0
-        def database1 = tree.use("testDB")
+        def database1 = tree.using("testDB")
         database1.testCollection.add('{"age":0}')
 
-        def database2 = tree.use("newDB")
+        def database2 = tree.using("newDB")
         database2.newCollection.add('{"age":0}')
 
         when : "eachVersionedMap is called"

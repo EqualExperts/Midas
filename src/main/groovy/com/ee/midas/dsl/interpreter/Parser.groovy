@@ -1,19 +1,21 @@
 package com.ee.midas.dsl.interpreter
 
 import com.ee.midas.dsl.interpreter.representation.Tree
+import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 
 @Slf4j
 class Parser {
-    private def tree = new Tree()
+    private Tree tree = new Tree()
     private def dbContext
 
+    @CompileStatic
     def getProperty(String name) {
         log.debug("property name is: $name")
         if(name == 'db') {
             return dbContext
         }
-        tree.use(name)
+        tree.using(name)
     }
 
     def using(db) {

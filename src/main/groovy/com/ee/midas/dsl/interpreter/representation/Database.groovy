@@ -1,6 +1,7 @@
 package com.ee.midas.dsl.interpreter.representation
 
 import com.ee.midas.transform.TransformType
+import groovy.transform.CompileStatic
 import groovy.transform.ToString
 import groovy.util.logging.Slf4j
 
@@ -8,12 +9,14 @@ import groovy.util.logging.Slf4j
 @Slf4j
 class Database {
     final String name
-    private final def collections = [:]
+    private final Map<String, Collection> collections = [:]
 
+    @CompileStatic
     Database(String name) {
         this.name = name
     }
 
+    @CompileStatic
     def getProperty(String name) {
         if(collections.containsKey(name)) {
             log.debug("Using Collection with $name")
@@ -24,16 +27,18 @@ class Database {
         }
     }
 
-    def each(TransformType transformType, closure) {
+    @CompileStatic
+    def each(TransformType transformType, Closure closure) {
         def dbName = this.name
         collections.each { name, Collection collection ->
             collection.each(transformType, dbName, closure)
         }
     }
 
-    def eachWithVersionedMap(TransformType transformType, closure) {
+    @CompileStatic
+    def eachWithVersionedMap(TransformType transformType, Closure closure) {
         def dbName = this.name
-        collections.each { name, Collection collection ->
+        collections.each { String name, Collection collection ->
             closure(dbName, name, collection.asVersionedMap(transformType))
         }
     }

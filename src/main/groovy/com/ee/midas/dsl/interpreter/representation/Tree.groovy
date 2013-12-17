@@ -1,16 +1,18 @@
 package com.ee.midas.dsl.interpreter.representation
 
 import com.ee.midas.transform.TransformType
+import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 
 @Slf4j
 public class Tree {
-    private final def databases = [:]
+    private final Map<String, Database> databases = [:]
 
     public Tree() {
     }
 
-    def use(name) {
+    @CompileStatic
+    def using(String name) {
         if(databases.containsKey(name)){
             log.info("Using database $name")
             databases[name]
@@ -19,14 +21,15 @@ public class Tree {
             databases[name] = new Database(name)
         }
     }
-
-    def each(TransformType transformType, closure) {
+    @CompileStatic
+    def each(TransformType transformType, Closure closure) {
         databases.each { name, Database database ->
             database.each(transformType, closure)
         }
     }
 
-    def eachWithVersionedMap(TransformType transformType, closure) {
+    @CompileStatic
+    def eachWithVersionedMap(TransformType transformType, Closure closure) {
         databases.each { name, Database database ->
             database.eachWithVersionedMap(transformType, closure)
         }

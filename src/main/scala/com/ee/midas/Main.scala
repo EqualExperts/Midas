@@ -28,7 +28,7 @@ object Main extends App with Loggable {
     val binDirURI = "generated/scala/bin/"
     val clazzName = "com.ee.midas.transform.Transformations"
 
-    val deltasProcessor = new DeltaFilesProcessor(new Translator(new Reader(), new ScalaGenerator()))
+    implicit val deltasProcessor = new DeltaFilesProcessor(new Translator(new Reader(), new ScalaGenerator()))
 
     log.info(s"Processing Delta Files...")
     val loader = Main.getClass.getClassLoader
@@ -40,13 +40,13 @@ object Main extends App with Loggable {
     val srcScalaDir = loader.getResource(srcScalaDirURI)
     log.info(s"Source Scala Dir = $srcScalaDir")
     val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
-    processDeltaFiles(deltasDir, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir, deltasProcessor)
+    processDeltaFiles(deltasDir, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
     log.info(s"Completed...Processing Delta Files!")
 
     log.info(s"Setting up Directory Watcher...")
     val watcher = new DirectoryWatcher(deltasDir.getPath)(watchEvent => {
       log.info(s"Received ${watchEvent.kind()}, Context = ${watchEvent.context()}")
-      processDeltaFiles(deltasDir, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir, deltasProcessor)
+      processDeltaFiles(deltasDir, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
     })
     watcher.start
 
@@ -91,7 +91,7 @@ object Main extends App with Loggable {
   }
 
   private def processDeltaFiles(deltasDir: URL, srcScalaTemplate: URL, srcScalaFile: File, binDir: URL,
-                                clazzName: String, classpathDir: URL, deltasProcessor: DeltaFilesProcessor): Unit = {
+                                clazzName: String, classpathDir: URL)(implicit deltasProcessor: DeltaFilesProcessor): Unit = {
     val writer = new PrintWriter(srcScalaFile, "utf-8")
     deltasProcessor.process(deltasDir, srcScalaTemplate, writer, srcScalaFile, binDir, clazzName, classpathDir)
     writer.close()

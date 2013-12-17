@@ -21,29 +21,31 @@ class DirectoryWatcher(dirURL: String) extends Loggable {
   
   var isRunning = true
   
-   def stopWatching = {
-     log.info(s"Stopping Watch on ${dirURL}")
-     isRunning = false
-     watcher.close()
-   }
+  def stopWatching = {
+    log.info(s"Stopping Watch on ${dirURL}")
+    isRunning = false
+    watcher.close()
+  }
   
-   def watch(onEvent: WatchEvent[_] => Unit): Unit = {
-     var valid = true
-     while(isRunning && valid) {
-       try {
-         log.info(s"Watching ${dirURL}...")
-         val watchKey = watcher.take()
-         val events = watchKey.pollEvents().asScala
-         events.foreach { e =>
-           log.info(s"Detected ${e.kind()}, Context = ${e.context()}}")
-           onEvent(e)
-         }
-         valid = watchKey.reset()
-       } catch {
-         case e: Exception => watcher.close()
-       }
-     }
-     isRunning = false
-     log.info(s"Completed Watch on ${dirURL}")
-   }
+  def watch(onEvent: WatchEvent[_] => Unit): Unit = {
+    var valid = true
+    while(isRunning && valid) {
+      try {
+        log.info(s"Watching ${dirURL}...")
+        val watchKey = watcher.take()
+        val events = watchKey.pollEvents().asScala
+        events.foreach { e =>
+          log.info(s"Detected ${e.kind()}, Context = ${e.context()}}")
+          onEvent(e)
+        }
+        valid = watchKey.reset()
+      } catch {
+        case e: Exception =>
+          log.error(s"Closing it due to ${e.getMessage}")
+          watcher.close()
+      }
+    }
+    isRunning = false
+    log.info(s"Completed Watch on ${dirURL}")
+  }
 }

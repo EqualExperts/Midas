@@ -3,7 +3,7 @@ package com.ee.midas.transform
 import org.bson.BSONObject
 import TransformType._
 
-trait Transforms extends Versioner {
+abstract class Transforms extends Versioner {
   type Snippet = BSONObject => BSONObject
   type Snippets = Iterable[Snippet]
   type VersionedSnippets = Map[Double, Snippet]

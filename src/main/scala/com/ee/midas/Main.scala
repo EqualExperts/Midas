@@ -5,12 +5,11 @@ import com.ee.midas.pipes.{SocketConnector, DuplexPipe}
 import java.net._
 import com.ee.midas.utils.{DirectoryWatcher, Accumulator, Loggable}
 import com.ee.midas.interceptor.{Transformer, MessageTracker, RequestInterceptor, ResponseInterceptor}
-import java.nio.file.WatchEvent
 import com.ee.midas.hotdeploy.DeltaFilesProcessor
 import com.ee.midas.dsl.generator.ScalaGenerator
 import com.ee.midas.dsl.interpreter.Reader
 import com.ee.midas.dsl.Translator
-import java.io.{Writer, PrintWriter, File}
+import java.io.{PrintWriter, File}
 import com.ee.midas.transform.TransformType
 
 

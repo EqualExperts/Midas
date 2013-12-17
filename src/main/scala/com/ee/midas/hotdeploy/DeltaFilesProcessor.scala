@@ -2,12 +2,10 @@ package com.ee.midas.hotdeploy
 
 import java.io._
 import com.ee.midas.dsl.Translator
-import com.ee.midas.dsl.interpreter.Reader
-import com.ee.midas.dsl.generator.ScalaGenerator
 import scala.collection.JavaConverters._
 import java.net.URL
 import com.ee.midas.utils.Loggable
-import com.ee.midas.transform.TransformsHolder
+import com.ee.midas.transform.{Transforms, TransformsHolder}
 import scala.Array
 
 class DeltaFilesProcessor(val translator: Translator) extends Loggable with Compilable with Deployable {
@@ -26,7 +24,7 @@ class DeltaFilesProcessor(val translator: Translator) extends Loggable with Comp
 
   private def translate(deltasDir: URL, scalaTemplateFilename: String, writer: Writer): Unit = {
     val deltaFiles = new File(deltasDir.toURI).listFiles()
-    log.debug(s"Got Delta Files $deltaFiles")
+    log.debug(s"Delta Files $deltaFiles")
     val sortedDeltaFiles = deltaFiles.filter(f => f.getName.endsWith(".delta")).sortBy(f => f.getName).toList
     log.info(s"Filtered and Sorted Delta Files $sortedDeltaFiles")
     val scalaSnippets = translator.translate(sortedDeltaFiles.asJava)
@@ -50,15 +48,15 @@ class DeltaFilesProcessor(val translator: Translator) extends Loggable with Comp
      binDir = $binDir
      Template Scala File = $srcScalaTemplate
     """.stripMargin)
-    log.info(s"Translating Delta Files...in ${deltasDir}")
+    log.debug(s"Translating Delta Files...in ${deltasDir}")
     translate(deltasDir, srcScalaTemplate.getPath, srcScalaWriter)
 
-    log.info(s"Compiling Delta Files...")
+    log.debug(s"Compiling Delta Files...")
     compile(classpathDir.getPath, binDir.getPath, srcScalaFile.getPath)
 
     log.info(s"Deploying Delta Files...in JVM")
     val loader = getClass.getClassLoader
-    val deployedInstance = deploy(loader, Array(binDir), clazzName)
+    val deployedInstance = deploy[Transforms](loader, Array(binDir), clazzName)
 
     //TODO: replace with actor model
     log.info(s"All Transformations BEFORE = $TransformsHolder")

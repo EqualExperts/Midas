@@ -13,8 +13,10 @@ trait Compilable extends Loggable {
       log.error(s"Scala Compiler Error $message")
     }
     val runtimeClasspath = System.getProperty("java.class.path")
-    log.info(s"Runtime Classpath = $runtimeClasspath")
-    log.info(s"Inside Compile classpathDir = $classpathDir, outputDirURI = $outputDir, files to compile = $files")
+    if(log.isDebugEnabled) {
+      log.debug(s"Runtime Classpath = $runtimeClasspath")
+      log.debug(s"Inside Compile classpathDir = $classpathDir, outputDirURI = $outputDir, files to compile = $files")
+    }
     val settings = new Settings(error)
 
     settings.outdir.value = outputDir
@@ -26,9 +28,10 @@ trait Compilable extends Loggable {
     log.info(s"Started Compilation of $files")
     val run = new compiler.Run
     run compile files
-    log.info(s"*** Completed Compilation of $files")
+    log.info(s"Completed Compilation of $files")
 //    reporter.printSummary()
     if(reporter.hasErrors) {
+      log.error(s"Compilation Failed!")
       throw new RuntimeException(s"Compilation Failed!")
     }
   }

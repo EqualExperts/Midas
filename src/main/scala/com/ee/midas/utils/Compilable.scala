@@ -1,8 +1,7 @@
-package com.ee.midas.hotdeploy
+package com.ee.midas.utils
 
 import scala.tools.nsc.{Settings, Global}
 import scala.tools.nsc.reporters.ConsoleReporter
-import com.ee.midas.utils.Loggable
 
 trait Compilable extends Loggable {
   def compile(classpathDir: String, outputDir: String, file: String): Unit =

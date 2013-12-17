@@ -1,12 +1,13 @@
-package com.ee.midas.hotdeploy
+package com.ee.midas
 
 import java.io._
 import com.ee.midas.dsl.Translator
 import scala.collection.JavaConverters._
 import java.net.URL
-import com.ee.midas.utils.Loggable
+import com.ee.midas.utils.{Compilable, Loggable}
 import com.ee.midas.transform.{Transforms, TransformsHolder}
 import scala.Array
+import com.ee.midas.hotdeploy.Deployable
 
 class DeltaFilesProcessor(val translator: Translator) extends Loggable with Compilable with Deployable {
 

@@ -5,21 +5,18 @@ import com.ee.midas.pipes.{SocketConnector, DuplexPipe}
 import java.net._
 import com.ee.midas.utils.{DirectoryWatcher, Accumulator, Loggable}
 import com.ee.midas.interceptor.{Transformer, MessageTracker, RequestInterceptor, ResponseInterceptor}
-import com.ee.midas.hotdeploy.DeltaFilesProcessor
 import com.ee.midas.dsl.generator.ScalaGenerator
 import com.ee.midas.dsl.interpreter.Reader
 import com.ee.midas.dsl.Translator
 import java.io.{PrintWriter, File}
 import com.ee.midas.transform.TransformType
 
-
 object Main extends App with Loggable {
-
   val maxClientConnections = 50
 
   override def main(args:Array[String]): Unit = {
-
     val (midasHost, midasPort, mongoHost, mongoPort) = (args(0), args(1).toInt, args(2), args(3).toInt)
+    val loader = Main.getClass.getClassLoader
 
     val deltasDirURI = "deltas/"
     val srcScalaTemplateURI = "templates/Transformations.scala.template"
@@ -27,9 +24,8 @@ object Main extends App with Loggable {
     val srcScalaFilename = "Transformations.scala"
     val binDirURI = "generated/scala/bin/"
     val clazzName = "com.ee.midas.transform.Transformations"
-
-    val loader = Main.getClass.getClassLoader
     val classpathURI = "."
+
     val classpathDir = loader.getResource(classpathURI)
     val binDir = loader.getResource(binDirURI)
     val deltasDir = loader.getResource(deltasDirURI)
@@ -57,7 +53,7 @@ object Main extends App with Loggable {
     sys.ShutdownHookThread {
       watcher.stopWatching
       val pipes = accumulate(null)
-      log.info("User Forced Stop on Midas...Closing Open Connections = ")
+      log.info("User Forced Stop on Midas...Closing Open Connections")
       pipes filter(_.isActive) map(_.forceStop)
     }
     //TODO#1: Wire this as option from cmdLine

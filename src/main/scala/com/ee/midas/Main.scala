@@ -11,6 +11,7 @@ import com.ee.midas.dsl.generator.ScalaGenerator
 import com.ee.midas.dsl.interpreter.Reader
 import com.ee.midas.dsl.Translator
 import java.io.{Writer, PrintWriter, File}
+import com.ee.midas.transform.TransformType
 
 
 object Main extends App with Loggable {
@@ -19,7 +20,7 @@ object Main extends App with Loggable {
 
   override def main(args:Array[String]): Unit = {
 
-    val (midasHost,midasPort,mongoHost,mongoPort) = (args(0), args(1).toInt, args(2), args(3).toInt)
+    val (midasHost, midasPort, mongoHost, mongoPort) = (args(0), args(1).toInt, args(2), args(3).toInt)
 
     val deltasDirURI = "deltas/"
     val srcScalaTemplateURI = "templates/Transformations.scala.template"
@@ -28,9 +29,6 @@ object Main extends App with Loggable {
     val binDirURI = "generated/scala/bin/"
     val clazzName = "com.ee.midas.transform.Transformations"
 
-    implicit val deltasProcessor = new DeltaFilesProcessor(new Translator(new Reader(), new ScalaGenerator()))
-
-    log.info(s"Processing Delta Files...")
     val loader = Main.getClass.getClassLoader
     val classpathURI = "."
     val classpathDir = loader.getResource(classpathURI)
@@ -40,6 +38,9 @@ object Main extends App with Loggable {
     val srcScalaDir = loader.getResource(srcScalaDirURI)
     log.info(s"Source Scala Dir = $srcScalaDir")
     val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
+
+    log.info(s"Processing Delta Files...")
+    implicit val deltasProcessor = new DeltaFilesProcessor(new Translator(new Reader(), new ScalaGenerator()))
     processDeltaFiles(deltasDir, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
     log.info(s"Completed...Processing Delta Files!")
 
@@ -60,7 +61,9 @@ object Main extends App with Loggable {
       log.info("User Forced Stop on Midas...Closing Open Connections = ")
       pipes filter(_.isActive) map(_.forceStop)
     }
-
+    //TODO#1: Wire this as option from cmdLine
+    //TODO#2: Later from an admin client that changes the Midas mode at runtime without shutting it down
+    val transformType = TransformType.EXPANSION
     import SocketConnector._
     while (true) {
       val application = waitForNewConnectionOn(midasSocket)
@@ -69,7 +72,7 @@ object Main extends App with Loggable {
         val mongoSocket = new Socket(mongoHost, mongoPort)
         val tracker = new MessageTracker()
         val requestInterceptable = new RequestInterceptor(tracker)
-        val responseInterceptable = new ResponseInterceptor(tracker, new Transformer())
+        val responseInterceptable = new ResponseInterceptor(tracker, new Transformer(transformType))
 
         val duplexPipe = application  <|==|> (mongoSocket, requestInterceptable, responseInterceptable)
         duplexPipe.start

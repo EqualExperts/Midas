@@ -4,7 +4,8 @@ import java.nio.file.{WatchEvent, FileSystems}
 import java.nio.file.StandardWatchEventKinds._
 import scala.collection.JavaConverters._
 
-class DirectoryWatcher(dirURL: String) extends Loggable {
+class DirectoryWatcher(dirURL: String)(onEvent: WatchEvent[_] => Unit) extends Loggable with Runnable {
+  private val dirWatcherThread = new Thread(this, getClass.getSimpleName + "-Thread")
   private val fileSystem = FileSystems.getDefault
   private val watcher = fileSystem.newWatchService()
   private val os = System.getProperty("os.name")
@@ -26,8 +27,12 @@ class DirectoryWatcher(dirURL: String) extends Loggable {
     isRunning = false
     watcher.close()
   }
+
+  def start : Unit = {
+     dirWatcherThread.start()
+  }
   
-  def watch(onEvent: WatchEvent[_] => Unit): Unit = {
+  def run: Unit = {
     var valid = true
     while(isRunning && valid) {
       try {

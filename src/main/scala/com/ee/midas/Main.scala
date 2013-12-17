@@ -10,7 +10,7 @@ import com.ee.midas.hotdeploy.DeltaFilesProcessor
 import com.ee.midas.dsl.generator.ScalaGenerator
 import com.ee.midas.dsl.interpreter.Reader
 import com.ee.midas.dsl.Translator
-import java.io.{PrintWriter, File}
+import java.io.{Writer, PrintWriter, File}
 
 
 object Main extends App with Loggable {
@@ -40,17 +40,15 @@ object Main extends App with Loggable {
     val srcScalaDir = loader.getResource(srcScalaDirURI)
     log.info(s"Source Scala Dir = $srcScalaDir")
     val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
-    val srcScalaWriter = new PrintWriter(srcScalaFile, "utf-8")
-    deltasProcessor.process(deltasDir, srcScalaTemplate, srcScalaWriter, srcScalaFile, binDir, clazzName, classpathDir)
+    processDeltaFiles(deltasDir, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir, deltasProcessor)
     log.info(s"Completed...Processing Delta Files!")
 
     log.info(s"Setting up Directory Watcher...")
-    val watcher = watch(deltasDir) { watchEvent =>
+    val watcher = new DirectoryWatcher(deltasDir.getPath)(watchEvent => {
       log.info(s"Received ${watchEvent.kind()}, Context = ${watchEvent.context()}")
-      val writer = new PrintWriter(srcScalaFile, "utf-8")
-      deltasProcessor.process(deltasDir, srcScalaTemplate, writer, srcScalaFile, binDir, clazzName, classpathDir)
-      writer.close()
-    }
+      processDeltaFiles(deltasDir, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir, deltasProcessor)
+    })
+    watcher.start
 
     log.info(s"Starting Midas Server...")
     val midasSocket = new ServerSocket(midasPort, maxClientConnections, InetAddress.getByName(midasHost))
@@ -92,11 +90,10 @@ object Main extends App with Loggable {
     serverSocket.accept()
   }
 
-  private def watch(dir: URL)(onEvent: WatchEvent[_] => Unit): DirectoryWatcher = {
-    val watcher = new DirectoryWatcher(dir.getPath)
-    new Thread(new Runnable() {
-      def run() = watcher watch onEvent
-    }).start()
-    watcher
+  private def processDeltaFiles(deltasDir: URL, srcScalaTemplate: URL, srcScalaFile: File, binDir: URL,
+                                clazzName: String, classpathDir: URL, deltasProcessor: DeltaFilesProcessor): Unit = {
+    val writer = new PrintWriter(srcScalaFile, "utf-8")
+    deltasProcessor.process(deltasDir, srcScalaTemplate, writer, srcScalaFile, binDir, clazzName, classpathDir)
+    writer.close()
   }
 }

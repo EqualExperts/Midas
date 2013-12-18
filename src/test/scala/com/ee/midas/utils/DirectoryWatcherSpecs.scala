@@ -8,6 +8,8 @@ import org.specs2.runner.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 object DirectoryWatcherSpecs extends Specification{
 
+  sequential
+
   def waitForWatcherToStart(millis: Long) = Thread.sleep(millis)
 
   "Directory watcher" should {
@@ -42,11 +44,14 @@ object DirectoryWatcherSpecs extends Specification{
     "stop watching a directory in case of an exception" in {
       val path = "/" + System.getProperty("user.dir")
       val watcher = new DirectoryWatcher(path)(watchEvent => {
-          throw new Exception()
+          throw new Exception("Exception forcibly throw from within a test case.")
         }
       )
       watcher.start
-      waitForWatcherToStart(200)
+      val file = new File("exception.txt")
+      file.createNewFile()
+      file.deleteOnExit()
+      waitForWatcherToStart(10000)
       watcher.isRunning must beFalse
     }
   }

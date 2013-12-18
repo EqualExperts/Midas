@@ -1,15 +1,14 @@
-package com.ee.midas.hotdeploy
+package com.ee.midas.utils
 
 import org.specs2.mutable.Specification
 
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 import java.io.{File, FileWriter}
-import com.ee.midas.utils.Compilable
 import com.ee.midas.Main
 
 @RunWith(classOf[JUnitRunner])
-object CompilableSpecs extends Specification with Compilable {
+object ScalaCompilerSpecs extends Specification with ScalaCompiler {
 
   sequential
 
@@ -31,7 +30,7 @@ object CompilableSpecs extends Specification with Compilable {
   log.info(s"Source Scala Dir = $srcScalaDir")
   val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
 
-  "Compilable class" should {
+  "Scala Compiler" should {
     "throw exception in case of errors" in {
       if(srcScalaFile.exists()) {
         srcScalaFile.delete()

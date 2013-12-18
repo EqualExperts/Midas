@@ -47,7 +47,8 @@ class DirectoryWatcher(dirURL: String)(onEvent: WatchEvent[_] => Unit) extends L
       } catch {
         case e: Exception =>
           log.error(s"Closing it due to ${e.getMessage}")
-          watcher.close()
+          stopWatching
+//          watcher.close()
       }
     }
     isRunning = false

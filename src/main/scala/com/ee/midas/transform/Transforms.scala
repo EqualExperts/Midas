@@ -11,9 +11,9 @@ abstract class Transforms extends Versioner with Deployable[Transforms] {
   var expansions : Map[String, VersionedSnippets]
   var contractions : Map[String, VersionedSnippets]
 
-  def injectState(newTransforms: Transforms) = {
-    this.expansions = newTransforms.expansions
-    this.contractions = newTransforms.contractions
+  def injectState(fromTransforms: Transforms) = {
+    this.expansions = fromTransforms.expansions
+    this.contractions = fromTransforms.contractions
   }
 
   def canBeApplied(fullCollectionName: String): Boolean =

@@ -4,6 +4,7 @@ import java.io.InputStream
 import org.bson.BSONObject
 import com.ee.midas.transform.DocumentOperations._
 import com.ee.midas.utils.Loggable
+import com.ee.midas.transform.Transformer
 
 class ResponseInterceptor (tracker: MessageTracker, transformer: Transformer)
   extends MidasInterceptable with Loggable {

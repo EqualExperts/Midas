@@ -1,9 +1,7 @@
-package com.ee.midas.interceptor
+package com.ee.midas.transform
 
 import org.bson.BSONObject
 import com.ee.midas.hotdeploy.DeployableHolder
-
-import com.ee.midas.transform.{Transforms, TransformType}
 
 class Transformer(val transformType: TransformType, deployableHolder: DeployableHolder[Transforms]) {
   def canTransformDocuments(implicit fullCollectionName: String): Boolean =

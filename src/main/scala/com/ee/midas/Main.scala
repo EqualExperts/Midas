@@ -4,12 +4,12 @@ package com.ee.midas
 import com.ee.midas.pipes.{SocketConnector, DuplexPipe}
 import java.net._
 import com.ee.midas.utils.{DirectoryWatcher, Accumulator, Loggable}
-import com.ee.midas.interceptor.{Transformer, MessageTracker, RequestInterceptor, ResponseInterceptor}
+import com.ee.midas.interceptor.{MessageTracker, RequestInterceptor, ResponseInterceptor}
 import com.ee.midas.dsl.generator.ScalaGenerator
 import com.ee.midas.dsl.interpreter.Reader
 import com.ee.midas.dsl.Translator
 import java.io.{PrintWriter, File}
-import com.ee.midas.transform.{Transformations, Transforms, TransformType}
+import com.ee.midas.transform.{Transformer, Transformations, Transforms, TransformType}
 import com.ee.midas.hotdeploy.DeployableHolder
 
 object Main extends App with Loggable {

@@ -8,6 +8,7 @@ import org.specs2.mock.Mockito
 import org.specs2.specification.Scope
 import com.mongodb.BasicDBObject
 import org.bson.BasicBSONEncoder
+import com.ee.midas.transform.Transformer
 
 @RunWith(classOf[JUnitRunner])
 class ResponseInterceptorSpecs extends Specification with Mockito {

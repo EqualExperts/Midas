@@ -1,6 +1,6 @@
 package com.ee.midas.hotdeploy
 
-trait DeployableHolder[T <: Deployable[T]] {
+abstract class DeployableHolder[T <: Deployable[T]] {
   private val deployable = createDeployable
 
   def get =

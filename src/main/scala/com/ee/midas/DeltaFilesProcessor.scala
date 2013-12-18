@@ -9,7 +9,8 @@ import com.ee.midas.transform.Transforms
 import scala.Array
 import com.ee.midas.hotdeploy.{DeployableHolder, Deployer}
 
-class DeltaFilesProcessor(val translator: Translator, val deployableHolder: DeployableHolder[Transforms]) extends Loggable with ScalaCompiler with Deployer {
+class DeltaFilesProcessor(val translator: Translator, val deployableHolder: DeployableHolder[Transforms])
+  extends Loggable with ScalaCompiler with Deployer {
 
   private def fillTemplate(scalaTemplateFilename: String, translations: String): String = {
     val scalaTemplateContents = scala.io.Source.fromFile(scalaTemplateFilename).mkString

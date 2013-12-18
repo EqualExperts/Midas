@@ -1,6 +1,6 @@
 package com.ee.midas.hotdeploy
 
-trait DeployableHolder[T <: DeployableInjector[T]] {
+trait DeployableHolder[T <: Deployable[T]] {
   private val deployable = createDeployable
 
   def get =

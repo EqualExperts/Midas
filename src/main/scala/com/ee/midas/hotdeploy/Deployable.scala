@@ -1,5 +1,5 @@
 package com.ee.midas.hotdeploy
 
-trait DeployableInjector[T] {
+trait Deployable[T] {
   def injectState(t: T)
 }

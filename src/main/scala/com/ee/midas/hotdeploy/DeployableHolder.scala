@@ -1,22 +1,24 @@
-package com.ee.midas.transform
+package com.ee.midas.hotdeploy
 
-object TransformsHolder {
-  private val transforms = new Transformations
+trait DeployableHolder[T <: DeployableInjector[T]] {
+  private val deployable = createDeployable
 
   def get =
     this.synchronized {
-      transforms
+      deployable
     }
 
-  def set(newTransforms: Transforms) =
+  def set(newT: T) =
     this.synchronized {
-      this.transforms.update(newTransforms)
+      this.deployable.injectState(newT)
     }
+  
+  def createDeployable: T
 
   override def toString =
     s"""
       |===============================================================
-      |${transforms}
+      |${deployable}
       |===============================================================
     """
 }

@@ -3,7 +3,7 @@ package com.ee.midas.hotdeploy
 import com.ee.midas.utils.Loggable
 import java.net.URL
 
-trait Deployable extends Loggable {
+trait Deployer extends Loggable {
   def deploy[T](parent: ClassLoader, loadFrom: Array[URL], clazzName: String): T = {
     try {
       val urlClassLoader = new ChildFirstClassLoader(loadFrom, parent)

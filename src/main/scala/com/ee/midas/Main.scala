@@ -9,7 +9,8 @@ import com.ee.midas.dsl.generator.ScalaGenerator
 import com.ee.midas.dsl.interpreter.Reader
 import com.ee.midas.dsl.Translator
 import java.io.{PrintWriter, File}
-import com.ee.midas.transform.TransformType
+import com.ee.midas.transform.{Transformations, Transforms, TransformType}
+import com.ee.midas.hotdeploy.DeployableHolder
 
 object Main extends App with Loggable {
   val maxClientConnections = 50
@@ -35,7 +36,9 @@ object Main extends App with Loggable {
     val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
 
     log.info(s"Processing Delta Files...")
-    implicit val deltasProcessor = new DeltaFilesProcessor(new Translator(new Reader(), new ScalaGenerator()))
+    val deployableHolder = createDeployableHolder
+    implicit val deltasProcessor =
+      new DeltaFilesProcessor(new Translator(new Reader(), new ScalaGenerator()), deployableHolder)
     processDeltaFiles(deltasDir, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
     log.info(s"Completed...Processing Delta Files!")
 
@@ -67,7 +70,7 @@ object Main extends App with Loggable {
         val mongoSocket = new Socket(mongoHost, mongoPort)
         val tracker = new MessageTracker()
         val requestInterceptable = new RequestInterceptor(tracker)
-        val responseInterceptable = new ResponseInterceptor(tracker, new Transformer(transformType))
+        val responseInterceptable = new ResponseInterceptor(tracker, new Transformer(transformType, deployableHolder))
 
         val duplexPipe = application  <|==|> (mongoSocket, requestInterceptable, responseInterceptable)
         duplexPipe.start
@@ -94,4 +97,9 @@ object Main extends App with Loggable {
     deltasProcessor.process(deltasDir, srcScalaTemplate, writer, srcScalaFile, binDir, clazzName, classpathDir)
     writer.close()
   }
+
+  private def createDeployableHolder =
+    new DeployableHolder[Transforms] {
+      def createDeployable: Transforms = new Transformations
+    }
 }

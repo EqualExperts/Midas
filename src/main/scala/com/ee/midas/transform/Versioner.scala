@@ -20,17 +20,17 @@ trait Versioner extends Loggable {
     val versionFieldName = transformType.versionFieldName()
     getVersion(document) match {
       case Some(version) => {
-        log.info("Current Version %f of Document %s".format(version, document))
+        log.debug("Current Version %f of Document %s".format(version, document))
         val nextVersion = version + 1d
         document + (versionFieldName, nextVersion)
-        log.info("Updated Version to %f on Document %s\n".format(nextVersion, document))
+        log.debug("Updated Version to %f on Document %s\n".format(nextVersion, document))
         document
       }
       case None => {
-        log.info("No Versioning found on Document %s".format(document))
+        log.debug("No Versioning found on Document %s".format(document))
         val version = 1d
         document + (versionFieldName, version)
-        log.info("Added Version %f to Document %s\n".format(version, document))
+        log.debug("Added Version %f to Document %s\n".format(version, document))
         document
       }
     }

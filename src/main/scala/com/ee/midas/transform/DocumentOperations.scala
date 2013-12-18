@@ -8,33 +8,33 @@ import com.ee.midas.utils.Loggable
 
 class DocumentOperations private (document: BSONObject) extends Loggable {
   def + [T] (field: String, value: T): BSONObject = {
-    log.info("Adding/Updating Field %s with Value %s on Document %s".format(field, value.toString, document))
+    log.debug("Adding/Updating Field %s with Value %s on Document %s".format(field, value.toString, document))
     document.put(field, value)
-    log.info("After Adding/Updating Field %s on Document %s\n".format(field, document))
+    log.debug("After Adding/Updating Field %s on Document %s\n".format(field, document))
     document
   }
 
   def - (name: String): BSONObject = {
-    log.info("Removing Field %s from Document %s".format(name, document))
+    log.debug("Removing Field %s from Document %s".format(name, document))
     document.removeField(name)
-    log.info("After Removing Field %s from Document %s\n".format(name, document))
+    log.debug("After Removing Field %s from Document %s\n".format(name, document))
     document
   }
 
   def ++ (fields: BSONObject) : BSONObject = {
-    log.info("Adding Fields %s to Document %s".format(fields, document))
+    log.debug("Adding Fields %s to Document %s".format(fields, document))
     document.putAll(fields)
-    log.info("After Adding Fields to Document %s\n".format(document))
+    log.debug("After Adding Fields to Document %s\n".format(document))
     document
   }
   
   def -- (fields: BSONObject) : BSONObject = {
-    log.info("Removing Fields %s from Document %s".format(fields, document))
+    log.debug("Removing Fields %s from Document %s".format(fields, document))
     fields.toMap.asScala.foreach { case(index, value) =>
       val name = value.asInstanceOf[String]
       document.removeField(name)
     }
-    log.info("After Removing Fields from Document %s\n".format(document))
+    log.debug("After Removing Fields from Document %s\n".format(document))
     document
   }
 

@@ -1,13 +1,14 @@
 package com.ee.midas.interceptor
 
 import org.bson.BSONObject
-//import com.ee.midas.transform.Transformations._
-import com.ee.midas.transform.{TransformsHolder, TransformType}
+import com.ee.midas.hotdeploy.DeployableHolder
 
-class Transformer(val transformType: TransformType) {
+import com.ee.midas.transform.{Transforms, TransformType}
+
+class Transformer(val transformType: TransformType, deployableHolder: DeployableHolder[Transforms]) {
   def canTransformDocuments(implicit fullCollectionName: String): Boolean =
-    TransformsHolder.get.canBeApplied(fullCollectionName)
+    deployableHolder.get.canBeApplied(fullCollectionName)
 
   def transform(document: BSONObject)(implicit fullCollectionName: String): BSONObject =
-    TransformsHolder.get.map(document)(fullCollectionName, transformType)
+    deployableHolder.get.map(document)(fullCollectionName, transformType)
 }

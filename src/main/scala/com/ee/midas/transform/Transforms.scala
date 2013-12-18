@@ -2,15 +2,16 @@ package com.ee.midas.transform
 
 import org.bson.BSONObject
 import TransformType._
+import com.ee.midas.hotdeploy.DeployableInjector
 
-abstract class Transforms extends Versioner {
+abstract class Transforms extends Versioner with DeployableInjector[Transforms] {
   type Snippet = BSONObject => BSONObject
   type Snippets = Iterable[Snippet]
   type VersionedSnippets = Map[Double, Snippet]
   var expansions : Map[String, VersionedSnippets]
   var contractions : Map[String, VersionedSnippets]
 
-  def update(transforms: Transforms) = {
+  override def injectState(transforms: Transforms) = {
     this.expansions = transforms.expansions
     this.contractions = transforms.contractions
   }

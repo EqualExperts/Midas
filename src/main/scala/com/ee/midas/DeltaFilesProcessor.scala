@@ -4,12 +4,12 @@ import java.io._
 import com.ee.midas.dsl.Translator
 import scala.collection.JavaConverters._
 import java.net.URL
-import com.ee.midas.utils.{Compilable, Loggable}
-import com.ee.midas.transform.{Transforms, TransformsHolder}
+import com.ee.midas.utils.{ScalaCompiler, Loggable}
+import com.ee.midas.transform.Transforms
 import scala.Array
-import com.ee.midas.hotdeploy.Deployable
+import com.ee.midas.hotdeploy.{DeployableHolder, Deployer}
 
-class DeltaFilesProcessor(val translator: Translator) extends Loggable with Compilable with Deployable {
+class DeltaFilesProcessor(val translator: Translator, val deployableHolder: DeployableHolder[Transforms]) extends Loggable with ScalaCompiler with Deployer {
 
   private def fillTemplate(scalaTemplateFilename: String, translations: String): String = {
     val scalaTemplateContents = scala.io.Source.fromFile(scalaTemplateFilename).mkString
@@ -60,8 +60,8 @@ class DeltaFilesProcessor(val translator: Translator) extends Loggable with Comp
     val deployedInstance = deploy[Transforms](loader, Array(binDir), clazzName)
 
     //TODO: replace with actor model
-    log.info(s"All Transformations BEFORE = $TransformsHolder")
-    TransformsHolder.set(deployedInstance)
-    log.info(s"All Transformations AFTER = $TransformsHolder")
+    log.info(s"STATE BEFORE = $deployableHolder")
+    deployableHolder.set(deployedInstance)
+    log.info(s"STATE AFTER = $deployableHolder")
   }
 }

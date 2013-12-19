@@ -4,7 +4,7 @@ import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 import org.specs2.mutable.Specification
 import com.ee.midas.utils.ScalaCompiler
-import com.ee.midas.Main
+import com.ee.midas.{Main}
 import java.io.{FileWriter, File}
 import com.ee.midas.transform.Transforms
 

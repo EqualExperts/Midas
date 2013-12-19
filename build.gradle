@@ -167,7 +167,7 @@ def runPythonTests(String srcFolder, String reportsFolder) {
 
 task ('cleanAcceptanceReportsDir') {
     File dir = new File(project.ext.acceptanceTestReportsDir)
-    dir.exists()? dir.deleteDir() : println("exists = ${dir.exists()}")
+    !dir.exists() ?: dir.deleteDir()
 }
 
 // Apply External Plugins

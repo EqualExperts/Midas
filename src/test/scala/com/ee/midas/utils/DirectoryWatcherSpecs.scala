@@ -63,7 +63,7 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers{
     val file = new File("exception.txt")
     file.createNewFile()
     file.deleteOnExit()
-    waitForWatcherToStart(10000)
+    waitForWatcherToStart(200)
     watcher.isRunning must beFalse
   }
 }

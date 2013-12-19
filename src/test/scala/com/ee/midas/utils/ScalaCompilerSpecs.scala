@@ -14,20 +14,14 @@ object ScalaCompilerSpecs extends Specification with ScalaCompiler {
 
   val loader = Main.getClass.getClassLoader
 
-  val deltasDirURI = "deltas/"
-  val srcScalaTemplateURI = "templates/Transformations.scala.template"
   val srcScalaDirURI = "generated/scala/"
-  val srcScalaFilename = "Transformations.scala"
+  val srcScalaFilename = "ScalaCompilerTest.scala"
   val binDirURI = "generated/scala/bin/"
-  val clazzName = "com.ee.midas.transform.Transformations"
   val classpathURI = "."
 
   val classpathDir = loader.getResource(classpathURI)
   val binDir = loader.getResource(binDirURI)
-  val deltasDir = loader.getResource(deltasDirURI)
-  val srcScalaTemplate = loader.getResource(srcScalaTemplateURI)
   val srcScalaDir = loader.getResource(srcScalaDirURI)
-  log.info(s"Source Scala Dir = $srcScalaDir")
   val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
 
   "Scala Compiler" should {
@@ -42,7 +36,7 @@ object ScalaCompilerSpecs extends Specification with ScalaCompiler {
       if(!srcScalaFile.exists()) {
         srcScalaFile.createNewFile()
         val writer = new FileWriter(srcScalaFile)
-        writer.write("object simpleObject {println(\"Hello World\")}")
+        writer.write(s"""class ScalaCompilerTest {println("Hello World")}""")
         writer.close()
       }
       compile(classpathDir.getPath, binDir.getPath, srcScalaFile.getPath) must throwA[RuntimeException].not

@@ -9,7 +9,7 @@ import org.specs2.matcher.DataTables
 import java.lang.RuntimeException
 
 @RunWith(classOf[JUnitRunner])
-class FixedSizeStreamSpecs extends Specification with Mockito with DataTables {
+class FixedSizeStreamSpecs extends Specification with Mockito {
 
    "FixedSizeStream " should {
        "Return available bytes in InputStream " in {

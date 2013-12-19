@@ -11,6 +11,8 @@ import com.ee.midas.transform.Transforms
 @RunWith(classOf[JUnitRunner])
 object DeployerSpecs extends Specification with Deployer with ScalaCompiler {
 
+  sequential
+
   val loader = Main.getClass.getClassLoader
 
   val srcScalaDirURI = "generated/scala/"
@@ -43,6 +45,15 @@ object DeployerSpecs extends Specification with Deployer with ScalaCompiler {
       //then
       instance.getClass.getSimpleName mustEqual "TestDeployerClass"
       instance.isInstanceCreated must beTrue
+    }
+
+    "throw exception if a class is not found" in {
+      //given: a random class name
+      val clazzName = "com.ee.midas.hotdeploy.DeployerExceptionClass"
+
+      //when
+      deploy[TestBaseClass](getClass.getClassLoader, Array(binDir), clazzName) must throwA[RuntimeException]
+
     }
   }
 }

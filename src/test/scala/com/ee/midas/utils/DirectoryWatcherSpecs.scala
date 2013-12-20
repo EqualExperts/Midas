@@ -4,7 +4,7 @@ import java.io.{FileWriter, File}
 import org.junit.runner.RunWith
 import org.mockito.runners.MockitoJUnitRunner
 import org.specs2.matcher.JUnitMustMatchers
-import org.junit.{Before, Test}
+import org.junit.{After, Before, Test}
 
 /**
  * IMPORTANT NOTE:
@@ -21,7 +21,15 @@ import org.junit.{Before, Test}
 class DirectoryWatcherSpecs extends JUnitMustMatchers{
 
   def waitForWatcherToStart(millis: Long) = Thread.sleep(millis)
-  val path: String = "/" + System.getProperty("user.dir")
+  val path: String = "/" + System.getProperty("user.dir") + "/testWatcherDir"
+  val directory = new File(path)
+  directory.deleteOnExit()
+
+  @Before
+  def setUp() {
+    if(!directory.exists())
+      directory.mkdir()
+  }
 
   @Test
   def itWatchesACreateEventForADirectory() {
@@ -34,7 +42,7 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers{
     watcher.start
 
     //when: there is a create event
-    val file = new File("createFile.txt")
+    val file = new File(path + "/createFile.txt")
     file.createNewFile()
     file.deleteOnExit()
     waitForWatcherToStart(200)
@@ -47,7 +55,7 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers{
   @Test
   def itWatchesAModifyEventForADirectory() {
     //given: a watcher with a directory to watch, and an existing file in the directory
-    val file = new File("modifyFile.txt")
+    val file = new File(path + "/modifyFile.txt")
     file.createNewFile()
     file.deleteOnExit()
     var watching: Boolean = false
@@ -71,7 +79,7 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers{
   @Test
   def itWatchesADeleteEventForADirectory() {
     //given: a watcher with a directory to watch, and an existing file in the directory
-    val file = new File("deleteFile.txt")
+    val file = new File(path + "/deleteFile.txt")
     file.createNewFile()
     var watching: Boolean = false
     val watcher = new DirectoryWatcher(path)(watchEvent => {
@@ -90,7 +98,7 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers{
   }
 
   @Test
-  def itWatchesEventsOnMultipleFilesForADirectory() {
+  def itWatchesCreateEventsOnMultipleFilesForADirectory() {
     //given: a watcher with a directory to watch
     var watching: Int = 0
     val watcher = new DirectoryWatcher(path)(watchEvent => {
@@ -100,13 +108,13 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers{
     watcher.start
 
     //when: there is a create event
-    val file1 = new File("createFile1.txt")
+    val file1 = new File(path + "/createFile1.txt")
     file1.createNewFile()
     file1.deleteOnExit()
-    val file2 = new File("createFile2.txt")
+    val file2 = new File(path + "/createFile2.txt")
     file2.createNewFile()
     file2.deleteOnExit()
-    val file3 = new File("createFile3.txt")
+    val file3 = new File(path + "/createFile3.txt")
     file3.createNewFile()
     file3.deleteOnExit()
     waitForWatcherToStart(200)
@@ -120,11 +128,11 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers{
   def itWatchesDeleteEventsOnMultipleFilesForADirectory() {
     //given: a watcher with a directory to watch
     var deleted: Int = 0
-    val file1 = new File("deleteFile1.txt")
+    val file1 = new File(path + "/deleteFile1.txt")
     file1.createNewFile()
-    val file2 = new File("deleteFile2.txt")
+    val file2 = new File(path + "/deleteFile2.txt")
     file2.createNewFile()
-    val file3 = new File("deleteFile3.txt")
+    val file3 = new File(path + "/deleteFile3.txt")
     file3.createNewFile()
 
     val watcher = new DirectoryWatcher(path)(watchEvent => {
@@ -145,7 +153,7 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers{
   }
 
   @Test
-  def stopWatchingADirectoryWhenRequested() {
+  def itStopsWatchingADirectoryWhenRequested() {
     var watching: Boolean = false
     val watcher = new DirectoryWatcher(path)(watchEvent => {
         watching = true
@@ -157,13 +165,13 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers{
   }
 
   @Test
-  def stopWatchingADirectoryInCaseOfAnException() {
+  def itStopsWatchingADirectoryInCaseOfAnException() {
     val watcher = new DirectoryWatcher(path)(watchEvent => {
         throw new Exception("Exception forcibly throw from within a test case.")
       }
     )
     watcher.start
-    val file = new File("exceptionFile.txt")
+    val file = new File(path + "/exceptionFile.txt")
     file.createNewFile()
     file.deleteOnExit()
     waitForWatcherToStart(200)

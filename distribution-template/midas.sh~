@@ -26,13 +26,13 @@
  #
  # The views and conclusions contained in the software and documentation
  # are those of the authors and should not be interpreted as representing
- # official policies, either expressed or implied, of the Midas Project.
+ # official policies, either expressed or implied, of the Tayra Project.
  ##############################################################################
 #!/bin/sh
 if [ -z "$MIDAS_HOME" ]
 then
   MIDAS_HOME=.
 fi
-  CLASSPATH=$MIDAS_HOME:%%JAVA_CLASS_PATH%%
+  CLASSPATH=%%JAVA_CLASS_PATH%%
 
-java -cp $CLASSPATH com.ee.midas.cli.CLIRunner $@
+java -cp $CLASSPATH com.ee.midas.Main $@

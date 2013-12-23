@@ -26,7 +26,7 @@
  REM
  REM The views and conclusions contained in the software and documentation
  REM are those of the authors and should not be interpreted as representing
- REM official policies, either expressed or implied, of the Tayra Project.
+ REM official policies, either expressed or implied, of the Midas Project.
 
 if not defined MIDAS_HOME (SET MIDAS_HOME=.)
 

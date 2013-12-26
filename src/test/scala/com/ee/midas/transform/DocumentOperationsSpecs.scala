@@ -27,7 +27,7 @@ class DocumentOperationsSpecs extends Specification {
         val expectedEncodedDocument = document toBytes
 
         //Then
-        expectedEncodedDocument == encoder.encode(document)
+        expectedEncodedDocument mustEqual encoder.encode(document)
       }
 
 
@@ -37,7 +37,7 @@ class DocumentOperationsSpecs extends Specification {
         val transformedDocument = documentOperations + ("version","1.0")
 
         //Then
-        transformedDocument.containsField("version")
+        transformedDocument.containsField("version") must beTrue
       }
 
       "Remove a single field from the document" in new setup {
@@ -46,7 +46,7 @@ class DocumentOperationsSpecs extends Specification {
         val transformedDocument = documentOperations - "removeSingle"
 
         //Then
-        !transformedDocument.containsField("removeSingle")
+        transformedDocument.containsField("removeSingle") must beFalse
       }
 
       "Add multiple fields to the document" in new setup {
@@ -59,8 +59,22 @@ class DocumentOperationsSpecs extends Specification {
         val transformedDocument = documentOperations ++ deltas
 
         //Then
-        transformedDocument.containsField("version")
-        transformedDocument.containsField("id")
+        transformedDocument.containsField("version") must beTrue
+        transformedDocument.containsField("id") must beTrue
+      }
+
+      "Add a field to nested document" in new setup {
+
+        val deltas = new BasicBSONObject("nestedField.innerField2","innerValue2")
+
+        //When
+        val transformedDocument = documentOperations ++ deltas
+
+        //Then
+        transformedDocument.containsField("nestedField") must beTrue
+        val nestedDoc = transformedDocument.get("nestedField").asInstanceOf[BasicBSONObject]
+        nestedDoc.containsField("innerField2") must beTrue
+        nestedDoc.get("innerField2").equals("innerValue2") must beTrue
       }
 
       "Remove multiple fields from the document" in new setup {
@@ -70,17 +84,31 @@ class DocumentOperationsSpecs extends Specification {
         val transformedDocument = documentOperations -- deltas
 
         //Then
-        !transformedDocument.containsField("removeSingle") && !transformedDocument.containsField("removeMultiple")
+        transformedDocument.containsField("removeSingle") must beFalse
+        transformedDocument.containsField("removeMultiple") must beFalse
+      }
+
+      "Remove a field from nested document" in new setup {
+
+        val deltas = JSON.parse("[\"nestedField.removeNestedField\"]").asInstanceOf[BSONObject]
+
+        //When
+        val transformedDocument = documentOperations -- deltas
+
+        //Then
+        transformedDocument.containsField("nestedField") must beTrue
+        val nestedDoc = transformedDocument.get("nestedField").asInstanceOf[BasicBSONObject]
+        nestedDoc.containsField("removeNestedField") must beFalse
       }
     }
 
   trait setup extends Scope {
-    val document = new BasicBSONObject("name" , "midas")
-    document.put("removeSingle", "field")
-    document.put("removeMultiple", "fields")
+    val document = new BasicBSONObject("name" , "midas").
+      append("removeSingle", "field").
+      append("removeMultiple", "fields").
+      append("nestedField", new BasicBSONObject("innerField1", "innerValue1").append("removeNestedField", "field"))
 
     val documentOperations = DocumentOperations(document)
     val encoder : BSONEncoder = new BasicBSONEncoder()
-//    val decoder : DBDecoder = new DefaultDBDecoder()
   }
 }

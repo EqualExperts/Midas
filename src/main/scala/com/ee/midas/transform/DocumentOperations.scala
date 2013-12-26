@@ -1,10 +1,11 @@
 package com.ee.midas.transform
 
-import org.bson.{BasicBSONEncoder, BSONObject}
+import org.bson.{BasicBSONObject, BasicBSONEncoder, BSONObject}
 import scala.collection.JavaConverters._
 import java.io.InputStream
 import com.mongodb.{DefaultDBDecoder, DBDecoder}
 import com.ee.midas.utils.Loggable
+import com.mongodb.util.JSON
 
 class DocumentOperations private (document: BSONObject) extends Loggable {
   def + [T] (field: String, value: T): BSONObject = {
@@ -23,7 +24,22 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
 
   def ++ (fields: BSONObject) : BSONObject = {
     log.debug("Adding Fields %s to Document %s".format(fields, document))
-    document.putAll(fields)
+    val keys = fields.keySet().asScala
+    val (nestedKeys, normalKeys) = keys.partition(key => key.contains("."))
+    if(nestedKeys.isEmpty){
+      document.putAll(fields)
+    } else {
+      normalKeys.foreach(key => document.put(key, fields.get(key)))
+      nestedKeys.foreach { key => {
+          val currentKey = key.takeWhile(_!='.')
+          if(document.containsField(currentKey))
+            DocumentOperations(document.get(currentKey).asInstanceOf[BasicBSONObject]) ++ new BasicBSONObject(key.dropWhile(_!='.').tail, fields.get(key))
+          else
+            document.put(currentKey, DocumentOperations(new BasicBSONObject()) ++ new BasicBSONObject(key.dropWhile(_!='.').tail, fields.get(key)))
+        }
+      }
+    }
+
     log.debug("After Adding Fields to Document %s\n".format(document))
     document
   }
@@ -32,7 +48,13 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
     log.debug("Removing Fields %s from Document %s".format(fields, document))
     fields.toMap.asScala.foreach { case(index, value) =>
       val name = value.asInstanceOf[String]
-      document.removeField(name)
+      if(name.contains(".")) {
+        val currentKey = name.takeWhile(_!='.')
+        if(document.containsField(currentKey))
+          DocumentOperations(document.get(currentKey).asInstanceOf[BasicBSONObject]) -- JSON.parse(s"""["${name.dropWhile(_!='.').tail}"]""").asInstanceOf[BSONObject]
+      }
+      else
+        document.removeField(name)
     }
     log.debug("After Removing Fields from Document %s\n".format(document))
     document

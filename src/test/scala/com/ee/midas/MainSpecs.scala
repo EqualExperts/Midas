@@ -6,9 +6,9 @@ import org.specs2.runner.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class MainSpecs extends Specification{
-    "Main class" should {
-       "process CLI arguments" in {
-
-       }
-    }
+//    "Main class" should {
+////       "process CLI arguments" in {
+////
+////       }
+//    }
 }

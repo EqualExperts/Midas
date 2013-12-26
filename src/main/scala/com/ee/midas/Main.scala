@@ -114,7 +114,7 @@ object Main extends App with Loggable {
     var mongoHost = "localhost"
     var mongoPort = "27017"
     var mode = "EXPANSION"
-    val parser = new scopt.OptionParser("scopt") {
+    val parser = new scopt.OptionParser("midas") {
       opt("port" , "OPTIONAL, the port on which midas will accept connections, default is 27020" , x => midasPort = x)
       opt("source" , "OPTIONAL, the mongo host midas will connect to, default is localhost" , x => mongoHost = x)
       opt("mongoPort" , "OPTIONAL, the mongo port midas will connect to, default is 27017" , x => mongoPort = x)

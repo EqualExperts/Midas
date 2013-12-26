@@ -64,6 +64,11 @@ project.ext {
     distsBinDirName = "$project.distsDir/bin"
     distsZipFileName = "${project.distsDir}/${project.archivesBaseName}.zip"
 
+    resourcesDir = 'src/main/resources'
+    deltasDir = "$resourcesDir/deltas"
+    generatedScalaDir = "$resourcesDir/generated"
+    templatesDir = "$resourcesDir/templates"
+
     //Explode Distributables here
     explodedDir = "$project.buildDir/exploded"
 
@@ -285,6 +290,10 @@ task distribute(type:Zip, dependsOn: assemble) {
     from (project.ext.distsTemplateDir) {
         include ('**/*.txt')
     }
+    from (project.ext.resourcesDir) {
+        exclude('*.properties')
+    }
+
     from ("$libsDir") { into ('libs') }
     from ("${project.ext.deltasDir}") { into ("${project.ext.deltas}") }
     from ("${project.ext.transformationsDir}") {

@@ -17,10 +17,10 @@ object Main extends App with Loggable {
 
   override def main(args:Array[String]): Unit = {
 
-    val (midasHost: String, midasPort: Int, mongoHost: String, mongoPort: Int, operationMode: TransformType ) = processCLIparameters(args)
+    val (midasHost: String, midasPort: Int, mongoHost: String, mongoPort: Int, transformType: TransformType, deltasDirURI: String) = processCLIparameters(args)
     val loader = Main.getClass.getClassLoader
 
-    val deltasDirURI = "deltas/"
+    //val deltasDirURI = "deltas/"
     val srcScalaTemplateURI = "templates/Transformations.scala.template"
     val srcScalaDirURI = "generated/scala/"
     val srcScalaFilename = "Transformations.scala"
@@ -66,7 +66,7 @@ object Main extends App with Loggable {
     }
     //TODO#1: Wire this as option from cmdLine
     //TODO#2: Later from an admin client that changes the Midas mode at runtime without shutting it down
-    val transformType = TransformType.EXPANSION
+   // val transformType = TransformType.EXPANSION
     import SocketConnector._
     while (true) {
       val application = waitForNewConnectionOn(midasSocket)
@@ -108,30 +108,36 @@ object Main extends App with Loggable {
       def createDeployable: Transforms = new Transformations
     }
 
-  def processCLIparameters(args:Array[String]) = {
-    val midasHost = "localhost"
-    var midasPort = "27020"
-    var mongoHost = "localhost"
-    var mongoPort = "27017"
-    var mode = "EXPANSION"
-    val parser = new scopt.OptionParser("midas") {
-      opt("port" , "OPTIONAL, the port on which midas will accept connections, default is 27020" , x => midasPort = x)
-      opt("source" , "OPTIONAL, the mongo host midas will connect to, default is localhost" , x => mongoHost = x)
-      opt("mongoPort" , "OPTIONAL, the mongo port midas will connect to, default is 27017" , x => mongoPort = x)
-      opt("mode" , "OPTIONAL, the operation mode (EXPANSION/CONTRACTION) for midas, default is EXPANSION" , x => mode = x)
-    }
 
-    if (parser.parse(args)) {
-      // println(midasPort+" "+mongoHost+" "+mongoPort+" "+TransformType.valueOf(mode.toUpperCase))
-      try {
-       (midasHost, midasPort.toInt, mongoHost, mongoPort.toInt, TransformType.valueOf(mode.toUpperCase))
+    def processCLIparameters(args:Array[String]) = {
+      val midasHost = "localhost"
+      val parser = new scopt.OptionParser[ConfigCLI]("midas") {
+        opt[Int]("port") action { (x,c) => c.copy(midasPort = x)} text("OPTIONAL, the port on which midas will accept connections, default is 27020")
+        opt[String]("source") action { (x,c) => c.copy(mongoHost = x)} text("OPTIONAL, the mongo host midas will connect to, default is localhost")
+        opt[Int]("mongoPort") action { (x,c) => c.copy(mongoPort = x)} text("OPTIONAL, the mongo port midas will connect to, default is 27017")
+        opt[String]("mode") action { (x,c) => { if(x.equalsIgnoreCase("contraction"))
+                                                   c.copy(mode = TransformType.CONTRACTION)
+                                                else
+                                                   c.copy(mode = TransformType.EXPANSION)} } text("OPTIONAL, the operation mode (EXPANSION/CONTRACTION) for midas, default is EXPANSION")
+        opt[String]("deltasDir") action { (x,c) => c.copy(deltasDir = x)}  text("OPTIONAL, the location of delta files ")
+        help("help") text ("Show usage")
       }
-      catch{
-        case e: IllegalArgumentException => println("ERROR: Incorrect Mode (Enter EXPANSION/CONTRACTION) ")
+      parser.showUsage
+//
+      try {
+             val result = parser.parse(args,ConfigCLI())
+//              println(midasPort+" "+mongoHost+" "+mongoPort+" "+TransformType.valueOf(mode.toUpperCase))
+//              parser.showUsage
+             (midasHost, result.get.midasPort , result.get.mongoHost,result.get.mongoPort, result.get.mode, result.get.deltasDir)
+//
+
+      }
+      catch {
+        case e: IllegalArgumentException => //println("ERROR: Incorrect Mode (Enter EXPANSION/CONTRACTION) ")
                                             println(parser.usage)
                                             sys.exit
-     }
-   }
-
+      }
   }
+
+
 }

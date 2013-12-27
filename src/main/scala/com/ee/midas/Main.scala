@@ -111,33 +111,22 @@ object Main extends App with Loggable {
 
     def processCLIparameters(args:Array[String]) = {
       val midasHost = "localhost"
-      val parser = new scopt.OptionParser[ConfigCLI]("midas") {
+      val parser = new scopt.OptionParser[Config]("midas") {
         opt[Int]("port") action { (x,c) => c.copy(midasPort = x)} text("OPTIONAL, the port on which midas will accept connections, default is 27020")
         opt[String]("source") action { (x,c) => c.copy(mongoHost = x)} text("OPTIONAL, the mongo host midas will connect to, default is localhost")
         opt[Int]("mongoPort") action { (x,c) => c.copy(mongoPort = x)} text("OPTIONAL, the mongo port midas will connect to, default is 27017")
         opt[String]("mode") action { (x,c) => { if(x.equalsIgnoreCase("contraction"))
                                                    c.copy(mode = TransformType.CONTRACTION)
                                                 else
-                                                   c.copy(mode = TransformType.EXPANSION)} } text("OPTIONAL, the operation mode (EXPANSION/CONTRACTION) for midas, default is EXPANSION")
+                                                   c.copy(mode = TransformType.EXPANSION)  } } text("OPTIONAL, the operation mode (EXPANSION/CONTRACTION) for midas, default is EXPANSION")
         opt[String]("deltasDir") action { (x,c) => c.copy(deltasDir = x)}  text("OPTIONAL, the location of delta files ")
         help("help") text ("Show usage")
+        override def reportError(msg: String) : Unit = {}
       }
-      parser.showUsage
-//
-      try {
-             val result = parser.parse(args,ConfigCLI())
-//              println(midasPort+" "+mongoHost+" "+mongoPort+" "+TransformType.valueOf(mode.toUpperCase))
-//              parser.showUsage
-             (midasHost, result.get.midasPort , result.get.mongoHost,result.get.mongoPort, result.get.mode, result.get.deltasDir)
-//
 
-      }
-      catch {
-        case e: IllegalArgumentException => //println("ERROR: Incorrect Mode (Enter EXPANSION/CONTRACTION) ")
-                                            println(parser.usage)
-                                            sys.exit
+      val result = parser.parse(args,Config())
+      (midasHost, result.get.midasPort , result.get.mongoHost,result.get.mongoPort, result.get.mode, result.get.deltasDir)
+
       }
   }
 
-
-}

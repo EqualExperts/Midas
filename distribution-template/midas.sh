@@ -33,6 +33,6 @@ if [ -z "$MIDAS_HOME" ]
 then
   MIDAS_HOME=.
 fi
-  CLASSPATH=%%JAVA_CLASS_PATH%%
+  CLASSPATH=$MIDAS_HOME:%%JAVA_CLASS_PATH%%
 
 java -cp $CLASSPATH com.ee.midas.Main $@

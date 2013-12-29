@@ -88,6 +88,14 @@ project.ext {
     javaTestReportsDir = "$acceptanceTestReportsDir/java"
     pythonTestDir = "$acceptanceTestDir/python/driver-version-2.6.3"
     pythonTestReportsDir = "$acceptanceTestReportsDir/python"
+
+    transformsPackage = 'com/ee/midas/transform/'
+    deltas = "deltas"
+    transformations = "generated"
+    templates = "templates"
+    transformationsDir = "${project.buildDir}/resources/main/$transformations"
+    deltasDir = "${project.buildDir}/resources/main/$deltas"
+    templatesDir = "${project.buildDir}/resources/main/$templates"
 }
 
 sourceSets {
@@ -200,7 +208,10 @@ dependencies {
 jar {
     manifest {
         attributes.putAll(project.ext.manifest)
+        attributes(['Sealed' : 'false'], "${project.ext.transformsPackage}")
     }
+
+    excludes = [project.ext.deltas, project.ext.transformations, project.ext.templates]
 
     doLast {
         copy {
@@ -273,6 +284,13 @@ task distribute(type:Zip, dependsOn: assemble) {
         include ('**/*.txt')
     }
     from ("$libsDir") { into ('libs') }
+    from ("${project.ext.deltasDir}") { into ("${project.ext.deltas}") }
+    from ("${project.ext.transformationsDir}") {
+        exclude ('**/*.scala', '**/*.class')
+        into ("${project.ext.transformations}")
+    }
+    from ("${project.ext.templatesDir}") { into ("${project.ext.templates}") }
+    includeEmptyDirs = false
 }
 
 def prepareExecutables() {

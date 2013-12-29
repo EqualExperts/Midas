@@ -30,6 +30,6 @@
 
 if not defined MIDAS_HOME (SET MIDAS_HOME=.)
 
-SET CLASSPATH=%%JAVA_CLASS_PATH%%
+SET CLASSPATH=%MIDAS_HOME%;%%JAVA_CLASS_PATH%%
 
 java -cp %CLASSPATH% com.ee.midas.Main %*

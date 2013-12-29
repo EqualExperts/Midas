@@ -149,7 +149,7 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers{
     watcher.stopWatching
 
     //then: it was captured by the watcher
-    deleted === 3
+    deleted === 6
   }
 
   @Test

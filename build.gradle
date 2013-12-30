@@ -65,9 +65,6 @@ project.ext {
     distsZipFileName = "${project.distsDir}/${project.archivesBaseName}.zip"
 
     resourcesDir = 'src/main/resources'
-    deltasDir = "$resourcesDir/deltas"
-    generatedScalaDir = "$resourcesDir/generated"
-    templatesDir = "$resourcesDir/templates"
 
     //Explode Distributables here
     explodedDir = "$project.buildDir/exploded"

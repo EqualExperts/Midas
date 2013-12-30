@@ -1,6 +1,8 @@
 package com.ee.midas
 
 
+import _root_.java.lang.Class
+import _root_.java.lang.reflect.Method
 import com.ee.midas.pipes.{SocketConnector, DuplexPipe}
 import java.net._
 import com.ee.midas.utils.{DirectoryWatcher, Accumulator, Loggable}
@@ -11,6 +13,8 @@ import com.ee.midas.dsl.Translator
 import java.io.{PrintWriter, File}
 import com.ee.midas.transform.{Transformer, Transformations, Transforms, TransformType}
 import com.ee.midas.hotdeploy.DeployableHolder
+import scala.tools.nsc.util.ClassPath
+
 
 object Main extends App with Loggable {
   val maxClientConnections = 50
@@ -21,6 +25,13 @@ object Main extends App with Loggable {
     val loader = Main.getClass.getClassLoader
 
     //val deltasDirURI = "deltas/"
+    val deltasDirFile: File = new File(deltasDirURI)
+    val parentDeltasDir = deltasDirFile.getParentFile
+
+    println("parent "+parentDeltasDir )
+    addToClassPath(parentDeltasDir.toURI.toURL)
+
+
     val srcScalaTemplateURI = "templates/Transformations.scala.template"
     val srcScalaDirURI = "generated/scala/"
     val srcScalaFilename = "Transformations.scala"
@@ -29,13 +40,10 @@ object Main extends App with Loggable {
     val classpathURI = "."
 
     val classpathDir = loader.getResource(classpathURI)
-    log.info(s"Source Scala Dir = $classpathDir")
     val binDir = loader.getResource(binDirURI)
-    log.info(s"Source Scala Dir = $binDir")
     val deltasDir = loader.getResource(deltasDirURI)
-    log.info(s"Source Scala Dir = $deltasDir")
+    log.info(s"Deltas Dir = $deltasDir")
     val srcScalaTemplate = loader.getResource(srcScalaTemplateURI)
-    log.info(s"Source Scala Dir = $srcScalaTemplate")
     val srcScalaDir = loader.getResource(srcScalaDirURI)
     log.info(s"Source Scala Dir = $srcScalaDir")
     val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
@@ -121,12 +129,25 @@ object Main extends App with Loggable {
                                                    c.copy(mode = TransformType.EXPANSION)  } } text("OPTIONAL, the operation mode (EXPANSION/CONTRACTION) for midas, default is EXPANSION")
         opt[String]("deltasDir") action { (x,c) => c.copy(deltasDir = x)}  text("OPTIONAL, the location of delta files ")
         help("help") text ("Show usage")
-        override def reportError(msg: String) : Unit = {}
+        override def reportError(msg: String) : Unit = {
+          println(usage)
+          sys.exit
+        }
       }
 
       val result = parser.parse(args,Config())
       (midasHost, result.get.midasPort , result.get.mongoHost,result.get.mongoPort, result.get.mode, result.get.deltasDir)
 
       }
+
+    private def addToClassPath(uri : URL) = {
+      val sysloader: URLClassLoader = (ClassLoader.getSystemClassLoader()).asInstanceOf[URLClassLoader]
+      val sysclass: Class[URLClassLoader] = classOf[URLClassLoader]
+      val parameters: Class[_] = classOf[URL]
+      val url:Object = uri
+      val method: Method  = sysclass.getDeclaredMethod("addURL", parameters)
+      method.setAccessible(true)
+      method.invoke(sysloader, url)
+    }
   }
 

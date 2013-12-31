@@ -107,14 +107,14 @@ class MainSpecs extends Specification{
       " uses the specified directory for picking up delta files " in {
         val (midasHost: String, midasPort: Int, mongoHost: String, mongoPort: Int,
         transformType: TransformType, deltasURI: String) = Main.processCLIparameters(Array("--port","27040",
-          "--source","192.168.1.44","--mongoPort","27019","--mode","CONTRACTION","--deltasDir","newDir/NewDelta"))
+          "--source","192.168.1.44","--mongoPort","27019","--mode","CONTRACTION","--deltasDir","src/main/resources/deltas"))
 
         midasHost mustEqual "localhost"
         midasPort mustEqual 27040
         mongoHost mustEqual "192.168.1.44"
         mongoPort mustEqual 27019
         transformType mustEqual TransformType.CONTRACTION
-        deltasURI mustEqual "newDir/NewDelta"
+        deltasURI mustEqual "src/main/resources/deltas"
       }
     }
 }

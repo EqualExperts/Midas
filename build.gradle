@@ -261,7 +261,7 @@ task scalastyle(description: 'Run scalaStyle analysis for main and test classes'
     ant.mkdir(dir: project.ext.scalaStyleReportsDirName)
     javaexec {
         main = 'org.scalastyle.Main'
-        classpath = sourceSets.main.runtimeClasspath + fileTree(dir: ".", include: 'scopt_2.10-3.2.0.jar')
+        classpath = sourceSets.main.runtimeClasspath + fileTree(dir: '/home/komal/.gradle/caches/artifacts-26/filestore/com.github.scopt/scopt_2.10/3.2.0/jar/46c4d16a8691f31a80d70237f18de74995d917c8', include: 'scopt_2.10-3.2.0.jar')
         ext.configDir = file("${projectDir}/tools-config/scalastyle/scalaStyle.xml")
         ext.sourceDir = 'src'
         ext.xmlOut = file("$project.ext.scalaStyleReportsDirName/main.xml")

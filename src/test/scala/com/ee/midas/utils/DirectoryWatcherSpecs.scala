@@ -5,6 +5,7 @@ import org.junit.runner.RunWith
 import org.mockito.runners.MockitoJUnitRunner
 import org.specs2.matcher.JUnitMustMatchers
 import org.junit.{After, Before, Test}
+import java.nio.file.StandardWatchEventKinds._
 
 /**
  * IMPORTANT NOTE:
@@ -34,9 +35,9 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers{
   @Test
   def itWatchesACreateEventForADirectory() {
     //given: a watcher with a directory to watch
-    var watching: Boolean = false
-    val watcher = new DirectoryWatcher(path)(watchEvent => {
-        watching = true
+    var watchedCreateEvent: Boolean = false
+    val watcher = new DirectoryWatcher(path, List(ENTRY_CREATE), 0)(watchEvent => {
+        watchedCreateEvent = true
       }
     )
     watcher.start
@@ -45,11 +46,11 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers{
     val file = new File(path + "/createFile.txt")
     file.createNewFile()
     file.deleteOnExit()
-    waitForWatcherToStart(200)
-    watcher.stopWatching
 
     //then: it was captured by the watcher
-    watching must beTrue
+    watcher.stopWatching
+    while(watcher.isRunning)
+    watchedCreateEvent must beTrue
   }
 
   @Test
@@ -58,9 +59,9 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers{
     val file = new File(path + "/modifyFile.txt")
     file.createNewFile()
     file.deleteOnExit()
-    var watching: Boolean = false
-    val watcher = new DirectoryWatcher(path)(watchEvent => {
-      watching = true
+    var watchedModifyEvent: Boolean = false
+    val watcher = new DirectoryWatcher(path, List(ENTRY_MODIFY), 0)(watchEvent => {
+      watchedModifyEvent = true
     })
     watcher.start
 
@@ -69,11 +70,10 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers{
     writer.write("add some data.")
     writer.close()
 
-    waitForWatcherToStart(200)
-    watcher.stopWatching
-
     //then: it was captured by the watcher
-    watching must beTrue
+    watcher.stopWatching
+    while(watcher.isRunning)
+    watchedModifyEvent must beTrue
   }
 
   @Test
@@ -81,53 +81,56 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers{
     //given: a watcher with a directory to watch, and an existing file in the directory
     val file = new File(path + "/deleteFile.txt")
     file.createNewFile()
-    var watching: Boolean = false
-    val watcher = new DirectoryWatcher(path)(watchEvent => {
-      watching = true
+    var watchedDeleteEvent: Boolean = false
+    val watcher = new DirectoryWatcher(path, List(ENTRY_DELETE), 0)(watchEvent => {
+      watchedDeleteEvent = true
     })
     watcher.start
 
-    //when: there is a modify event
+    //when: there is a delete event
     file.delete()
 
-    waitForWatcherToStart(200)
-    watcher.stopWatching
 
     //then: it was captured by the watcher
-    watching must beTrue
+    watcher.stopWatching
+    while(watcher.isRunning)
+    watchedDeleteEvent must beTrue
   }
 
   @Test
   def itWatchesCreateEventsOnMultipleFilesForADirectory() {
     //given: a watcher with a directory to watch
-    var watching: Int = 0
-    val watcher = new DirectoryWatcher(path)(watchEvent => {
-      watching += 1
-    }
+    var watchedCreateEvents: Int = 0
+    val watcher = new DirectoryWatcher(path, List(ENTRY_CREATE), 0)(watchEvent => {
+      watchedCreateEvents += 1
+      }
     )
     watcher.start
 
-    //when: there is a create event
+    //when: there are multiple create events
     val file1 = new File(path + "/createFile1.txt")
     file1.createNewFile()
     file1.deleteOnExit()
+    Thread.sleep(100)
     val file2 = new File(path + "/createFile2.txt")
     file2.createNewFile()
     file2.deleteOnExit()
+    Thread.sleep(100)
     val file3 = new File(path + "/createFile3.txt")
     file3.createNewFile()
     file3.deleteOnExit()
-    waitForWatcherToStart(200)
-    watcher.stopWatching
+    Thread.sleep(100)
 
-    //then: it was captured by the watcher
-    watching === 3
+    //then: they are captured by the watcher
+    watcher.stopWatching
+    while(watcher.isRunning)
+    watchedCreateEvents === 3
   }
 
   @Test
   def itWatchesDeleteEventsOnMultipleFilesForADirectory() {
     //given: a watcher with a directory to watch
-    var deleted: Int = 0
+    var watchedDeleted: Int = 0
     val file1 = new File(path + "/deleteFile1.txt")
     file1.createNewFile()
     val file2 = new File(path + "/deleteFile2.txt")
@@ -135,27 +138,30 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers{
     val file3 = new File(path + "/deleteFile3.txt")
     file3.createNewFile()
 
-    val watcher = new DirectoryWatcher(path)(watchEvent => {
-      deleted += 1
-    }
+    val watcher = new DirectoryWatcher(path, List(ENTRY_DELETE),0)(watchEvent => {
+        watchedDeleted += 1
+      }
     )
     watcher.start
 
     //when: there is a create event
     file1.delete()
+    Thread.sleep(100)
     file2.delete()
+    Thread.sleep(100)
     file3.delete()
-    waitForWatcherToStart(200)
-    watcher.stopWatching
+    Thread.sleep(100)
 
     //then: it was captured by the watcher
-    deleted === 6
+    watcher.stopWatching
+    while(watcher.isRunning)
+    watchedDeleted === 3
   }
 
   @Test
   def itStopsWatchingADirectoryWhenRequested() {
     var watching: Boolean = false
-    val watcher = new DirectoryWatcher(path)(watchEvent => {
+    val watcher = new DirectoryWatcher(path, List(ENTRY_CREATE, ENTRY_DELETE))(watchEvent => {
         watching = true
       }
     )
@@ -166,7 +172,8 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers{
 
   @Test
   def itStopsWatchingADirectoryInCaseOfAnException() {
-    val watcher = new DirectoryWatcher(path)(watchEvent => {
+    val watcher = new DirectoryWatcher(path, List(ENTRY_CREATE, ENTRY_DELETE), 0)(watchEvent => {
+        println("Throwing exception")
         throw new Exception("Exception forcibly throw from within a test case.")
       }
     )
@@ -174,7 +181,8 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers{
     val file = new File(path + "/exceptionFile.txt")
     file.createNewFile()
     file.deleteOnExit()
-    waitForWatcherToStart(200)
+
+    Thread.sleep(100)
     watcher.isRunning must beFalse
   }
 }

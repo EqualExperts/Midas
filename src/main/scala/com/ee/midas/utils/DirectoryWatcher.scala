@@ -1,10 +1,12 @@
 package com.ee.midas.utils
 
 import java.nio.file.{WatchEvent, FileSystems}
-import java.nio.file.StandardWatchEventKinds._
 import scala.collection.JavaConverters._
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeUnit._
 
-class DirectoryWatcher(dirURL: String)(onEvent: WatchEvent[_] => Unit) extends Loggable with Runnable {
+class DirectoryWatcher(dirURL: String, events: Seq[WatchEvent.Kind[_]], waitBeforeProcessing: Long = 1000,
+                       timeUnit: TimeUnit = MILLISECONDS)(onEvents: Seq[WatchEvent[_]] => Unit) extends Loggable with Runnable {
   private val dirWatcherThread = new Thread(this, getClass.getSimpleName + "-Thread")
   private val fileSystem = FileSystems.getDefault
   private val watcher = fileSystem.newWatchService()
@@ -17,8 +19,8 @@ class DirectoryWatcher(dirURL: String)(onEvent: WatchEvent[_] => Unit) extends L
                      else
                         fileSystem.getPath(dirURL)
 
-  path.register(watcher, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE)
-  log.info(s"Will Watch dir ${dirURL} for Creation, Modification and Deletion of Files...")
+  path.register(watcher, events.toArray)
+  log.info(s"Will Watch dir ${dirURL} for ${events} of Files...")
   
   var isRunning = true
   
@@ -31,24 +33,28 @@ class DirectoryWatcher(dirURL: String)(onEvent: WatchEvent[_] => Unit) extends L
   def start : Unit = {
      dirWatcherThread.start()
   }
-  
+
+  def forMoreEvents(waitTime: Long) = {
+    Thread.sleep(waitTime)
+  }
+
   def run: Unit = {
     var valid = true
     while(isRunning && valid) {
       try {
         log.info(s"Watching ${dirURL}...")
         val watchKey = watcher.take()
+        forMoreEvents(waitBeforeProcessing)
         val events = watchKey.pollEvents().asScala
         events.foreach { e =>
           log.info(s"Detected ${e.kind()}, Context = ${e.context()}}")
-          onEvent(e)
         }
+        onEvents(events)
         valid = watchKey.reset()
       } catch {
         case e: Exception =>
           log.error(s"Closing it due to ${e.getMessage}")
           stopWatching
-//          watcher.close()
       }
     }
     isRunning = false

@@ -21,17 +21,19 @@ object Main extends App with Loggable {
 
   override def main(args:Array[String]): Unit = {
 
-    val (midasHost: String, midasPort: Int, mongoHost: String, mongoPort: Int, transformType: TransformType, deltasDirURI: String) = processCLIparameters(args)
+    val (midasHost: String, midasPort: Int, mongoHost: String, mongoPort: Int, transformType: TransformType, deltasPath: String) = processCLIparameters(args)
     val loader = Main.getClass.getClassLoader
 
-    //val deltasDirURI = "deltas/"
-    val deltasDirFile: File = new File(deltasDirURI)
-    val parentDeltasDir = deltasDirFile.getParentFile
+    val startOfChildDir = deltasPath.lastIndexOf("/")
+    val parentDir =  "/" + deltasPath.substring(0,startOfChildDir+1)
+    val parentDirURI: URI = new File(parentDir).toURI
 
-    println("parent "+parentDeltasDir )
-    addToClassPath(parentDeltasDir.toURI.toURL)
+    //println("parent "+parentDirURI.toURL)
+    addToClassPath(parentDirURI.toURL)
 
-
+    val deltasDirURI : String = deltasPath.substring(startOfChildDir+1,deltasPath.length)
+    //println("child "+deltasDirURI)
+    
     val srcScalaTemplateURI = "templates/Transformations.scala.template"
     val srcScalaDirURI = "generated/scala/"
     val srcScalaFilename = "Transformations.scala"
@@ -123,10 +125,12 @@ object Main extends App with Loggable {
         opt[Int]("port") action { (x,c) => c.copy(midasPort = x)} text("OPTIONAL, the port on which midas will accept connections, default is 27020")
         opt[String]("source") action { (x,c) => c.copy(mongoHost = x)} text("OPTIONAL, the mongo host midas will connect to, default is localhost")
         opt[Int]("mongoPort") action { (x,c) => c.copy(mongoPort = x)} text("OPTIONAL, the mongo port midas will connect to, default is 27017")
-        opt[String]("mode") action { (x,c) => { if(x.equalsIgnoreCase("contraction"))
-                                                   c.copy(mode = TransformType.CONTRACTION)
-                                                else
-                                                   c.copy(mode = TransformType.EXPANSION)  } } text("OPTIONAL, the operation mode (EXPANSION/CONTRACTION) for midas, default is EXPANSION")
+        opt[String]("mode") action { (x,c) =>  try { c.copy(mode = TransformType.valueOf(x))
+                                               } catch {
+                                                   case e: IllegalArgumentException => println(usage)
+                                                                                       sys.exit
+                                               }
+                                              } text("OPTIONAL, the operation mode (EXPANSION/CONTRACTION) for midas, default is EXPANSION")
         opt[String]("deltasDir") action { (x,c) => c.copy(deltasDir = x)}  text("OPTIONAL, the location of delta files ")
         help("help") text ("Show usage")
         override def reportError(msg: String) : Unit = {
@@ -140,14 +144,18 @@ object Main extends App with Loggable {
 
       }
 
-    private def addToClassPath(uri : URL) = {
-      val sysloader: URLClassLoader = (ClassLoader.getSystemClassLoader()).asInstanceOf[URLClassLoader]
-      val sysclass: Class[URLClassLoader] = classOf[URLClassLoader]
-      val parameters: Class[_] = classOf[URL]
-      val url:Object = uri
-      val method: Method  = sysclass.getDeclaredMethod("addURL", parameters)
+    private def addToClassPath(url : URL) = {
+      val sysClassLoader: URLClassLoader = (ClassLoader.getSystemClassLoader()).asInstanceOf[URLClassLoader]
+      val sysClass: Class[URLClassLoader] = classOf[URLClassLoader]
+      val parameter: Class[_] = classOf[URL]
+      val urlObject: Object = url
+      val method: Method  = sysClass.getDeclaredMethod("addURL", parameter)
       method.setAccessible(true)
-      method.invoke(sysloader, url)
+      method.invoke(sysClassLoader, urlObject)
+      val urls = sysClassLoader.getURLs()
+      for(url <- urls) {
+          println(url.getFile())
+      }
     }
   }
 

@@ -13,7 +13,7 @@ import com.ee.midas.dsl.Translator
 import java.io.{PrintWriter, File}
 import com.ee.midas.transform.{Transformer, Transformations, Transforms, TransformType}
 import com.ee.midas.hotdeploy.DeployableHolder
-import scala.tools.nsc.util.ClassPath
+import scopt.OptionParser
 
 
 object Main extends App with Loggable {
@@ -24,16 +24,8 @@ object Main extends App with Loggable {
     val (midasHost: String, midasPort: Int, mongoHost: String, mongoPort: Int, transformType: TransformType, deltasPath: String) = processCLIparameters(args)
     val loader = Main.getClass.getClassLoader
 
-    val startOfChildDir = deltasPath.lastIndexOf("/")
-    val parentDir =  "/" + deltasPath.substring(0,startOfChildDir+1)
-    val parentDirURI: URI = new File(parentDir).toURI
+    val deltasDirURI : String = processDeltaPath(deltasPath)
 
-    //println("parent "+parentDirURI.toURL)
-    addToClassPath(parentDirURI.toURL)
-
-    val deltasDirURI : String = deltasPath.substring(startOfChildDir+1,deltasPath.length)
-    //println("child "+deltasDirURI)
-    
     val srcScalaTemplateURI = "templates/Transformations.scala.template"
     val srcScalaDirURI = "generated/scala/"
     val srcScalaFilename = "Transformations.scala"
@@ -101,6 +93,15 @@ object Main extends App with Loggable {
     }
   }
 
+  private def processDeltaPath(deltasPath: String) : String = {
+    val startOfChildDir = deltasPath.lastIndexOf("/")
+    val parentDeltaDir =  "/" + deltasPath.substring(0,startOfChildDir+1)
+    val parentDeltaDirURI: URI = new File(parentDeltaDir).toURI
+
+    addToClassPath(parentDeltaDirURI.toURL)
+    deltasPath.substring(startOfChildDir+1,deltasPath.length)
+  }
+
   private def waitForNewConnectionOn(serverSocket: ServerSocket) = {
     log.info("Listening on port " + serverSocket.getLocalPort() + " for new connections...")
     serverSocket.accept()
@@ -120,18 +121,18 @@ object Main extends App with Loggable {
 
 
     def processCLIparameters(args:Array[String]) = {
-      val midasHost = "localhost"
+
       val parser = new scopt.OptionParser[Config]("midas") {
-        opt[Int]("port") action { (x,c) => c.copy(midasPort = x)} text("OPTIONAL, the port on which midas will accept connections, default is 27020")
-        opt[String]("source") action { (x,c) => c.copy(mongoHost = x)} text("OPTIONAL, the mongo host midas will connect to, default is localhost")
-        opt[Int]("mongoPort") action { (x,c) => c.copy(mongoPort = x)} text("OPTIONAL, the mongo port midas will connect to, default is 27017")
-        opt[String]("mode") action { (x,c) =>  try { c.copy(mode = TransformType.valueOf(x))
-                                               } catch {
-                                                   case e: IllegalArgumentException => println(usage)
-                                                                                       sys.exit
-                                               }
-                                              } text("OPTIONAL, the operation mode (EXPANSION/CONTRACTION) for midas, default is EXPANSION")
-        opt[String]("deltasDir") action { (x,c) => c.copy(deltasDir = x)}  text("OPTIONAL, the location of delta files ")
+        opt[Int]("port") action { (x, c) => c.copy(midasPort = x)
+                                } text("OPTIONAL, the port on which midas will accept connections, default is 27020")
+        opt[String]("source") action { (x, c) => c.copy(mongoHost = x)
+                                     } text("OPTIONAL, the mongo host midas will connect to, default is localhost")
+        opt[Int]("mongoPort") action { (x, c) => c.copy(mongoPort = x)
+                                     } text("OPTIONAL, the mongo port midas will connect to, default is 27017")
+        opt[String]("mode") action { (x, c) =>  userSuppliedMode(x, c, this)
+                                   } text("OPTIONAL, the operation mode (EXPANSION/CONTRACTION) for midas, default is EXPANSION")
+        opt[String]("deltasDir") action { (x, c) => userSuppliedDeltasDir(x, c, this)
+                                        } text("OPTIONAL, the location of delta files ")
         help("help") text ("Show usage")
         override def reportError(msg: String) : Unit = {
           println(usage)
@@ -139,12 +140,36 @@ object Main extends App with Loggable {
         }
       }
 
-      val result = parser.parse(args,Config())
-      (midasHost, result.get.midasPort , result.get.mongoHost,result.get.mongoPort, result.get.mode, result.get.deltasDir)
-
+      parser.parse(args, Config()) map { config =>
+        (config.midasHost, config.midasPort, config.mongoHost, config.mongoPort, config.mode, config.deltasDir)
+      } getOrElse {
+        println("Terminating execution...!!")
       }
 
-    private def addToClassPath(url : URL) = {
+  }
+
+  private def userSuppliedMode(value: String, config: Config, parser: OptionParser[Config]) = {
+    try {
+      config.copy(mode = TransformType.valueOf(value.toUpperCase))
+    } catch {
+      case e: IllegalArgumentException => println(parser.usage)
+                                          sys.exit
+    }
+  }
+
+  private def userSuppliedDeltasDir(value: String, config: Config, parser: OptionParser[Config]) = {
+    val file: File = new File(value)
+    if (file.exists)
+         config.copy(deltasDir = value)
+    else {
+          println("--deltasDir path does not exist")
+          println(parser.usage)
+          sys.exit
+     }
+   
+  }
+
+  private def addToClassPath(url : URL) = {
       val sysClassLoader: URLClassLoader = (ClassLoader.getSystemClassLoader()).asInstanceOf[URLClassLoader]
       val sysClass: Class[URLClassLoader] = classOf[URLClassLoader]
       val parameter: Class[_] = classOf[URL]
@@ -152,10 +177,6 @@ object Main extends App with Loggable {
       val method: Method  = sysClass.getDeclaredMethod("addURL", parameter)
       method.setAccessible(true)
       method.invoke(sysClassLoader, urlObject)
-      val urls = sysClassLoader.getURLs()
-      for(url <- urls) {
-          println(url.getFile())
-      }
     }
   }
 

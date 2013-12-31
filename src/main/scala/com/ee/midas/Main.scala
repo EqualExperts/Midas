@@ -11,12 +11,14 @@ import com.ee.midas.dsl.Translator
 import java.io.{PrintWriter, File}
 import com.ee.midas.transform.{Transformer, Transformations, Transforms, TransformType}
 import com.ee.midas.hotdeploy.DeployableHolder
+import java.nio.file.StandardWatchEventKinds._
 
 object Main extends App with Loggable {
   val maxClientConnections = 50
 
   override def main(args:Array[String]): Unit = {
     val (midasHost, midasPort, mongoHost, mongoPort) = (args(0), args(1).toInt, args(2), args(3).toInt)
+    val waitBeforeProcessing = 100
     val loader = Main.getClass.getClassLoader
 
     val deltasDirURI = "deltas/"
@@ -43,8 +45,11 @@ object Main extends App with Loggable {
     log.info(s"Completed...Processing Delta Files!")
 
     log.info(s"Setting up Directory Watcher...")
-    val watcher = new DirectoryWatcher(deltasDir.getPath)(watchEvent => {
-      log.info(s"Received ${watchEvent.kind()}, Context = ${watchEvent.context()}")
+    val watcher = new DirectoryWatcher(deltasDir.getPath, List(ENTRY_CREATE, ENTRY_DELETE),
+            waitBeforeProcessing)(watchEvents => {
+      watchEvents.foreach {watchEvent =>
+        log.info(s"Received ${watchEvent.kind()}, Context = ${watchEvent.context()}")
+      }
       processDeltaFiles(deltasDir, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
     })
     watcher.start

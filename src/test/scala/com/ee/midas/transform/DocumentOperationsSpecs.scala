@@ -77,6 +77,31 @@ class DocumentOperationsSpecs extends Specification {
         nestedDoc.get("innerField2").equals("innerValue2") must beTrue
       }
 
+      "Add fields to deeply nested document" in new setup {
+
+        val deltas = new BasicBSONObject().
+            append("addSingle", "singleValue").
+            append("addMultiple", "multipleValue").
+            append("nestedField.innerField2", "innerValue2").
+            append("nestedField.innerField3", "innerValue3").
+            append("deeplyNestedField.level1.level2.level3","deeplyNestedValue")
+
+        //When
+        val transformedDocument = documentOperations ++ deltas
+
+        //Then
+        val expectedDocument = new BasicBSONObject("name" , "midas").
+          append("removeSingle", "field").
+          append("removeMultiple", "fields").
+          append("nestedField", new BasicBSONObject("innerField1", "innerValue1").append("removeNestedField", "field").append("innerField2", "innerValue2").append("innerField3", "innerValue3")).
+          append("addSingle", "singleValue").
+          append("addMultiple", "multipleValue").
+          append("deeplyNestedField", new BasicBSONObject("level1", new BasicBSONObject("level2", new BasicBSONObject("level3", "deeplyNestedValue"))))
+
+        expectedDocument mustEqual transformedDocument
+
+      }
+
       "Remove multiple fields from the document" in new setup {
         val deltas = JSON.parse("[\"removeSingle\", \"removeMultiple\"]").asInstanceOf[BSONObject]
 
@@ -99,6 +124,25 @@ class DocumentOperationsSpecs extends Specification {
         transformedDocument.containsField("nestedField") must beTrue
         val nestedDoc = transformedDocument.get("nestedField").asInstanceOf[BasicBSONObject]
         nestedDoc.containsField("removeNestedField") must beFalse
+      }
+
+      "Remove fields from deeply nested document" in new setup {
+        document.append("deeplyNestedField", new BasicBSONObject("level1", new BasicBSONObject("level2",
+                    new BasicBSONObject("level3", 3).append("removeNestedField", "field"))))
+
+        val deltas = JSON.parse("[\"removeSingle\", \"removeMultiple\", \"nestedField.removeNestedField\", \"deeplyNestedField.level1.level2.removeNestedField\"]").asInstanceOf[BSONObject]
+
+        //When
+        val transformedDocument = documentOperations -- deltas
+
+        //Then
+        val expectedDocument = new BasicBSONObject("name" , "midas").
+          append("nestedField", new BasicBSONObject("innerField1", "innerValue1")).
+          append("deeplyNestedField", new BasicBSONObject("level1", new BasicBSONObject("level2",
+          new BasicBSONObject("level3", 3))))
+
+        expectedDocument mustEqual transformedDocument
+
       }
     }
 

@@ -268,7 +268,7 @@ task scalastyle(description: 'Run scalaStyle analysis for main and test classes'
 //Cobertura Configuration
 cobertura {
     coverageReportDir = file(project.ext.coberturaCoverageReportsDirName)
-    cobertura.coverageExcludes = ['.*net.saliman.*']
+    cobertura.coverageExcludes = ['.*net.saliman.*', '.*com.ee.midas.transform.Transformations.*']
     coverageFormats = ['html', 'xml']
     totalLineCoverage = 80
     totalBranchCoverage = 50

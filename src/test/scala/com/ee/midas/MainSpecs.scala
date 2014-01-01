@@ -17,7 +17,7 @@ class MainSpecs extends Specification{
          mongoHost mustEqual "localhost"
          mongoPort mustEqual 27017
          transformType mustEqual TransformType.EXPANSION
-         deltasURI mustEqual "deltas/"
+         deltasURI mustEqual "deltas"
        }
 
       " runs on a given PORT and connects to default source and mongoPort" in {
@@ -29,7 +29,7 @@ class MainSpecs extends Specification{
         mongoHost mustEqual "localhost"
         mongoPort mustEqual 27017
         transformType mustEqual TransformType.EXPANSION
-        deltasURI mustEqual "deltas/"
+        deltasURI mustEqual "deltas"
       }
 
       " runs on default port and connects to given MONGOHOST on default mongoPort" in {
@@ -41,7 +41,7 @@ class MainSpecs extends Specification{
         mongoHost mustEqual "192.168.1.44"
         mongoPort mustEqual 27017
         transformType mustEqual TransformType.EXPANSION
-        deltasURI mustEqual "deltas/"
+        deltasURI mustEqual "deltas"
       }
 
       " runs on default port and connects to default mongoHost on given MONGOPORT" in {
@@ -53,7 +53,7 @@ class MainSpecs extends Specification{
         mongoHost mustEqual "localhost"
         mongoPort mustEqual 27019
         transformType mustEqual TransformType.EXPANSION
-        deltasURI mustEqual "deltas/"
+        deltasURI mustEqual "deltas"
       }
 
       " runs on given PORT and connects to given MONGOHOST on default mongoPort" in {
@@ -65,7 +65,7 @@ class MainSpecs extends Specification{
         mongoHost mustEqual "192.168.1.44"
         mongoPort mustEqual 27017
         transformType mustEqual TransformType.EXPANSION
-        deltasURI mustEqual "deltas/"
+        deltasURI mustEqual "deltas"
       }
 
       " runs on given PORT and connects to default mongoHost on given MONGOPORT" in {
@@ -77,7 +77,7 @@ class MainSpecs extends Specification{
         mongoHost mustEqual "localhost"
         mongoPort mustEqual 27019
         transformType mustEqual TransformType.EXPANSION
-        deltasURI mustEqual "deltas/"
+        deltasURI mustEqual "deltas"
       }
 
       " runs on default port and connects to given MONGOHOST on MONGOPORT" in {
@@ -89,7 +89,7 @@ class MainSpecs extends Specification{
         mongoHost mustEqual "192.168.1.44"
         mongoPort mustEqual 27019
         transformType mustEqual TransformType.EXPANSION
-        deltasURI mustEqual "deltas/"
+        deltasURI mustEqual "deltas"
       }
 
       " runs in CONTRACTION mode" in {
@@ -101,7 +101,7 @@ class MainSpecs extends Specification{
         mongoHost mustEqual "192.168.1.44"
         mongoPort mustEqual 27019
         transformType mustEqual TransformType.CONTRACTION
-        deltasURI mustEqual "deltas/"
+        deltasURI mustEqual "deltas"
       }
 
       " uses the specified directory for picking up delta files " in {

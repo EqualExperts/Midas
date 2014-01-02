@@ -274,8 +274,8 @@ cobertura {
     coverageReportDir = file(project.ext.coberturaCoverageReportsDirName)
     cobertura.coverageExcludes = ['.*net.saliman.*']
     coverageFormats = ['html', 'xml']
-    totalLineCoverage = 70
-    totalBranchCoverage = 40
+    totalLineCoverage = 80
+    totalBranchCoverage = 50
 }
 
 task distribute(type:Zip, dependsOn: assemble) {

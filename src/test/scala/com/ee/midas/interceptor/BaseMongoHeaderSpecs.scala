@@ -19,6 +19,22 @@ class BaseMongoHeaderSpecs extends Specification {
         baseMongoHeader.isInstanceOf[BaseMongoHeader]
       }
 
+      "Throw exception if header length is zero" in {
+        val headerBytes: Array[Byte] = Array(0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x1d.toByte, 0x00.toByte,
+          0x00.toByte, 0x00.toByte, 0x21.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x01.toByte, 0x00.toByte, 0x00.toByte,
+          0x00.toByte, 0x08.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte)
+        val inputStream: InputStream = new ByteArrayInputStream(headerBytes)
+        BaseMongoHeader(inputStream) must throwA[IllegalArgumentException]
+      }
+
+      "Throw exception if header length is greater than MAX length" in {
+        val headerBytes: Array[Byte] = Array(0x01.toByte, 0x00.toByte, 0x00.toByte, 0x20.toByte, 0x1d.toByte, 0x00.toByte,
+          0x00.toByte, 0x00.toByte, 0x21.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x01.toByte, 0x00.toByte, 0x00.toByte,
+          0x00.toByte, 0x08.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte)
+        val inputStream: InputStream = new ByteArrayInputStream(headerBytes)
+        BaseMongoHeader(inputStream) must throwA[IllegalArgumentException]
+      }
+
       "Check for payload" in {
         val headerBytes: Array[Byte] = Array(0x45.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x1d.toByte, 0x00.toByte,
           0x00.toByte, 0x00.toByte, 0x21.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x01.toByte, 0x00.toByte, 0x00.toByte,

@@ -1,6 +1,8 @@
 package com.ee.midas
 
 
+import _root_.java.lang.Class
+import _root_.java.lang.reflect.Method
 import com.ee.midas.pipes.{SocketConnector, DuplexPipe}
 import java.net._
 import com.ee.midas.utils.{DirectoryWatcher, Accumulator, Loggable}
@@ -12,16 +14,19 @@ import java.io.{PrintWriter, File}
 import com.ee.midas.transform.{Transformer, Transformations, Transforms, TransformType}
 import com.ee.midas.hotdeploy.DeployableHolder
 import java.nio.file.StandardWatchEventKinds._
+import scopt.OptionParser
 
 object Main extends App with Loggable {
   val maxClientConnections = 50
 
   override def main(args:Array[String]): Unit = {
-    val (midasHost, midasPort, mongoHost, mongoPort) = (args(0), args(1).toInt, args(2), args(3).toInt)
+
+    val (midasHost: String, midasPort: Int, mongoHost: String, mongoPort: Int, transformType: TransformType, deltasPath: String) = CLIParser.processCLIparameters(args)
     val waitBeforeProcessing = 100
     val loader = Main.getClass.getClassLoader
 
-    val deltasDirURI = "deltas/"
+    val deltasDirURI : String = processDeltaPath(deltasPath)
+
     val srcScalaTemplateURI = "templates/Transformations.scala.template"
     val srcScalaDirURI = "generated/scala/"
     val srcScalaFilename = "Transformations.scala"
@@ -32,6 +37,7 @@ object Main extends App with Loggable {
     val classpathDir = loader.getResource(classpathURI)
     val binDir = loader.getResource(binDirURI)
     val deltasDir = loader.getResource(deltasDirURI)
+    log.info(s"Deltas Dir = $deltasDir")
     val srcScalaTemplate = loader.getResource(srcScalaTemplateURI)
     val srcScalaDir = loader.getResource(srcScalaDirURI)
     log.info(s"Source Scala Dir = $srcScalaDir")
@@ -66,7 +72,7 @@ object Main extends App with Loggable {
     }
     //TODO#1: Wire this as option from cmdLine
     //TODO#2: Later from an admin client that changes the Midas mode at runtime without shutting it down
-    val transformType = TransformType.EXPANSION
+   // val transformType = TransformType.EXPANSION
     import SocketConnector._
     while (true) {
       val application = waitForNewConnectionOn(midasSocket)
@@ -91,6 +97,15 @@ object Main extends App with Loggable {
     }
   }
 
+  private def processDeltaPath(deltasPath: String) : String = {
+    val startOfChildDir = deltasPath.lastIndexOf("/")
+    val parentDeltaDir =  "/" + deltasPath.substring(0,startOfChildDir+1)
+    val parentDeltaDirURI: URI = new File(parentDeltaDir).toURI
+
+    addToClassPath(parentDeltaDirURI.toURL)
+    deltasPath.substring(startOfChildDir+1,deltasPath.length)
+  }
+
   private def waitForNewConnectionOn(serverSocket: ServerSocket) = {
     log.info("Listening on port " + serverSocket.getLocalPort() + " for new connections...")
     serverSocket.accept()
@@ -107,4 +122,16 @@ object Main extends App with Loggable {
     new DeployableHolder[Transforms] {
       def createDeployable: Transforms = new Transformations
     }
-}
+
+
+  private def addToClassPath(url : URL) = {
+      val sysClassLoader: URLClassLoader = (ClassLoader.getSystemClassLoader()).asInstanceOf[URLClassLoader]
+      val sysClass: Class[URLClassLoader] = classOf[URLClassLoader]
+      val parameter: Class[_] = classOf[URL]
+      val urlObject: Object = url
+      val method: Method  = sysClass.getDeclaredMethod("addURL", parameter)
+      method.setAccessible(true)
+      method.invoke(sysClassLoader, urlObject)
+    }
+  }
+

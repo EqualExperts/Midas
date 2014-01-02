@@ -46,6 +46,8 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers{
     val file = new File(path + "/createFile.txt")
     file.createNewFile()
     file.deleteOnExit()
+    waitForWatcherToStart(200)
+    watcher.stopWatching
 
     //then: it was captured by the watcher
     watcher.stopWatching
@@ -70,9 +72,10 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers{
     writer.write("add some data.")
     writer.close()
 
-    //then: it was captured by the watcher
     watcher.stopWatching
     while(watcher.isRunning)
+
+    //then: it was captured by the watcher
     watchedModifyEvent must beTrue
   }
 
@@ -87,7 +90,7 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers{
     })
     watcher.start
 
-    //when: there is a delete event
+    //when: there is a modify event
     file.delete()
 
 
@@ -103,7 +106,7 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers{
     var watchedCreateEvents: Int = 0
     val watcher = new DirectoryWatcher(path, List(ENTRY_CREATE), 0)(watchEvent => {
       watchedCreateEvents += 1
-      }
+    }
     )
     watcher.start
 

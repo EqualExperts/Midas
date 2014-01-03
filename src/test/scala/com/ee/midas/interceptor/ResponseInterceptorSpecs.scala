@@ -81,6 +81,7 @@ class ResponseInterceptorSpecs extends Specification with Mockito {
         header.hasPayload returns true
         header.responseTo returns responseID
         header.payloadSize returns payloadBytes.length
+        header.documentsCount returns 1
         tracker.fullCollectionName(responseID) returns Option(collectionName)
         mockTransformer.canTransformDocuments(collectionName) returns false
 
@@ -97,6 +98,7 @@ class ResponseInterceptorSpecs extends Specification with Mockito {
         header.hasPayload returns true
         header.responseTo returns responseID
         header.payloadSize returns payloadBytes.length
+        header.documentsCount returns 1
         tracker.fullCollectionName(responseID) returns None
 
         //when:

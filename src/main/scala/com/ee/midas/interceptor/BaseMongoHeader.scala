@@ -22,6 +22,7 @@ class BaseMongoHeader(val bytes : Array[Byte]) {
   val requestID = Bits.readInt(bytes, pos + 4)  //Int = 4 bytes
   val responseTo = Bits.readInt(bytes, pos + (4 * 2))
   val opCode = OpCode(Bits.readInt(bytes, pos + (4 * 3)))
+
   val flags = Bits.readInt(bytes, pos + (4 * 4))   //Int = 4 bytes
 
   def payloadSize: Int = messageLength - bytes.length

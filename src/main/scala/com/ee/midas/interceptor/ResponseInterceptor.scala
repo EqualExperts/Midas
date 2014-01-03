@@ -31,9 +31,14 @@ class ResponseInterceptor (tracker: MessageTracker, transformer: Transformer)
   }
   
   private def payload(in: InputStream, header: MongoHeader): Array[Byte] = {
-    val remaining = new Array[Byte](header.payloadSize)
-    in.read(remaining)
-    remaining
+    val stream = new FixedSizeStream(in, header.payloadSize)
+    val totalDocuments = header.documentsCount
+    val documents = 1 to totalDocuments map { n =>
+      val document: BSONObject = stream
+      document
+    }
+    val payloadBytes = documents.toList flatMap (_.toBytes)
+    payloadBytes.toArray
   }
 
   private def modifyPayloadIfRequired(in: InputStream, header: MongoHeader): Array[Byte] = {

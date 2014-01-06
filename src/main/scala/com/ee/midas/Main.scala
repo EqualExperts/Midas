@@ -14,18 +14,17 @@ import java.io.{PrintWriter, File}
 import com.ee.midas.transform.{Transformer, Transformations, Transforms, TransformType}
 import com.ee.midas.hotdeploy.DeployableHolder
 import java.nio.file.StandardWatchEventKinds._
-import scopt.OptionParser
 
 object Main extends App with Loggable {
   val maxClientConnections = 50
 
   override def main(args:Array[String]): Unit = {
 
-    val (midasHost: String, midasPort: Int, mongoHost: String, mongoPort: Int, transformType: TransformType, deltasPath: String) = CLIParser.parse(args)
+    val config = CLIParser.parse(args)
     val waitBeforeProcessing = 100
     val loader = Main.getClass.getClassLoader
 
-    val deltasDirURI : String = processDeltaPath(deltasPath)
+    val deltasDirURI : String = processDeltaPath(config.deltasDir)
 
     val srcScalaTemplateURI = "templates/Transformations.scala.template"
     val srcScalaDirURI = "generated/scala/"
@@ -61,7 +60,7 @@ object Main extends App with Loggable {
     watcher.start
 
     log.info(s"Starting Midas Server...")
-    val midasSocket = new ServerSocket(midasPort, maxClientConnections, InetAddress.getByName(midasHost))
+    val midasSocket = new ServerSocket(config.midasPort, maxClientConnections, InetAddress.getByName(config.midasHost))
     val accumulate = Accumulator[DuplexPipe](Nil)
 
     sys.ShutdownHookThread {
@@ -70,18 +69,16 @@ object Main extends App with Loggable {
       log.info("User Forced Stop on Midas...Closing Open Connections")
       pipes filter(_.isActive) map(_.forceStop)
     }
-    //TODO#1: Wire this as option from cmdLine
     //TODO#2: Later from an admin client that changes the Midas mode at runtime without shutting it down
-   // val transformType = TransformType.EXPANSION
     import SocketConnector._
     while (true) {
       val application = waitForNewConnectionOn(midasSocket)
       log.info("New connection received...")
       try{
-        val mongoSocket = new Socket(mongoHost, mongoPort)
+        val mongoSocket = new Socket(config.mongoHost, config.mongoPort)
         val tracker = new MessageTracker()
         val requestInterceptable = new RequestInterceptor(tracker)
-        val responseInterceptable = new ResponseInterceptor(tracker, new Transformer(transformType, deployableHolder))
+        val responseInterceptable = new ResponseInterceptor(tracker, new Transformer(config.mode, deployableHolder))
 
         val duplexPipe = application  <|==|> (mongoSocket, requestInterceptable, responseInterceptable)
         duplexPipe.start
@@ -90,8 +87,8 @@ object Main extends App with Loggable {
       }
       catch {
         case e: ConnectException  =>
-          println(s"Error : MongoDB on $mongoHost:$mongoPort is not available")
-          log.error(s"MongoDB on $mongoHost:$mongoPort is not available")
+          println(s"Error : MongoDB on ${config.mongoHost}:${config.mongoPort} is not available")
+          log.error(s"MongoDB on ${config.mongoHost}:${config.mongoPort} is not available")
           application.close()
       }
     }

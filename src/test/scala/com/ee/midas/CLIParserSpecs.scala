@@ -10,7 +10,7 @@ class CLIParserSpecs extends Specification{
     "Midas" should {
        "run with default values" in {
          val (midasHost: String, midasPort: Int, mongoHost: String, mongoPort: Int,
-              transformType: TransformType, deltasURI: String) = CLIParser.processCLIparameters(Array())
+              transformType: TransformType, deltasURI: String) = CLIParser.parse(Array())
 
          midasHost mustEqual "localhost"
          midasPort mustEqual 27020
@@ -22,7 +22,7 @@ class CLIParserSpecs extends Specification{
 
       " runs on a given PORT and connects to default source and mongoPort" in {
         val (midasHost: String, midasPort: Int, mongoHost: String, mongoPort: Int,
-        transformType: TransformType, deltasURI: String) = CLIParser.processCLIparameters(Array("--port","27040"))
+        transformType: TransformType, deltasURI: String) = CLIParser.parse(Array("--port","27040"))
 
         midasHost mustEqual "localhost"
         midasPort mustEqual 27040
@@ -34,7 +34,7 @@ class CLIParserSpecs extends Specification{
 
       " runs on default port and connects to given MONGOHOST on default mongoPort" in {
         val (midasHost: String, midasPort: Int, mongoHost: String, mongoPort: Int,
-        transformType: TransformType, deltasURI: String) = CLIParser.processCLIparameters(Array("--source","192.168.1.44"))
+        transformType: TransformType, deltasURI: String) = CLIParser.parse(Array("--source","192.168.1.44"))
 
         midasHost mustEqual "localhost"
         midasPort mustEqual 27020
@@ -46,7 +46,7 @@ class CLIParserSpecs extends Specification{
 
       " runs on default port and connects to default mongoHost on given MONGOPORT" in {
         val (midasHost: String, midasPort: Int, mongoHost: String, mongoPort: Int,
-        transformType: TransformType, deltasURI: String) = CLIParser.processCLIparameters(Array("--mongoPort","27019"))
+        transformType: TransformType, deltasURI: String) = CLIParser.parse(Array("--mongoPort","27019"))
 
         midasHost mustEqual "localhost"
         midasPort mustEqual 27020
@@ -58,7 +58,7 @@ class CLIParserSpecs extends Specification{
 
       " runs on given PORT and connects to given MONGOHOST on default mongoPort" in {
         val (midasHost: String, midasPort: Int, mongoHost: String, mongoPort: Int,
-        transformType: TransformType, deltasURI: String) = CLIParser.processCLIparameters(Array("--port","27040","--source","192.168.1.44"))
+        transformType: TransformType, deltasURI: String) = CLIParser.parse(Array("--port","27040","--source","192.168.1.44"))
 
         midasHost mustEqual "localhost"
         midasPort mustEqual 27040
@@ -70,7 +70,7 @@ class CLIParserSpecs extends Specification{
 
       " runs on given PORT and connects to default mongoHost on given MONGOPORT" in {
         val (midasHost: String, midasPort: Int, mongoHost: String, mongoPort: Int,
-        transformType: TransformType, deltasURI: String) = CLIParser.processCLIparameters(Array("--port","27040","--mongoPort","27019"))
+        transformType: TransformType, deltasURI: String) = CLIParser.parse(Array("--port","27040","--mongoPort","27019"))
 
         midasHost mustEqual "localhost"
         midasPort mustEqual 27040
@@ -82,7 +82,7 @@ class CLIParserSpecs extends Specification{
 
       " runs on default port and connects to given MONGOHOST on MONGOPORT" in {
         val (midasHost: String, midasPort: Int, mongoHost: String, mongoPort: Int,
-        transformType: TransformType, deltasURI: String) = CLIParser.processCLIparameters(Array("--source","192.168.1.44","--mongoPort","27019"))
+        transformType: TransformType, deltasURI: String) = CLIParser.parse(Array("--source","192.168.1.44","--mongoPort","27019"))
 
         midasHost mustEqual "localhost"
         midasPort mustEqual 27020
@@ -94,7 +94,7 @@ class CLIParserSpecs extends Specification{
 
       " runs in CONTRACTION mode" in {
         val (midasHost: String, midasPort: Int, mongoHost: String, mongoPort: Int,
-        transformType: TransformType, deltasURI: String) = CLIParser.processCLIparameters(Array("--port","27040","--source","192.168.1.44","--mongoPort","27019","--mode","CONTRACTION"))
+        transformType: TransformType, deltasURI: String) = CLIParser.parse(Array("--port","27040","--source","192.168.1.44","--mongoPort","27019","--mode","CONTRACTION"))
 
         midasHost mustEqual "localhost"
         midasPort mustEqual 27040
@@ -106,7 +106,7 @@ class CLIParserSpecs extends Specification{
 
       " uses the specified directory for picking up delta files " in {
         val (midasHost: String, midasPort: Int, mongoHost: String, mongoPort: Int,
-        transformType: TransformType, deltasURI: String) = CLIParser.processCLIparameters(Array("--port","27040",
+        transformType: TransformType, deltasURI: String) = CLIParser.parse(Array("--port","27040",
           "--source","192.168.1.44","--mongoPort","27019","--mode","CONTRACTION","--deltasDir","src/main/resources/deltas"))
 
         midasHost mustEqual "localhost"

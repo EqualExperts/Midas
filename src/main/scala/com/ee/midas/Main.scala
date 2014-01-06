@@ -21,7 +21,7 @@ object Main extends App with Loggable {
 
   override def main(args:Array[String]): Unit = {
 
-    val (midasHost: String, midasPort: Int, mongoHost: String, mongoPort: Int, transformType: TransformType, deltasPath: String) = CLIParser.processCLIparameters(args)
+    val (midasHost: String, midasPort: Int, mongoHost: String, mongoPort: Int, transformType: TransformType, deltasPath: String) = CLIParser.parse(args)
     val waitBeforeProcessing = 100
     val loader = Main.getClass.getClassLoader
 
@@ -99,7 +99,7 @@ object Main extends App with Loggable {
 
   private def processDeltaPath(deltasPath: String) : String = {
     val startOfChildDir = deltasPath.lastIndexOf("/")
-    val parentDeltaDir =  "/" + deltasPath.substring(0,startOfChildDir+1)
+    val parentDeltaDir =  deltasPath.substring(0,startOfChildDir+1)
     val parentDeltaDirURI: URI = new File(parentDeltaDir).toURI
 
     addToClassPath(parentDeltaDirURI.toURL)

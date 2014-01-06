@@ -7,7 +7,7 @@ import java.io.File
 case class Config (midasHost:String = "localhost", midasPort: Int = 27020 , mongoHost: String = "localhost", mongoPort: Int = 27017, mode:TransformType = TransformType.EXPANSION, deltasDir: String = "deltas")
 
 object CLIParser {
-  def processCLIparameters(args:Array[String]) = {
+  def parse(args:Array[String]) = {
 
     val parser = new scopt.OptionParser[Config]("midas") {
       opt[Int]("port") action { (x, c) => c.copy(midasPort = x)

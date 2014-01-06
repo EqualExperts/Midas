@@ -19,78 +19,81 @@ object Main extends App with Loggable {
   val maxClientConnections = 50
 
   override def main(args:Array[String]): Unit = {
+    CLIParser.parse(args) match {
+      case Some(config) =>
+        val waitBeforeProcessing = 100
+        val loader = Main.getClass.getClassLoader
 
-    val config = CLIParser.parse(args)
-    val waitBeforeProcessing = 100
-    val loader = Main.getClass.getClassLoader
+        val deltasDirURI : String = processDeltaPath(config.deltasDir)
 
-    val deltasDirURI : String = processDeltaPath(config.deltasDir)
+        val srcScalaTemplateURI = "templates/Transformations.scala.template"
+        val srcScalaDirURI = "generated/scala/"
+        val srcScalaFilename = "Transformations.scala"
+        val binDirURI = "generated/scala/bin/"
+        val clazzName = "com.ee.midas.transform.Transformations"
+        val classpathURI = "."
 
-    val srcScalaTemplateURI = "templates/Transformations.scala.template"
-    val srcScalaDirURI = "generated/scala/"
-    val srcScalaFilename = "Transformations.scala"
-    val binDirURI = "generated/scala/bin/"
-    val clazzName = "com.ee.midas.transform.Transformations"
-    val classpathURI = "."
+        val classpathDir = loader.getResource(classpathURI)
+        val binDir = loader.getResource(binDirURI)
+        val deltasDir = loader.getResource(deltasDirURI)
+        log.info(s"Deltas Dir = $deltasDir")
+        val srcScalaTemplate = loader.getResource(srcScalaTemplateURI)
+        val srcScalaDir = loader.getResource(srcScalaDirURI)
+        log.info(s"Source Scala Dir = $srcScalaDir")
+        val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
 
-    val classpathDir = loader.getResource(classpathURI)
-    val binDir = loader.getResource(binDirURI)
-    val deltasDir = loader.getResource(deltasDirURI)
-    log.info(s"Deltas Dir = $deltasDir")
-    val srcScalaTemplate = loader.getResource(srcScalaTemplateURI)
-    val srcScalaDir = loader.getResource(srcScalaDirURI)
-    log.info(s"Source Scala Dir = $srcScalaDir")
-    val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
+        log.info(s"Processing Delta Files...")
+        val deployableHolder = createDeployableHolder
+        implicit val deltasProcessor =
+          new DeltaFilesProcessor(new Translator(new Reader(), new ScalaGenerator()), deployableHolder)
+        processDeltaFiles(deltasDir, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
+        log.info(s"Completed...Processing Delta Files!")
 
-    log.info(s"Processing Delta Files...")
-    val deployableHolder = createDeployableHolder
-    implicit val deltasProcessor =
-      new DeltaFilesProcessor(new Translator(new Reader(), new ScalaGenerator()), deployableHolder)
-    processDeltaFiles(deltasDir, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
-    log.info(s"Completed...Processing Delta Files!")
+        log.info(s"Setting up Directory Watcher...")
+        val watcher = new DirectoryWatcher(deltasDir.getPath, List(ENTRY_CREATE, ENTRY_DELETE),
+          waitBeforeProcessing)(watchEvents => {
+          watchEvents.foreach {watchEvent =>
+            log.info(s"Received ${watchEvent.kind()}, Context = ${watchEvent.context()}")
+          }
+          processDeltaFiles(deltasDir, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
+        })
+        watcher.start
 
-    log.info(s"Setting up Directory Watcher...")
-    val watcher = new DirectoryWatcher(deltasDir.getPath, List(ENTRY_CREATE, ENTRY_DELETE),
-            waitBeforeProcessing)(watchEvents => {
-      watchEvents.foreach {watchEvent =>
-        log.info(s"Received ${watchEvent.kind()}, Context = ${watchEvent.context()}")
-      }
-      processDeltaFiles(deltasDir, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
-    })
-    watcher.start
+        log.info(s"Starting Midas Server in ${config.mode} mode...")
+        val midasSocket = new ServerSocket(config.midasPort, maxClientConnections, InetAddress.getByName(config.midasHost))
+        val accumulate = Accumulator[DuplexPipe](Nil)
 
-    log.info(s"Starting Midas Server...")
-    val midasSocket = new ServerSocket(config.midasPort, maxClientConnections, InetAddress.getByName(config.midasHost))
-    val accumulate = Accumulator[DuplexPipe](Nil)
+        sys.ShutdownHookThread {
+          watcher.stopWatching
+          val pipes = accumulate(null)
+          log.info("User Forced Stop on Midas...Closing Open Connections")
+          pipes filter(_.isActive) map(_.forceStop)
+        }
+        //TODO#2: Later from an admin client that changes the Midas mode at runtime without shutting it down
+        import SocketConnector._
+        while (true) {
+          val application = waitForNewConnectionOn(midasSocket)
+          log.info("New connection received...")
+          try{
+            val mongoSocket = new Socket(config.mongoHost, config.mongoPort)
+            val tracker = new MessageTracker()
+            val requestInterceptable = new RequestInterceptor(tracker)
+            val responseInterceptable = new ResponseInterceptor(tracker, new Transformer(config.mode, deployableHolder))
 
-    sys.ShutdownHookThread {
-      watcher.stopWatching
-      val pipes = accumulate(null)
-      log.info("User Forced Stop on Midas...Closing Open Connections")
-      pipes filter(_.isActive) map(_.forceStop)
-    }
-    //TODO#2: Later from an admin client that changes the Midas mode at runtime without shutting it down
-    import SocketConnector._
-    while (true) {
-      val application = waitForNewConnectionOn(midasSocket)
-      log.info("New connection received...")
-      try{
-        val mongoSocket = new Socket(config.mongoHost, config.mongoPort)
-        val tracker = new MessageTracker()
-        val requestInterceptable = new RequestInterceptor(tracker)
-        val responseInterceptable = new ResponseInterceptor(tracker, new Transformer(config.mode, deployableHolder))
+            val duplexPipe = application  <|==|> (mongoSocket, requestInterceptable, responseInterceptable)
+            duplexPipe.start
+            log.info("Setup DataPipe = " + duplexPipe.toString)
+            accumulate(duplexPipe)
+          }
+          catch {
+            case e: ConnectException  =>
+              println(s"Error : MongoDB on ${config.mongoHost}:${config.mongoPort} is not available")
+              log.error(s"MongoDB on ${config.mongoHost}:${config.mongoPort} is not available")
+              application.close()
+          }
+        }
 
-        val duplexPipe = application  <|==|> (mongoSocket, requestInterceptable, responseInterceptable)
-        duplexPipe.start
-        log.info("Setup DataPipe = " + duplexPipe.toString)
-        accumulate(duplexPipe)
-      }
-      catch {
-        case e: ConnectException  =>
-          println(s"Error : MongoDB on ${config.mongoHost}:${config.mongoPort} is not available")
-          log.error(s"MongoDB on ${config.mongoHost}:${config.mongoPort} is not available")
-          application.close()
-      }
+      case None =>
     }
   }
 

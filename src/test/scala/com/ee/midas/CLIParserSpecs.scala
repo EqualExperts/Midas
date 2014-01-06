@@ -6,106 +6,159 @@ import org.specs2.runner.JUnitRunner
 import com.ee.midas.transform.TransformType
 
 @RunWith(classOf[JUnitRunner])
-class CLIParserSpecs extends Specification{
+class CLIParserSpecs extends Specification {
     "Midas" should {
        "run with default values" in {
-         val config = CLIParser.parse(Array())
+         CLIParser.parse(Array()) match {
+           case Some(config) =>
+             config.midasHost mustEqual "localhost"
+             config.midasPort mustEqual 27020
+             config.mongoHost mustEqual "localhost"
+             config.mongoPort mustEqual 27017
+             config.mode mustEqual TransformType.EXPANSION
+             config.deltasDir mustEqual "deltas"
+             success
 
-         config.midasHost mustEqual "localhost"
-         config.midasPort mustEqual 27020
-         config.mongoHost mustEqual "localhost"
-         config.mongoPort mustEqual 27017
-         config.mode mustEqual TransformType.EXPANSION
-         config.deltasDir mustEqual "deltas"
+           case None =>
+              failure("Should have run with default Values")
+         }
        }
 
       " runs on a given PORT and connects to default source and mongoPort" in {
-        val config = CLIParser.parse(Array("--port","27040"))
+        CLIParser.parse(Array("--port","27040")) match {
+          case Some(config) =>
+            config.midasHost mustEqual "localhost"
+            config.midasPort mustEqual 27040
+            config.mongoHost mustEqual "localhost"
+            config.mongoPort mustEqual 27017
+            config.mode mustEqual TransformType.EXPANSION
+            config.deltasDir mustEqual "deltas"
+            success
 
-        config.midasHost mustEqual "localhost"
-        config.midasPort mustEqual 27040
-        config.mongoHost mustEqual "localhost"
-        config.mongoPort mustEqual 27017
-        config.mode mustEqual TransformType.EXPANSION
-        config.deltasDir mustEqual "deltas"
+          case None =>
+            failure("Should have run with given PORT while using defaults for source and mongoPort")
+
+        }
       }
 
       " runs on default port and connects to given MONGOHOST on default mongoPort" in {
-        val config = CLIParser.parse(Array("--source","192.168.1.44"))
+        CLIParser.parse(Array("--source","192.168.1.44")) match {
+          case Some(config) =>
+            config.midasHost mustEqual "localhost"
+            config.midasPort mustEqual 27020
+            config.mongoHost mustEqual "192.168.1.44"
+            config.mongoPort mustEqual 27017
+            config.mode mustEqual TransformType.EXPANSION
+            config.deltasDir mustEqual "deltas"
+            success
 
-        config.midasHost mustEqual "localhost"
-        config.midasPort mustEqual 27020
-        config.mongoHost mustEqual "192.168.1.44"
-        config.mongoPort mustEqual 27017
-        config.mode mustEqual TransformType.EXPANSION
-        config.deltasDir mustEqual "deltas"
+          case None =>
+            failure("Should have run with given MONGOHOST while using defaults for port and mongoPort")
+
+        }
       }
 
       " runs on default port and connects to default mongoHost on given MONGOPORT" in {
-        val config = CLIParser.parse(Array("--mongoPort","27019"))
+        CLIParser.parse(Array("--mongoPort","27019")) match {
+          case Some(config) =>
+            config.midasHost mustEqual "localhost"
+            config.midasPort mustEqual 27020
+            config.mongoHost mustEqual "localhost"
+            config.mongoPort mustEqual 27019
+            config.mode mustEqual TransformType.EXPANSION
+            config.deltasDir mustEqual "deltas"
+            success
 
-        config.midasHost mustEqual "localhost"
-        config.midasPort mustEqual 27020
-        config.mongoHost mustEqual "localhost"
-        config.mongoPort mustEqual 27019
-        config.mode mustEqual TransformType.EXPANSION
-        config.deltasDir mustEqual "deltas"
+          case None =>
+            failure("Should have run with given MONGOPORT while using defaults for port and mongoHost")
+
+        }
       }
 
       " runs on given PORT and connects to given MONGOHOST on default mongoPort" in {
-        val config = CLIParser.parse(Array("--port","27040","--source","192.168.1.44"))
+        CLIParser.parse(Array("--port","27040","--source","192.168.1.44")) match {
+          case Some(config) =>
+            config.midasHost mustEqual "localhost"
+            config.midasPort mustEqual 27040
+            config.mongoHost mustEqual "192.168.1.44"
+            config.mongoPort mustEqual 27017
+            config.mode mustEqual TransformType.EXPANSION
+            config.deltasDir mustEqual "deltas"
+            success
 
-        config.midasHost mustEqual "localhost"
-        config.midasPort mustEqual 27040
-        config.mongoHost mustEqual "192.168.1.44"
-        config.mongoPort mustEqual 27017
-        config.mode mustEqual TransformType.EXPANSION
-        config.deltasDir mustEqual "deltas"
+          case None =>
+            failure("Should have run with given PORT and MONGOHOST while using defaults for mongoPort")
+
+        }
       }
 
       " runs on given PORT and connects to default mongoHost on given MONGOPORT" in {
-        val config = CLIParser.parse(Array("--port","27040","--mongoPort","27019"))
+        CLIParser.parse(Array("--port","27040","--mongoPort","27019")) match {
+          case Some(config) =>
+            config.midasHost mustEqual "localhost"
+            config.midasPort mustEqual 27040
+            config.mongoHost mustEqual "localhost"
+            config.mongoPort mustEqual 27019
+            config.mode mustEqual TransformType.EXPANSION
+            config.deltasDir mustEqual "deltas"
+            success
 
-        config.midasHost mustEqual "localhost"
-        config.midasPort mustEqual 27040
-        config.mongoHost mustEqual "localhost"
-        config.mongoPort mustEqual 27019
-        config.mode mustEqual TransformType.EXPANSION
-        config.deltasDir mustEqual "deltas"
+          case None =>
+            failure("Should have run with given PORT and MONGOPORT while using defaults for mongoHost")
+
+        }
       }
 
       " runs on default port and connects to given MONGOHOST on MONGOPORT" in {
-        val config = CLIParser.parse(Array("--source","192.168.1.44","--mongoPort","27019"))
+        CLIParser.parse(Array("--source","192.168.1.44","--mongoPort","27019")) match {
+          case Some(config) =>
+            config.midasHost mustEqual "localhost"
+            config.midasPort mustEqual 27020
+            config.mongoHost mustEqual "192.168.1.44"
+            config.mongoPort mustEqual 27019
+            config.mode mustEqual TransformType.EXPANSION
+            config.deltasDir mustEqual "deltas"
+            success
 
-        config.midasHost mustEqual "localhost"
-        config.midasPort mustEqual 27020
-        config.mongoHost mustEqual "192.168.1.44"
-        config.mongoPort mustEqual 27019
-        config.mode mustEqual TransformType.EXPANSION
-        config.deltasDir mustEqual "deltas"
+          case None =>
+            failure("Should have run with given MONGOHOST and MONGOPORT while using defaults for port")
+
+        }
       }
 
       " runs in CONTRACTION mode" in {
-        val config = CLIParser.parse(Array("--port","27040","--source","192.168.1.44","--mongoPort","27019","--mode","CONTRACTION"))
+        CLIParser.parse(Array("--port","27040","--source","192.168.1.44","--mongoPort","27019","--mode","CONTRACTION")) match {
+          case Some(config) =>
+            config.midasHost mustEqual "localhost"
+            config.midasPort mustEqual 27040
+            config.mongoHost mustEqual "192.168.1.44"
+            config.mongoPort mustEqual 27019
+            config.mode mustEqual TransformType.CONTRACTION
+            config.deltasDir mustEqual "deltas"
+            success
 
-        config.midasHost mustEqual "localhost"
-        config.midasPort mustEqual 27040
-        config.mongoHost mustEqual "192.168.1.44"
-        config.mongoPort mustEqual 27019
-        config.mode mustEqual TransformType.CONTRACTION
-        config.deltasDir mustEqual "deltas"
+          case None =>
+            failure("Should have run in CONTRACTION mode")
+
+        }
       }
 
       " uses the specified directory for picking up delta files " in {
-        val config = CLIParser.parse(Array("--port","27040",
-          "--source","192.168.1.44","--mongoPort","27019","--mode","CONTRACTION","--deltasDir","src/main/resources/deltas"))
+        CLIParser.parse(Array("--port","27040",
+          "--source","192.168.1.44","--mongoPort","27019","--mode","CONTRACTION","--deltasDir","src/main/resources/deltas")) match {
+          case Some(config) =>
+            config.midasHost mustEqual "localhost"
+            config.midasPort mustEqual 27040
+            config.mongoHost mustEqual "192.168.1.44"
+            config.mongoPort mustEqual 27019
+            config.mode mustEqual TransformType.CONTRACTION
+            config.deltasDir mustEqual "src/main/resources/deltas"
+            success
 
-        config.midasHost mustEqual "localhost"
-        config.midasPort mustEqual 27040
-        config.mongoHost mustEqual "192.168.1.44"
-        config.mongoPort mustEqual 27019
-        config.mode mustEqual TransformType.CONTRACTION
-        config.deltasDir mustEqual "src/main/resources/deltas"
+          case None =>
+            failure("Should have used specified deltas directory")
+
+        }
       }
     }
 }

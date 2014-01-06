@@ -3,13 +3,14 @@ package com.ee.midas
 import com.ee.midas.transform.TransformType
 import scopt.{Read, OptionParser}
 import java.io.File
+import java.net.URI
 
 case class MidasConfig (midasHost:String = "localhost",
                         midasPort: Int = 27020 ,
                         mongoHost: String = "localhost",
                         mongoPort: Int = 27017,
                         mode: TransformType = TransformType.EXPANSION,
-                        deltasDir: String = "deltas")
+                        deltasDir: URI )
 
 object CLIParser {
   implicit val transformTypRead: Read[TransformType] = new Read[TransformType]{
@@ -31,21 +32,20 @@ object CLIParser {
       opt[TransformType]("mode") action { (userSuppliedMode, defaultMidasConfig) =>
         defaultMidasConfig.copy(mode = userSuppliedMode)
       } text("OPTIONAL, the operation mode (EXPANSION/CONTRACTION) for midas, default is EXPANSION")
-      opt[String]("deltasDir") action { (userSuppliedDeltasDir, defaultMidasConfig) =>
+      opt[File]("deltasDir") action { (userSuppliedDeltasDir, defaultMidasConfig) =>
         deltasDir(userSuppliedDeltasDir, defaultMidasConfig, this)
       } text("OPTIONAL, the location of delta files ")
       help("help") text ("Show usage")
-//      override def reportError(msg: String) : Unit = {
-//        println(msg)
-//      }
     }
-    parser.parse(args, MidasConfig())
+    val loader = this.getClass.getClassLoader
+    parser.parse(args, MidasConfig(deltasDir = loader.getResource("deltas").toURI))
   }
 
-  private def deltasDir(value: String, config: MidasConfig, parser: OptionParser[MidasConfig]) = {
-    val file = new File(value)
-    if (file.exists)
-        config.copy(deltasDir = value)
+  private def deltasDir(value: File, config: MidasConfig, parser: OptionParser[MidasConfig]) = {
+     if (value.exists)
+      {
+        config.copy(deltasDir = value.toURI)
+      }
     else {
         println("--deltasDir path does not exist")
         println(parser.usage)

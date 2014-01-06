@@ -3,7 +3,7 @@ package com.ee.midas
 import java.io._
 import com.ee.midas.dsl.Translator
 import scala.collection.JavaConverters._
-import java.net.URL
+import java.net.{URI, URL}
 import com.ee.midas.utils.{ScalaCompiler, Loggable}
 import com.ee.midas.transform.Transforms
 import scala.Array
@@ -24,8 +24,8 @@ class DeltaFilesProcessor(val translator: Translator, val deployableHolder: Depl
     writer.flush()
   }
 
-  private def translate(deltasDir: URL, scalaTemplateFilename: String, writer: Writer): Unit = {
-    val deltaFiles = new File(deltasDir.toURI).listFiles()
+  private def translate(deltasDir: URI, scalaTemplateFilename: String, writer: Writer): Unit = {
+    val deltaFiles = new File(deltasDir).listFiles()
     log.debug(s"Delta Files $deltaFiles")
     val sortedDeltaFiles = deltaFiles.filter(f => f.getName.endsWith(".delta")).sortBy(f => f.getName).toList
     log.info(s"Filtered and Sorted Delta Files $sortedDeltaFiles")
@@ -41,7 +41,7 @@ class DeltaFilesProcessor(val translator: Translator, val deployableHolder: Depl
   //1. Translate (Delta -> Scala)
   //2. Compile   (Scala -> ByteCode)
   //3. Deploy    (ByteCode -> JVM)
-  def process(deltasDir: URL, srcScalaTemplate: URL, srcScalaWriter: Writer, srcScalaFile: File,
+  def process(deltasDir: URI, srcScalaTemplate: URL, srcScalaWriter: Writer, srcScalaFile: File,
               binDir: URL, clazzName: String, classpathDir: URL): Unit = {
     log.debug(
     s"""

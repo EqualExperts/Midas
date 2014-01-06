@@ -1,8 +1,6 @@
 package com.ee.midas
 
 
-import _root_.java.lang.Class
-import _root_.java.lang.reflect.Method
 import com.ee.midas.pipes.{SocketConnector, DuplexPipe}
 import java.net._
 import com.ee.midas.utils.{DirectoryWatcher, Accumulator, Loggable}
@@ -24,8 +22,6 @@ object Main extends App with Loggable {
         val waitBeforeProcessing = 100
         val loader = Main.getClass.getClassLoader
 
-        val deltasDirURI : String = processDeltaPath(config.deltasDir)
-
         val srcScalaTemplateURI = "templates/Transformations.scala.template"
         val srcScalaDirURI = "generated/scala/"
         val srcScalaFilename = "Transformations.scala"
@@ -35,8 +31,7 @@ object Main extends App with Loggable {
 
         val classpathDir = loader.getResource(classpathURI)
         val binDir = loader.getResource(binDirURI)
-        val deltasDir = loader.getResource(deltasDirURI)
-        log.info(s"Deltas Dir = $deltasDir")
+        log.info(s"Deltas Dir = ${config.deltasDir}")
         val srcScalaTemplate = loader.getResource(srcScalaTemplateURI)
         val srcScalaDir = loader.getResource(srcScalaDirURI)
         log.info(s"Source Scala Dir = $srcScalaDir")
@@ -46,16 +41,16 @@ object Main extends App with Loggable {
         val deployableHolder = createDeployableHolder
         implicit val deltasProcessor =
           new DeltaFilesProcessor(new Translator(new Reader(), new ScalaGenerator()), deployableHolder)
-        processDeltaFiles(deltasDir, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
+        processDeltaFiles(config.deltasDir, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
         log.info(s"Completed...Processing Delta Files!")
 
         log.info(s"Setting up Directory Watcher...")
-        val watcher = new DirectoryWatcher(deltasDir.getPath, List(ENTRY_CREATE, ENTRY_DELETE),
+        val watcher = new DirectoryWatcher(config.deltasDir.getPath, List(ENTRY_CREATE, ENTRY_DELETE),
           waitBeforeProcessing)(watchEvents => {
           watchEvents.foreach {watchEvent =>
             log.info(s"Received ${watchEvent.kind()}, Context = ${watchEvent.context()}")
           }
-          processDeltaFiles(deltasDir, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
+          processDeltaFiles(config.deltasDir, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
         })
         watcher.start
 
@@ -97,21 +92,12 @@ object Main extends App with Loggable {
     }
   }
 
-  private def processDeltaPath(deltasPath: String) : String = {
-    val startOfChildDir = deltasPath.lastIndexOf("/")
-    val parentDeltaDir =  deltasPath.substring(0,startOfChildDir+1)
-    val parentDeltaDirURI: URI = new File(parentDeltaDir).toURI
-
-    addToClassPath(parentDeltaDirURI.toURL)
-    deltasPath.substring(startOfChildDir+1,deltasPath.length)
-  }
-
   private def waitForNewConnectionOn(serverSocket: ServerSocket) = {
     log.info("Listening on port " + serverSocket.getLocalPort() + " for new connections...")
     serverSocket.accept()
   }
 
-  private def processDeltaFiles(deltasDir: URL, srcScalaTemplate: URL, srcScalaFile: File, binDir: URL,
+  private def processDeltaFiles(deltasDir: URI, srcScalaTemplate: URL, srcScalaFile: File, binDir: URL,
                                 clazzName: String, classpathDir: URL)(implicit deltasProcessor: DeltaFilesProcessor): Unit = {
     val writer = new PrintWriter(srcScalaFile, "utf-8")
     deltasProcessor.process(deltasDir, srcScalaTemplate, writer, srcScalaFile, binDir, clazzName, classpathDir)
@@ -121,17 +107,6 @@ object Main extends App with Loggable {
   private def createDeployableHolder =
     new DeployableHolder[Transforms] {
       def createDeployable: Transforms = new Transformations
-    }
-
-
-  private def addToClassPath(url : URL) = {
-      val sysClassLoader: URLClassLoader = (ClassLoader.getSystemClassLoader()).asInstanceOf[URLClassLoader]
-      val sysClass: Class[URLClassLoader] = classOf[URLClassLoader]
-      val parameter: Class[_] = classOf[URL]
-      val urlObject: Object = url
-      val method: Method  = sysClass.getDeclaredMethod("addURL", parameter)
-      method.setAccessible(true)
-      method.invoke(sysClassLoader, urlObject)
     }
   }
 

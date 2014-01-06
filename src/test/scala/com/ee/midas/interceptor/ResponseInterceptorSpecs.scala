@@ -13,6 +13,7 @@ import com.ee.midas.transform.Transformer
 @RunWith(classOf[JUnitRunner])
 class ResponseInterceptorSpecs extends Specification with Mockito {
 
+    sequential
     "Response Interceptor" should {
       "Read Header" in new setup {
 

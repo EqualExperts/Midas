@@ -8,9 +8,10 @@ import com.ee.midas.transform.{Transformations, Transforms}
 import com.ee.midas.dsl.Translator
 import com.ee.midas.dsl.interpreter.Reader
 import com.ee.midas.dsl.generator.ScalaGenerator
-import java.net.URL
+import java.net.{URI, URL}
 import java.io.{FileWriter, PrintWriter, File, Writer}
 import org.specs2.mock.Mockito
+import java.net
 
 @RunWith(classOf[JUnitRunner])
 class DeltaFilesProcessorSpecs extends Specification with Mockito {
@@ -20,8 +21,7 @@ class DeltaFilesProcessorSpecs extends Specification with Mockito {
 
            val loader = com.ee.midas.Main.getClass.getClassLoader
 
-           val deltasDirURI = "deltas/"
-           val deltasDir = loader.getResource(deltasDirURI)
+           val deltasDirURI =  new File("src/test/scala/com/ee/midas/newDeltas").toURI
 
            val srcScalaTemplateURI = "templates/Transformations.scala.template"
            val srcScalaTemplate = loader.getResource(srcScalaTemplateURI)
@@ -37,17 +37,17 @@ class DeltaFilesProcessorSpecs extends Specification with Mockito {
            val classpathURI = "."
            val classpathDir = loader.getResource(classpathURI)
 
-           val clazzName = "com.ee.midas.FileProcessorTest"
+           val clazzName = "com.ee.midas.FileProcessorStub"
 
            val writer = new PrintWriter(srcScalaFile, "utf-8")
 
            val deployableHolder = new DeployableHolder[Transforms] {
-             def createDeployable: Transforms = new FileProcessorTest
+             def createDeployable: Transforms = new FileProcessorStub
            }
 
            val deltaFileProcessor = new DeltaFilesProcessor(new Translator(new Reader(), new ScalaGenerator()), deployableHolder)
 
-           deltaFileProcessor.process(deltasDir, srcScalaTemplate, writer, srcScalaFile,
+           deltaFileProcessor.process(deltasDirURI, srcScalaTemplate, writer, srcScalaFile,
              binDir, clazzName, classpathDir)
 
            writer.close
@@ -55,7 +55,7 @@ class DeltaFilesProcessorSpecs extends Specification with Mockito {
            val deployable = deployableHolder.get
            deployable.contractions.contains("field")
            deployable.expansions.contains("field")
-           deployable.isInstanceOf[FileProcessorTest]
+           deployable.isInstanceOf[FileProcessorStub]
          }
      }
 }

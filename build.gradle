@@ -189,7 +189,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'net.saliman:gradle-cobertura-plugin:2.1.0-SNAPSHOT'
+        classpath 'net.saliman:gradle-cobertura-plugin:2.2.2'
     }
 }
 
@@ -274,8 +274,9 @@ cobertura {
     coverageReportDir = file(project.ext.coberturaCoverageReportsDirName)
     cobertura.coverageExcludes = ['.*net.saliman.*', '.*com.ee.midas.transform.Transformations.*', '.*MidasConfig.*']
     coverageFormats = ['html', 'xml']
-    totalLineCoverage = 80
-    totalBranchCoverage = 50
+    coverageCheckTotalLineRate = 80
+    coverageCheckTotalBranchRate = 50
+    coverageCheckHaltOnFailure = true
 }
 
 task distribute(type:Zip, dependsOn: assemble) {

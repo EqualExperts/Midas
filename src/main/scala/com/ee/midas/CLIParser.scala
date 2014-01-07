@@ -1,7 +1,7 @@
 package com.ee.midas
 
 import com.ee.midas.transform.TransformType
-import scopt.{Read, OptionParser}
+import scopt.{Read}
 import java.io.File
 import java.net.URI
 
@@ -32,24 +32,19 @@ object CLIParser {
       opt[TransformType]("mode") action { (userSuppliedMode, defaultMidasConfig) =>
         defaultMidasConfig.copy(mode = userSuppliedMode)
       } text("OPTIONAL, the operation mode (EXPANSION/CONTRACTION) for midas, default is EXPANSION")
-      opt[File]("deltasDir") action { (userSuppliedDeltasDir, defaultMidasConfig) =>
-        deltasDir(userSuppliedDeltasDir, defaultMidasConfig, this)
-      } text("OPTIONAL, the location of delta files ")
+
+      def directoryExists: (File) => Either[String, Unit] = (userSuppliedDeltasDir) =>
+        if(userSuppliedDeltasDir.exists()) success
+        else failure(s"${userSuppliedDeltasDir.getAbsolutePath} doesn't exist!")
+
+      opt[File]("deltasDir") action {(userSuppliedDeltasDir, defaultMidasConfig) =>
+        defaultMidasConfig.copy(deltasDir = userSuppliedDeltasDir.toURI)
+      } validate { directoryExists } text("OPTIONAL, the location of delta files ")
       help("help") text ("Show usage")
     }
+
     val loader = this.getClass.getClassLoader
     parser.parse(args, MidasConfig(deltasDir = loader.getResource("deltas").toURI))
   }
 
-  private def deltasDir(value: File, config: MidasConfig, parser: OptionParser[MidasConfig]) = {
-     if (value.exists)
-      {
-        config.copy(deltasDir = value.toURI)
-      }
-    else {
-        println("--deltasDir path does not exist")
-        println(parser.usage)
-        sys.exit
-    }
-  }
 }

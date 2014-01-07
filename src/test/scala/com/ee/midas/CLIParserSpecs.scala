@@ -166,5 +166,23 @@ class CLIParserSpecs extends Specification {
 
         }
       }
+
+      "fails when given a deltasDir that doesn't exist" in {
+        CLIParser.parse(Array("--deltasDir", "someDir/someFile")) match {
+          case None =>
+            success
+          case Some(config) =>
+            failure("Should have failed for a directory that doesn't exist")
+        }
+      }
+
+      "fails when an invalid option is given" in {
+        CLIParser.parse(Array("--invalidOption", "invalidValue")) match {
+          case None =>
+            success
+          case Some(config) =>
+            failure("Should have failed for an invalid option")
+        }
+      }
     }
 }

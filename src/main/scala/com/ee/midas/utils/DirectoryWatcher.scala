@@ -27,7 +27,6 @@ class DirectoryWatcher(dirURL: String, events: Seq[WatchEvent.Kind[_]], waitBefo
   def stopWatching = {
     log.info(s"Stopping Watch on ${dirURL}")
     isRunning = false
-    watcher.close()
   }
 
   def start : Unit = {
@@ -58,6 +57,7 @@ class DirectoryWatcher(dirURL: String, events: Seq[WatchEvent.Kind[_]], waitBefo
       }
     }
     isRunning = false
+    watcher.close()
     log.info(s"Completed Watch on ${dirURL}")
   }
 }

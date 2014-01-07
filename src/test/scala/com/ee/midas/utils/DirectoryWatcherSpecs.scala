@@ -18,8 +18,10 @@ import java.nio.file.StandardWatchEventKinds._
  * Also, @RunWith uses MockitoJUnitRunner because the conventional JUnitRunner provided by Specs2
  * is not compatible with JUnit style test cases written here.
  */
+
+//TODO: Get Rid of hard-coded sleeps, this Specs needs refactoring
 @RunWith(classOf[MockitoJUnitRunner])
-class DirectoryWatcherSpecs extends JUnitMustMatchers{
+class DirectoryWatcherSpecs extends JUnitMustMatchers {
 
   def waitForWatcherToStart(millis: Long) = Thread.sleep(millis)
   val path: String = "/" + System.getProperty("user.dir") + "/testWatcherDir"
@@ -181,11 +183,15 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers{
       }
     )
     watcher.start
+
     val file = new File(path + "/exceptionFile.txt")
     file.createNewFile()
     file.deleteOnExit()
 
-    Thread.sleep(100)
+    while(watcher.isRunning)  {
+      Thread.sleep(100)
+    }
+
     watcher.isRunning must beFalse
   }
 }

@@ -24,8 +24,8 @@ class DeltaFilesProcessor(val translator: Translator, val deployableHolder: Depl
     writer.flush()
   }
 
-  private def translate(deltasDir: URI, scalaTemplateFilename: String, writer: Writer): Unit = {
-    val deltaFiles = new File(deltasDir).listFiles()
+  private def translate(deltasDir: URL, scalaTemplateFilename: String, writer: Writer): Unit = {
+    val deltaFiles = new File(deltasDir.toURI).listFiles()
     log.debug(s"Delta Files $deltaFiles")
     val sortedDeltaFiles = deltaFiles.filter(f => f.getName.endsWith(".delta")).sortBy(f => f.getName).toList
     log.info(s"Filtered and Sorted Delta Files $sortedDeltaFiles")
@@ -41,7 +41,7 @@ class DeltaFilesProcessor(val translator: Translator, val deployableHolder: Depl
   //1. Translate (Delta -> Scala)
   //2. Compile   (Scala -> ByteCode)
   //3. Deploy    (ByteCode -> JVM)
-  def process(deltasDir: URI, srcScalaTemplate: URL, srcScalaWriter: Writer, srcScalaFile: File,
+  def process(deltasDir: URL, srcScalaTemplate: URL, srcScalaWriter: Writer, srcScalaFile: File,
               binDir: URL, clazzName: String, classpathDir: URL): Unit = {
     log.debug(
     s"""

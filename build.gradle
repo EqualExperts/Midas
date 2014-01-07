@@ -275,7 +275,7 @@ cobertura {
     cobertura.coverageExcludes = ['.*net.saliman.*', '.*com.ee.midas.transform.Transformations.*', '.*MidasConfig.*']
     coverageFormats = ['html', 'xml']
     totalLineCoverage = 80
-    totalBranchCoverage = 48
+    totalBranchCoverage = 50
 }
 
 task distribute(type:Zip, dependsOn: assemble) {

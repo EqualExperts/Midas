@@ -22,6 +22,8 @@ object Main extends App with Loggable {
         val waitBeforeProcessing = 100
         val loader = Main.getClass.getClassLoader
 
+        val deltasDirURL : URL  = config.deltasDir.toURL
+
         val srcScalaTemplateURI = "templates/Transformations.scala.template"
         val srcScalaDirURI = "generated/scala/"
         val srcScalaFilename = "Transformations.scala"
@@ -31,7 +33,7 @@ object Main extends App with Loggable {
 
         val classpathDir = loader.getResource(classpathURI)
         val binDir = loader.getResource(binDirURI)
-        log.info(s"Deltas Dir = ${config.deltasDir}")
+        log.info(s"Deltas Dir = ${deltasDirURL}")
         val srcScalaTemplate = loader.getResource(srcScalaTemplateURI)
         val srcScalaDir = loader.getResource(srcScalaDirURI)
         log.info(s"Source Scala Dir = $srcScalaDir")
@@ -41,7 +43,7 @@ object Main extends App with Loggable {
         val deployableHolder = createDeployableHolder
         implicit val deltasProcessor =
           new DeltaFilesProcessor(new Translator(new Reader(), new ScalaGenerator()), deployableHolder)
-        processDeltaFiles(config.deltasDir, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
+        processDeltaFiles(deltasDirURL, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
         log.info(s"Completed...Processing Delta Files!")
 
         log.info(s"Setting up Directory Watcher...")
@@ -50,7 +52,7 @@ object Main extends App with Loggable {
           watchEvents.foreach {watchEvent =>
             log.info(s"Received ${watchEvent.kind()}, Context = ${watchEvent.context()}")
           }
-          processDeltaFiles(config.deltasDir, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
+          processDeltaFiles(deltasDirURL, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
         })
         watcher.start
 
@@ -97,7 +99,7 @@ object Main extends App with Loggable {
     serverSocket.accept()
   }
 
-  private def processDeltaFiles(deltasDir: URI, srcScalaTemplate: URL, srcScalaFile: File, binDir: URL,
+  private def processDeltaFiles(deltasDir: URL, srcScalaTemplate: URL, srcScalaFile: File, binDir: URL,
                                 clazzName: String, classpathDir: URL)(implicit deltasProcessor: DeltaFilesProcessor): Unit = {
     val writer = new PrintWriter(srcScalaFile, "utf-8")
     deltasProcessor.process(deltasDir, srcScalaTemplate, writer, srcScalaFile, binDir, clazzName, classpathDir)

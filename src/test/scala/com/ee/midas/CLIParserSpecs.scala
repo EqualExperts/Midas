@@ -11,6 +11,8 @@ import java.io.File
 class CLIParserSpecs extends Specification {
     val loader = this.getClass.getClassLoader
     val defaultDirURI : URI =  loader.getResource("deltas").toURI
+    val file = new File("src/test/scala/com/ee/midas/newDeltas")
+    file.mkdir
     val userSuppliedURI : URI = new File("src/test/scala/com/ee/midas/newDeltas").toURI
 
     "Midas" should {
@@ -165,6 +167,7 @@ class CLIParserSpecs extends Specification {
             failure("Should have used specified deltas directory")
 
         }
+        file.delete
       }
 
       "fails when given a deltasDir that doesn't exist" in {

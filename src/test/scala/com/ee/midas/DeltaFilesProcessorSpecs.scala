@@ -21,7 +21,10 @@ class DeltaFilesProcessorSpecs extends Specification with Mockito {
 
            val loader = com.ee.midas.Main.getClass.getClassLoader
 
-           val deltasDirURI =  new File("src/test/scala/com/ee/midas/newDeltas").toURI
+           val file = new File("src/test/scala/com/ee/midas/newDeltas")
+           file.mkdir()
+
+           val deltasDirURL =  file.toURI.toURL
 
            val srcScalaTemplateURI = "templates/Transformations.scala.template"
            val srcScalaTemplate = loader.getResource(srcScalaTemplateURI)
@@ -47,7 +50,7 @@ class DeltaFilesProcessorSpecs extends Specification with Mockito {
 
            val deltaFileProcessor = new DeltaFilesProcessor(new Translator(new Reader(), new ScalaGenerator()), deployableHolder)
 
-           deltaFileProcessor.process(deltasDirURI, srcScalaTemplate, writer, srcScalaFile,
+           deltaFileProcessor.process(deltasDirURL, srcScalaTemplate, writer, srcScalaFile,
              binDir, clazzName, classpathDir)
 
            writer.close
@@ -56,6 +59,8 @@ class DeltaFilesProcessorSpecs extends Specification with Mockito {
            deployable.contractions.contains("field")
            deployable.expansions.contains("field")
            deployable.isInstanceOf[FileProcessorStub]
+
+           file.delete()
          }
      }
 }

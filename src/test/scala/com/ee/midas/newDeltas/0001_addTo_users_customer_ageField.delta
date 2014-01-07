@@ -1,2 +1,0 @@
-use users
-db.customers.add('{"age" : 0 }')

@@ -27,7 +27,9 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
     val keys = fields.keySet().asScala
     val (nestedKeys, normalKeys) = keys.partition(key => key.contains("."))
     if(nestedKeys.isEmpty){
-      document.putAll(fields)
+      normalKeys.filter (!document.containsField(_)) foreach { key =>
+        document.put(key, fields.get(key))
+      }
     } else {
       normalKeys.foreach(key => document.put(key, fields.get(key)))
       nestedKeys.foreach { key => {

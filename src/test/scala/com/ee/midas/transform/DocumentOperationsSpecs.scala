@@ -63,6 +63,21 @@ class DocumentOperationsSpecs extends Specification {
         transformedDocument.containsField("id") must beTrue
       }
 
+
+      "Ignore field that exists for multiple fields addition" in new setup {
+
+        val deltas = new BasicBSONObject()
+        deltas.put("name", "DefaultName")
+        deltas.put("id", 1)
+
+        //When
+        val transformedDocument = documentOperations ++ deltas
+
+        //Then
+        transformedDocument.get("name") mustEqual "midas"
+        transformedDocument.containsField("id") must beTrue
+      }
+
       "Add a field to nested document" in new setup {
 
         val deltas = new BasicBSONObject("nestedField.innerField2","innerValue2")

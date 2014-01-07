@@ -102,8 +102,13 @@ object Main extends App with Loggable {
   private def processDeltaFiles(deltasDir: URL, srcScalaTemplate: URL, srcScalaFile: File, binDir: URL,
                                 clazzName: String, classpathDir: URL)(implicit deltasProcessor: DeltaFilesProcessor): Unit = {
     val writer = new PrintWriter(srcScalaFile, "utf-8")
-    deltasProcessor.process(deltasDir, srcScalaTemplate, writer, srcScalaFile, binDir, clazzName, classpathDir)
-    writer.close()
+    try {
+      deltasProcessor.process(deltasDir, srcScalaTemplate, writer, srcScalaFile, binDir, clazzName, classpathDir)
+    } catch {
+      case e: Exception => log.info(s"Error Processing Delta Files: ${e.getMessage}")
+    } finally {
+      writer.close()
+    }
   }
 
   private def createDeployableHolder =

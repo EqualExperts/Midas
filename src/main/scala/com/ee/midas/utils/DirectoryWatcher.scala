@@ -6,7 +6,9 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit._
 
 class DirectoryWatcher(dirURL: String, events: Seq[WatchEvent.Kind[_]], waitBeforeProcessing: Long = 1000,
-                       timeUnit: TimeUnit = MILLISECONDS)(onEvents: Seq[WatchEvent[_]] => Unit) extends Loggable with Runnable {
+                       timeUnit: TimeUnit = MILLISECONDS)(onEvents: Seq[WatchEvent[_]] => Unit)
+  extends Loggable with Runnable {
+
   private val dirWatcherThread = new Thread(this, getClass.getSimpleName + "-Thread")
   private val fileSystem = FileSystems.getDefault
   private val watcher = fileSystem.newWatchService()
@@ -26,6 +28,7 @@ class DirectoryWatcher(dirURL: String, events: Seq[WatchEvent.Kind[_]], waitBefo
   
   def stopWatching = {
     log.info(s"Stopping Watch on ${dirURL}")
+    watcher.close()
     isRunning = false
   }
 
@@ -56,8 +59,7 @@ class DirectoryWatcher(dirURL: String, events: Seq[WatchEvent.Kind[_]], waitBefo
           stopWatching
       }
     }
-    isRunning = false
-    watcher.close()
+    stopWatching
     log.info(s"Completed Watch on ${dirURL}")
   }
 }

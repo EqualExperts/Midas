@@ -2,17 +2,20 @@ package com.ee.midas
 
 import com.ee.midas.transform.TransformType
 import scopt.{Read}
-import java.io.File
-import java.net.URI
+import java.io.{FileInputStream, File}
+import java.net.{URL, URI}
+import com.ee.midas.utils.Loggable
 
-case class MidasConfig (midasHost:String = "localhost",
-                        midasPort: Int = 27020 ,
-                        mongoHost: String = "localhost",
-                        mongoPort: Int = 27017,
-                        mode: TransformType = TransformType.EXPANSION,
-                        deltasDir: URI )
+case class MidasConfig (val midasHost:String = "localhost",
+                        val midasPort: Int = 27020 ,
+                        val mongoHost: String = "localhost",
+                        val mongoPort: Int = 27017,
+                        val mode: TransformType = TransformType.EXPANSION,
+                        val baseDeltasDir: URI )  {
+  val deltasDirURL = new File(baseDeltasDir.getPath + "/" + mode.toString.toLowerCase).toURI.toURL
+}
 
-object CLIParser {
+object CLIParser extends Loggable {
   implicit val transformTypRead: Read[TransformType] = new Read[TransformType]{
     def arity = 1
     def reads: String => TransformType = (mode: String) => TransformType.valueOf(mode.toUpperCase)
@@ -30,21 +33,26 @@ object CLIParser {
         defaultMidasConfig.copy(mongoPort = userSuppliedMongoPort)
       } text("OPTIONAL, the mongo port midas will connect to, default is 27017")
       opt[TransformType]("mode") action { (userSuppliedMode, defaultMidasConfig) =>
+        log.info(s"User Supplied Mode = ${userSuppliedMode}")
         defaultMidasConfig.copy(mode = userSuppliedMode)
       } text("OPTIONAL, the operation mode (EXPANSION/CONTRACTION) for midas, default is EXPANSION")
 
       def directoryExists: (File) => Either[String, Unit] = (userSuppliedDeltasDir) =>
-        if(userSuppliedDeltasDir.exists()) success
-        else failure(s"${userSuppliedDeltasDir.getAbsolutePath} doesn't exist!")
+        if (userSuppliedDeltasDir.exists())
+          success
+        else
+          failure(s"${userSuppliedDeltasDir.getAbsolutePath} doesn't exist!")
 
       opt[File]("deltasDir") action {(userSuppliedDeltasDir, defaultMidasConfig) =>
-        defaultMidasConfig.copy(deltasDir = userSuppliedDeltasDir.toURI)
+        defaultMidasConfig.copy(baseDeltasDir = userSuppliedDeltasDir.toURI)
       } validate { directoryExists } text("OPTIONAL, the location of delta files ")
       help("help") text ("Show usage")
     }
 
     val loader = this.getClass.getClassLoader
-    parser.parse(args, MidasConfig(deltasDir = loader.getResource("deltas").toURI))
+    val baseDeltasDir = loader.getResource("deltas").toURI
+    log.info(s"Default Base DeltasDir = $baseDeltasDir")
+    val defaultMidasConfig = MidasConfig(baseDeltasDir = baseDeltasDir)
+    parser.parse(args, defaultMidasConfig)
   }
-
 }

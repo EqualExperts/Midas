@@ -21,7 +21,7 @@ class DeltaFilesProcessorSpecs extends Specification with Mockito {
 
            val loader = com.ee.midas.Main.getClass.getClassLoader
 
-           val file = new File("src/test/scala/com/ee/midas/newDeltas")
+           val file = new File("src/test/scala/com/ee/midas/myDeltas")
            file.mkdir()
 
            val deltasDirURL =  file.toURI.toURL

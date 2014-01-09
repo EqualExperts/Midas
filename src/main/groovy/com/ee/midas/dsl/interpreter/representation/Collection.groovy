@@ -4,7 +4,6 @@ import com.ee.midas.dsl.grammar.Contraction
 import com.ee.midas.dsl.grammar.Expansion
 import com.ee.midas.dsl.grammar.Grammar
 import com.ee.midas.transform.TransformType
-import com.mongodb.util.JSON
 import groovy.json.JsonException
 import groovy.json.JsonSlurper
 import groovy.transform.CompileStatic
@@ -19,7 +18,6 @@ import static com.ee.midas.transform.TransformType.EXPANSION
 @Slf4j
 class Collection {
     final String name
-    private JsonSlurper jsonSlurper = new JsonSlurper()
     private final Map<Long, Tuple> versionedExpansions = [:]
     private final Map<Long, Tuple> versionedContractions = [:]
     private Long curExpansionVersion = 1
@@ -30,14 +28,11 @@ class Collection {
     }
 
     def invokeMethod(String name, args) {
-        log.debug("${this.name} invokeMethod: Operation $name with $args")
+        log.info("${this.name} invokeMethod: Operation $name with $args")
 
         if(args) {
-            Grammar grammar = validateGrammar(name)
-
-            String jsonString = args[0].toString()
-            validateJson(jsonString)
-
+            Grammar grammar = asGrammar(name)
+            grammar.validate(args as List<String>)
             if (isExpansion(grammar)) {
                 log.info("${this.name} Adding Expansion $grammar with $args")
                 versionedExpansions[curExpansionVersion++] = [grammar, args]
@@ -62,21 +57,11 @@ class Collection {
     }
 
     @CompileStatic
-    private Grammar validateGrammar(String token) {
+    private Grammar asGrammar(String token) {
         try {
             Grammar.valueOf(token)
         } catch (IllegalArgumentException iae) {
             throw new InvalidGrammar("Sorry!! Midas Compiler doesn't understand $token")
-        }
-    }
-    @CompileStatic
-    private void validateJson(String jsonString) {
-        try {
-            log.debug("Parsing Input JSON...$jsonString")
-            jsonSlurper.parseText(jsonString)
-            log.debug("Parsed Input JSON Successfully")
-        } catch (JsonException je) {
-            throw new InvalidGrammar("MidasCompiler: Error: $je.message")
         }
     }
 

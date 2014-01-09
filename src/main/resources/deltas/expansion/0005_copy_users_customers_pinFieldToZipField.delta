@@ -1,0 +1,2 @@
+use users
+db.customers.copy("pin", "zip")

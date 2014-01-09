@@ -3,7 +3,7 @@ package com.ee.midas
 import java.io._
 import com.ee.midas.dsl.Translator
 import scala.collection.JavaConverters._
-import java.net.{URI, URL}
+import java.net.{URL}
 import com.ee.midas.utils.{ScalaCompiler, Loggable}
 import com.ee.midas.transform.Transforms
 import scala.Array

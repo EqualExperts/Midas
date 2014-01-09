@@ -1,0 +1,5 @@
+//Set context to users db
+use users
+
+//Add age field with default value 0 to all documents that do not have one
+db.customers.add('{"age" : 0 }')

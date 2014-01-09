@@ -52,9 +52,9 @@ public class ScalaGenerator implements Generator {
         tree.eachWithVersionedMap(transformType) { String dbName, String collectionName, versionedMap ->
             def versionedSnippets = versionedMap.collect { version, operation ->
                 def operationName = operation['name']
-                def args = operation['args']
+                def args = operation['args'] as List<String>
                 log.info("Generating Snippet for... $dbName.$collectionName => Version = $version, Operation = $operationName, Args = $args")
-                def snippet = "$operationName"(args[0])
+                def snippet = "$operationName"(*args)
                 "${version}d -> $snippet"
             }
             def fullCollectionName = toFullCollectionName(dbName, collectionName)
@@ -81,6 +81,15 @@ public class ScalaGenerator implements Generator {
                 val json = \"""$jsonString\"""
                 val fields = JSON.parse(json).asInstanceOf[BSONObject]
                 document ++ fields
+            })
+        """.stripMargin()
+    }
+
+    private String copy(fromFieldString, toFieldString) {
+        """
+            ((document: BSONObject) => {
+                val fromFieldValue = document.get(\"$fromFieldString\")
+                document + (\"$toFieldString\", fromFieldValue)
             })
         """.stripMargin()
     }

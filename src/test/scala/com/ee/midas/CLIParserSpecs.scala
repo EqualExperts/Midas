@@ -39,6 +39,8 @@ class CLIParserSpecs extends Specification {
     }
   }
 
+  sequential
+
     "Midas" should {
        "run with default values" in new SetupTeardown {
          CLIParser.parse(Array()) match {

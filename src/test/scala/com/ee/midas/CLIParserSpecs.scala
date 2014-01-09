@@ -33,9 +33,9 @@ class CLIParserSpecs extends Specification {
     }
 
     def after: Any = {
-      newBaseDeltasdirFile.delete
       newExpansionDeltasdirFile.delete
       newContractionDeltasdirFile.delete
+      newBaseDeltasdirFile.delete
     }
   }
 

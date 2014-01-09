@@ -23,6 +23,9 @@ object CLIParser extends Loggable {
 
   def parse(args:Array[String]): Option[MidasConfig] = {
     val parser = new scopt.OptionParser[MidasConfig]("midas") {
+      opt[String]("host") action { (userSuppliedHost, defaultMidasConfig) =>
+        defaultMidasConfig.copy(midasHost = userSuppliedHost)
+      } text("OPTIONAL, the host/IP midas will be available on, default is localhost")
       opt[Int]("port") action { (userSuppliedPort, defaultMidasConfig) => 
         defaultMidasConfig.copy(midasPort = userSuppliedPort)
       } text("OPTIONAL, the port on which midas will accept connections, default is 27020")

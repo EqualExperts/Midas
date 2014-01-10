@@ -16,7 +16,9 @@ public class JSONValidator implements Validator {
         try {
             JSON.parse(arg);
         } catch (JSONParseException je) {
-            throw new InvalidGrammar(String.format(errMsg, arg, je.getMessage()));
+            throw new InvalidGrammar(String.format(errMsg,
+                                                    arg,
+                                                    je.getMessage()));
         }
     }
 }

@@ -96,4 +96,14 @@ public class ScalaGenerator implements Generator {
         """.stripMargin()
     }
 
+    private String mergeInto(mergeFieldString, separatorString, fieldsJsonString) {
+        """
+            ((document: BSONObject) => {
+                val json = \"""$fieldsJsonString\"""
+                val fields = JSON.parse(json).asInstanceOf[BSONObject]
+                document >~< (\"$mergeFieldString\", \"$separatorString\",fields)
+            })
+        """.stripMargin()
+    }
+
 }

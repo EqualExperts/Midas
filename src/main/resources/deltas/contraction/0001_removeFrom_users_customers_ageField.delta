@@ -1,2 +1,11 @@
 use users
-db.customers.remove('["age"]')
+
+/***
+ * Remove single or multiple fields
+ *
+ * syntax: db.collection.remove('["fieldOne", "nested.fieldTwo", ...]')
+ * syntax: db.collection.remove("['fieldOne', 'nested.fieldTwo', ...]")
+ */
+
+// Remove age field
+db.customers.remove("['age']")

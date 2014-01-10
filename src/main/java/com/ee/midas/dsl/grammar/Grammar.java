@@ -8,11 +8,14 @@ public enum Grammar {
     @Expansion @ArgsSpecs(ArgType.JSON)
     add,
 
-    @Expansion @ArgsSpecs({ ArgType.String, ArgType.String })
+    @Expansion @ArgsSpecs({ ArgType.Identifier, ArgType.Identifier })
     copy,
 
 //    @Expansion   split,
-//    @Expansion   merge,
+
+    @Expansion   @ArgsSpecs({ ArgType.Identifier, ArgType.String, ArgType.JSON })
+    mergeInto,
+
     @Contraction @ArgsSpecs(ArgType.JSON)
     remove;
 

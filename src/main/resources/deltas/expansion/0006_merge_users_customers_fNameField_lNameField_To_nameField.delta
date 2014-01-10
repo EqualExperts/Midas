@@ -1,0 +1,13 @@
+use users
+
+/***
+ * Merge into a target field multiple fields using a user-defined separator
+ *
+ * syntax: db.collection.mergeInto('field', 'usingSeparator', '["fieldOne", "fieldTwo", ...]')
+ * syntax: db.collection.mergeInto("field", "usingSeparator", "['fieldOne', 'fieldTwo', ...]")
+ *
+ * Separator can be any punctuations, symbols, spaces, alphanumeric string
+ *
+ * Note: mergeInto currently does not work for nested fields.
+ */
+db.customers.mergeInto('name', ' ', '["lname", "fname"]')

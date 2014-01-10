@@ -1,5 +1,12 @@
 //Set context to users db
 use users
 
+/**
+ * Add single or multiple fields
+ *
+ * syntax: db.collection.add('{ "fieldOne" : "valueOne", "nested.fieldTwo" : 2, ... }')
+ * syntax: db.collection.add("{ 'fieldOne' : 'valueOne', 'nested.fieldTwo' : 2, ... }")
+ */
+
 //Add age field with default value 0 to all documents that do not have one
 db.customers.add('{"age" : 0 }')

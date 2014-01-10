@@ -48,15 +48,19 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
   
   def -- (fields: BSONObject) : BSONObject = {
     log.debug("Removing Fields %s from Document %s".format(fields, document))
-    fields.toMap.asScala.foreach { case(index, value) =>
-      val name = value.asInstanceOf[String]
-      if(name.contains(".")) {
-        val currentKey = name.takeWhile(_!='.')
-        if(document.containsField(currentKey))
-          DocumentOperations(document.get(currentKey).asInstanceOf[BasicBSONObject]) -- JSON.parse(s"""["${name.dropWhile(_!='.').tail}"]""").asInstanceOf[BSONObject]
+    fields.toMap.asScala.foreach { case(index, field) =>
+      val fieldName = field.asInstanceOf[String]
+      if(fieldName.contains(".")) {
+        val currentKey = fieldName.takeWhile(_ != '.')
+        if (document.containsField(currentKey)) {
+          val nextLevelDocument = document.get(currentKey).asInstanceOf[BSONObject]
+          val remainingLevels = s"""["${fieldName.dropWhile(_ != '.').tail}"]"""
+          val fieldsToRemove = JSON.parse(remainingLevels).asInstanceOf[BSONObject] 
+          DocumentOperations(nextLevelDocument) -- fieldsToRemove
+        }
       }
       else
-        document.removeField(name)
+        document.removeField(fieldName)
     }
     log.debug("After Removing Fields from Document %s\n".format(document))
     document
@@ -68,7 +72,15 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
   }
 
   //merge
-  def >~< (fields: BSONObject) : BSONObject = {
+  def >~< (mergeFieldName: String, usingSeparator: String, fields: BSONObject) : BSONObject = {
+    log.debug("Merging Fields %s in Document %s".format(fields, document))
+    val fieldValues = fields.toMap.asScala.map { case (index, field) =>
+      val fieldName = field.asInstanceOf[String]
+      document.get(fieldName).toString
+    }
+    val mergedValues = fieldValues mkString usingSeparator
+    DocumentOperations(document) + (mergeFieldName, mergedValues)
+    log.debug("After Merging Fields in Document %s\n".format(document))
     document
   }
 

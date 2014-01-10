@@ -1,2 +1,11 @@
 use users
-db.customers.copy("pin", "zip")
+
+/**
+ * copy value from a field to another, if the target field does not exist, create one.
+ *
+ * syntax: db.collection.copy('fromFieldName', 'toFieldName')
+ * syntax: db.collection.copy("fromFieldName", "toFieldName")
+ *
+ * Note: copy currently does not work for nested fields.
+ */
+db.customers.copy('pin', 'zip')

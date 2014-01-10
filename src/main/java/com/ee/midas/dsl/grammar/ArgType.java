@@ -16,9 +16,10 @@ public enum ArgType {
     //Symbols = \p{S}
     //Punctuation = \p{P}
     //Any Whitespace or Invisible character = \p{Z}
-    String(new RegexValidator(Pattern.compile("[\\p{L}\\p{N}\\p{S}\\p{P}\\p{Z}]*",
-                               Pattern.UNICODE_CASE),
-                               "%s needs to be a valid string!"));
+    String(new RegexValidator(
+            Pattern.compile("[\\p{L}\\p{N}\\p{S}\\p{P}\\p{Z}]*",
+            Pattern.UNICODE_CASE),
+            "%s needs to be a valid string!"));
 
     private final Validator validator;
 

@@ -13,7 +13,7 @@ public enum Grammar {
 
 //    @Expansion   split,
 
-    @Expansion   @ArgsSpecs({ ArgType.Identifier, ArgType.String, ArgType.JSON })
+    @Expansion @ArgsSpecs({ ArgType.Identifier, ArgType.String, ArgType.JSON })
     mergeInto,
 
     @Contraction @ArgsSpecs(ArgType.JSON)
@@ -26,12 +26,31 @@ public enum Grammar {
                                             .getAnnotation(ArgsSpecs.class);
 
             ArgType[] types = argsSpecsAnnotation.value();
-            for (int index = 0; index < types.length; index++) {
-                types[index].validate(args.get(index));
-            }
+            validateArgsLength(args, types);
+            validateArgsValues(args, types);
         } catch (NoSuchFieldException e) {
             throw new InvalidGrammar(
                     "Sorry!! Midas Compiler bombed - " + e.getMessage());
+        }
+    }
+
+    private void validateArgsValues(final List<String> args,
+                                    final ArgType[] types) {
+        for (int index = 0; index < types.length; index++) {
+            types[index].validate(args.get(index));
+        }
+    }
+
+    private void validateArgsLength(final List<String> args,
+                                    final ArgType[] types) {
+        if (types.length != args.size()) {
+            final String errMsg =
+                "Wrong number of arguments supplied for %s, "
+                + "Required %d, Found %d";
+            throw new InvalidGrammar(String.format(errMsg,
+                                                    name(),
+                                                    types.length,
+                                                    args.size()));
         }
     }
 }

@@ -3,7 +3,7 @@ package com.ee.midas.transform
 import org.bson.{BasicBSONObject, BasicBSONEncoder, BSONObject}
 import scala.collection.JavaConverters._
 import java.io.InputStream
-import com.mongodb.{DefaultDBDecoder, DBDecoder}
+import com.mongodb.{DefaultDBDecoder}
 import com.ee.midas.utils.Loggable
 import com.mongodb.util.JSON
 

@@ -105,7 +105,7 @@ object Main extends App with Loggable {
     try {
       deltasProcessor.process(transformType, deltasDir, srcScalaTemplate, writer, srcScalaFile, binDir, clazzName, classpathDir)
     } catch {
-      case e: Exception => log.info(s"Error Processing Delta Files: ${e.getMessage}, Please fix the compilation issue in delta file and rethrow it in the appropriate directory!")
+      case e: Exception => log.info(s"Error Processing Delta File: ${e.getMessage}, Please fix the compilation issue in delta file and rethrow it in the appropriate directory!")
     } finally {
       writer.close()
     }

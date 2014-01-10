@@ -7,7 +7,7 @@ import com.ee.midas.dsl.grammar.validator.Validator;
 import java.util.regex.Pattern;
 
 public enum ArgType {
-    JSON(new JSONValidator("%s is an invalid json!")),
+    JSON(new JSONValidator("%s is an invalid json: %s")),
     String(new RegexValidator(Pattern.compile("[a-zA-Z_][a-zA-Z0-9_]*",
                               Pattern.UNICODE_CASE),
                               "%s needs to be a valid identifier!"));

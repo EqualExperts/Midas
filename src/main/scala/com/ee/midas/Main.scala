@@ -44,8 +44,7 @@ object Main extends App with Loggable {
         val deployableHolder = createDeployableHolder
         implicit val deltasProcessor =
           new DeltaFilesProcessor(new Translator(new Reader(), new ScalaGenerator()), deployableHolder)
-        processDeltaFiles(deltasDirURL, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
-        log.info(s"Completed...Processing Delta Files!")
+        processDeltaFiles(transformType, deltasDirURL, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
 
         log.info(s"Setting up Directory Watcher...")
         val watcher = new DirectoryWatcher(deltasDirURL.getPath, List(ENTRY_CREATE, ENTRY_DELETE),
@@ -53,7 +52,7 @@ object Main extends App with Loggable {
           watchEvents.foreach {watchEvent =>
             log.info(s"Received ${watchEvent.kind()}, Context = ${watchEvent.context()}")
           }
-          processDeltaFiles(deltasDirURL, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
+          processDeltaFiles(transformType, deltasDirURL, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
         })
         watcher.start
 
@@ -100,13 +99,13 @@ object Main extends App with Loggable {
     serverSocket.accept()
   }
 
-  private def processDeltaFiles(deltasDir: URL, srcScalaTemplate: URL, srcScalaFile: File, binDir: URL,
+  private def processDeltaFiles(transformType: TransformType, deltasDir: URL, srcScalaTemplate: URL, srcScalaFile: File, binDir: URL,
                                 clazzName: String, classpathDir: URL)(implicit deltasProcessor: DeltaFilesProcessor): Unit = {
     val writer = new PrintWriter(srcScalaFile, "utf-8")
     try {
-      deltasProcessor.process(deltasDir, srcScalaTemplate, writer, srcScalaFile, binDir, clazzName, classpathDir)
+      deltasProcessor.process(transformType, deltasDir, srcScalaTemplate, writer, srcScalaFile, binDir, clazzName, classpathDir)
     } catch {
-      case e: Exception => log.info(s"Error Processing Delta Files: ${e.getMessage}")
+      case e: Exception => log.info(s"Error Processing Delta Files: ${e.getMessage}, Please fix the compilation issue in delta file and rethrow it in the appropriate directory!")
     } finally {
       writer.close()
     }

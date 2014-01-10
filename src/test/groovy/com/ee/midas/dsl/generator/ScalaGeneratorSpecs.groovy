@@ -35,6 +35,8 @@ class ScalaGeneratorSpecs extends Specification {
                                  document ++ fields
                            })
                        ))
+
+              override var contractions: Map[String, VersionedSnippets] = Map()
               """
            result.replaceAll(' ', '') == expansionSnippets.replaceAll(' ', '')
    }
@@ -57,6 +59,8 @@ class ScalaGeneratorSpecs extends Specification {
        then : "generates Scala snippets"
            def contractionSnippets =
                    """
+                   override var expansions: Map[String, VersionedSnippets] = Map()
+
                    override var contractions: Map[String, VersionedSnippets] =
                    Map(\"someDatabase.collectionName\" ->
                           Map(1d ->

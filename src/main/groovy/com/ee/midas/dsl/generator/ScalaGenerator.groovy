@@ -29,9 +29,13 @@ public class ScalaGenerator implements Generator {
             """
             override var expansions: Map[String, VersionedSnippets] =
             Map(${transformationEntries})
+
+            override var contractions: Map[String, VersionedSnippets] = Map()
             """
         } else if (transformType == CONTRACTION) {
             """
+            override var expansions: Map[String, VersionedSnippets] = Map()
+
             override var contractions: Map[String, VersionedSnippets] =
             Map(${transformationEntries})
             """

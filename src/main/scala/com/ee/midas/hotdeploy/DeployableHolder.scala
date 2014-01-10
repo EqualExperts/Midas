@@ -15,10 +15,5 @@ abstract class DeployableHolder[T <: Deployable[T]] {
   
   def createDeployable: T
 
-  override def toString =
-    s"""
-      |===============================================================
-      |${deployable}
-      |===============================================================
-    """
+  override def toString = deployable.toString
 }

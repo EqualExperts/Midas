@@ -5,7 +5,7 @@ import com.ee.midas.dsl.Translator
 import scala.collection.JavaConverters._
 import java.net.{URL}
 import com.ee.midas.utils.{ScalaCompiler, Loggable}
-import com.ee.midas.transform.Transforms
+import com.ee.midas.transform.{TransformType, Transforms}
 import scala.Array
 import com.ee.midas.hotdeploy.{DeployableHolder, Deployer}
 
@@ -24,12 +24,12 @@ class DeltaFilesProcessor(val translator: Translator, val deployableHolder: Depl
     writer.flush()
   }
 
-  private def translate(deltasDir: URL, scalaTemplateFilename: String, writer: Writer): Unit = {
+  private def translate(transformType: TransformType, deltasDir: URL, scalaTemplateFilename: String, writer: Writer): Unit = {
     val deltaFiles = new File(deltasDir.toURI).listFiles()
     log.debug(s"Delta Files $deltaFiles")
     val sortedDeltaFiles = deltaFiles.filter(f => f.getName.endsWith(".delta")).sortBy(f => f.getName).toList
     log.info(s"Filtered and Sorted Delta Files $sortedDeltaFiles")
-    val scalaSnippets = translator.translate(sortedDeltaFiles.asJava)
+    val scalaSnippets = translator.translate(transformType, sortedDeltaFiles.asJava)
     log.info(s"Delta Files as Scala Snippets $scalaSnippets")
     val scalaCode = fillTemplate(scalaTemplateFilename, scalaSnippets)
     log.info(s"Filled Scala Template $scalaCode")
@@ -41,17 +41,18 @@ class DeltaFilesProcessor(val translator: Translator, val deployableHolder: Depl
   //1. Translate (Delta -> Scala)
   //2. Compile   (Scala -> ByteCode)
   //3. Deploy    (ByteCode -> JVM)
-  def process(deltasDir: URL, srcScalaTemplate: URL, srcScalaWriter: Writer, srcScalaFile: File,
+  def process(transformType: TransformType, deltasDir: URL, srcScalaTemplate: URL, srcScalaWriter: Writer, srcScalaFile: File,
               binDir: URL, clazzName: String, classpathDir: URL): Unit = {
     log.debug(
     s"""
+     transformType = $transformType
      deltasDir = $deltasDir
      classpathDir = $classpathDir
      binDir = $binDir
      Template Scala File = $srcScalaTemplate
     """.stripMargin)
     log.debug(s"Translating Delta Files...in ${deltasDir}")
-    translate(deltasDir, srcScalaTemplate.getPath, srcScalaWriter)
+    translate(transformType, deltasDir, srcScalaTemplate.getPath, srcScalaWriter)
 
     log.debug(s"Compiling Delta Files...")
     compile(classpathDir.getPath, binDir.getPath, srcScalaFile.getPath)

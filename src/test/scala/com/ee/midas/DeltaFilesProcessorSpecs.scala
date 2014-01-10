@@ -1,6 +1,6 @@
 package com.ee.midas
 
-import org.specs2.mutable.Specification
+import org.specs2.mutable.{BeforeAfter, Specification}
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 import com.ee.midas.hotdeploy.DeployableHolder
@@ -8,59 +8,95 @@ import com.ee.midas.transform.{Transformations, Transforms}
 import com.ee.midas.dsl.Translator
 import com.ee.midas.dsl.interpreter.Reader
 import com.ee.midas.dsl.generator.ScalaGenerator
-import java.net.{URI, URL}
-import java.io.{FileWriter, PrintWriter, File, Writer}
+import java.io.{PrintWriter, File}
 import org.specs2.mock.Mockito
-import java.net
+import com.ee.midas.transform.TransformType._
 
 @RunWith(classOf[JUnitRunner])
 class DeltaFilesProcessorSpecs extends Specification with Mockito {
+     trait SetupTeardown extends BeforeAfter {
+       val loader = com.ee.midas.Main.getClass.getClassLoader
+       val myDeltas = new File("src/test/scala/com/ee/midas/myDeltas")
+       val deltasDirURL =  myDeltas.toURI.toURL
+       val srcScalaTemplateURI = "templates/Transformations.scala.template"
+       val srcScalaDirURI = "generated/scala/"
+       val binDirURI = "generated/scala/bin/"
+       val classpathURI = "."
+       val srcScalaDir = loader.getResource(srcScalaDirURI)
 
+       val srcScalaFilename = "Transformations.scala"
+       val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
+
+       val writer = new PrintWriter(srcScalaFile, "utf-8")
+       val clazzName = "com.ee.midas.transform.Transformations"
+       val srcScalaTemplate = loader.getResource(srcScalaTemplateURI)
+
+       val binDir = loader.getResource(binDirURI)
+       val classpathDir = loader.getResource(classpathURI)
+       val deployableHolder = new DeployableHolder[Transforms] {
+         def createDeployable: Transforms = new Transformations
+       }
+
+       def before: Any = {
+         myDeltas.mkdir()
+         val expansionDeltaFile = new File(myDeltas.getPath + "/expansion.delta")
+         val expansionDelta = new PrintWriter(expansionDeltaFile)
+
+         val contractionDeltaFile = new File(myDeltas.getPath + "/contraction.delta")
+         val contractionDelta = new PrintWriter(contractionDeltaFile)
+
+         expansionDelta.write("use someDatabase\n")
+         expansionDelta.write("db.collection.add(\'{\"field\": \"value\"}\')\n")
+         expansionDelta.flush()
+         expansionDelta.close()
+
+         contractionDelta.write("use someDatabase\n")
+         contractionDelta.write("db.collection.remove(\'[\"field\"]\')\n")
+         contractionDelta.flush()
+         contractionDelta.close()
+       }
+
+       def after: Any = {
+         myDeltas.delete()
+       }
+     }
+
+     sequential
      "Delta File Processor" should {
-         "process delta files " in {
-
-           val loader = com.ee.midas.Main.getClass.getClassLoader
-
-           val file = new File("src/test/scala/com/ee/midas/myDeltas")
-           file.mkdir()
-
-           val deltasDirURL =  file.toURI.toURL
-
-           val srcScalaTemplateURI = "templates/Transformations.scala.template"
-           val srcScalaTemplate = loader.getResource(srcScalaTemplateURI)
-
-           val srcScalaDirURI = "generated/scala/"
-           val srcScalaDir = loader.getResource(srcScalaDirURI)
-           val srcScalaFilename = "FileProcessorTest.scala"
-           val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
-
-           val binDirURI = "generated/scala/bin/"
-           val binDir = loader.getResource(binDirURI)
-
-           val classpathURI = "."
-           val classpathDir = loader.getResource(classpathURI)
-
-           val clazzName = "com.ee.midas.FileProcessorStub"
-
-           val writer = new PrintWriter(srcScalaFile, "utf-8")
-
-           val deployableHolder = new DeployableHolder[Transforms] {
-             def createDeployable: Transforms = new FileProcessorStub
-           }
-
+         "process expansion delta files " in new SetupTeardown {
+           //Given
            val deltaFileProcessor = new DeltaFilesProcessor(new Translator(new Reader(), new ScalaGenerator()), deployableHolder)
 
-           deltaFileProcessor.process(deltasDirURL, srcScalaTemplate, writer, srcScalaFile,
+           //When
+           deltaFileProcessor.process(EXPANSION, deltasDirURL, srcScalaTemplate, writer, srcScalaFile,
              binDir, clazzName, classpathDir)
 
            writer.close
 
+           //Then
            val deployable = deployableHolder.get
-           deployable.contractions.contains("field")
-           deployable.expansions.contains("field")
-           deployable.isInstanceOf[FileProcessorStub]
+           deployable.contractions must beEmpty
+           val expansions = deployable.expansions
+           expansions must haveLength(1)
+           expansions must haveKey("someDatabase.collection")
+         }
 
-           file.delete()
+         "process contraction delta files " in new SetupTeardown {
+           //Given
+           val deltaFileProcessor = new DeltaFilesProcessor(new Translator(new Reader(), new ScalaGenerator()), deployableHolder)
+
+           //When
+           deltaFileProcessor.process(CONTRACTION, deltasDirURL, srcScalaTemplate, writer, srcScalaFile,
+             binDir, clazzName, classpathDir)
+
+           writer.close
+
+           //Then
+           val deployable = deployableHolder.get
+           deployable.expansions must beEmpty
+           val contractions = deployable.contractions
+           contractions must haveLength(1)
+           contractions must haveKey("someDatabase.collection")
          }
      }
 }

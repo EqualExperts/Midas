@@ -2,6 +2,7 @@ package com.ee.midas.dsl
 
 import com.ee.midas.dsl.generator.Generator
 import com.ee.midas.dsl.interpreter.Reader
+import com.ee.midas.transform.TransformType
 
 public class Translator {
     private final Reader reader
@@ -12,8 +13,8 @@ public class Translator {
         this.generator = generator
     }
 
-    public String translate(final List<File> deltaFiles) {
+    public String translate(final TransformType transformType, final List<File> deltaFiles) {
         def tree = reader.read(deltaFiles)
-        generator.generate(tree)
+        generator.generate(transformType, tree)
     }
 }

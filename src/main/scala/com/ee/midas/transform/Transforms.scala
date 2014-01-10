@@ -49,7 +49,10 @@ abstract class Transforms extends Versioner with Deployable[Transforms] {
 
   override def toString =
     s"""
-      Expansions = ${expansions.size} [${expansions mkString "::"}]
-      Contractions = ${contractions.size} [${contractions mkString "::"}]
+      |======================================================================
+      |Expansions = ${expansions.size} [${expansions mkString "\n"}]
+      |
+      |Contractions = ${contractions.size} [${contractions mkString "\n"}]
+      |======================================================================
      """.stripMargin
 }

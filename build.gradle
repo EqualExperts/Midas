@@ -109,6 +109,9 @@ sourceSets {
     }
 }
 
+//http://forums.gradle.org/gradle/topics/how_to_compile_groovy_sources_mixed_with_java_sources
+sourceSets.main.groovy.srcDirs += ["src/main/java"]
+
 test {
     exclude '**/run/*.class', '**/sample/*.class', '**/acceptance/*.class'
 }

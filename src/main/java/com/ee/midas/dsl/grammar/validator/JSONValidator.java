@@ -5,14 +5,19 @@ import groovy.json.JsonException;
 import groovy.json.JsonSlurper;
 
 public class JSONValidator implements Validator {
-    private JsonSlurper jsonSlurper = new JsonSlurper();
+    private final JsonSlurper jsonSlurper = new JsonSlurper();
+    private final String errMsg;
+
+    public JSONValidator(final String errMsg) {
+        this.errMsg = errMsg;
+    }
 
     @Override
     public final void validate(final String arg) {
         try {
             jsonSlurper.parseText(arg);
         } catch (JsonException je) {
-            throw new InvalidGrammar("MidasCompiler: Error: $je.message");
+            throw new InvalidGrammar(String.format(errMsg, arg));
         }
     }
 }

@@ -10,36 +10,34 @@ import static com.ee.midas.transform.TransformType.EXPANSION
 @Slf4j
 public class ScalaGenerator implements Generator {
 
-    private static final String NEW_LINE = '\n'
     private static final String TAB = '\t'
 
     public ScalaGenerator() {
     }
 
     @Override
-    public String generate(Tree tree) {
-        log.info('Generating Scala Code Midas-Snippets for each transformation...')
-        def expansionSnippets = generateSnippets(EXPANSION, tree)
-        def contractionSnippets = generateSnippets(CONTRACTION, tree)
+    public String generate(TransformType transformType, Tree tree) {
+        log.info('Generating Scala Code Midas-Snippets for $transformType...')
+        def snippets = generateSnippets(transformType, tree)
 
-        def expansionEntries = expansionSnippets.collect { fullCollectionName, versionedSnippets ->
+        def transformationEntries = snippets.collect { fullCollectionName, versionedSnippets ->
             """\"$fullCollectionName\" ->
                 Map(${versionedSnippets.join("$TAB$TAB, ")})"""
         }.join(', ')
 
-
-        def contractionEntries = contractionSnippets.collect { fullCollectionName, versionedSnippets ->
-            """\"$fullCollectionName\" ->
-                Map(${versionedSnippets.join("$TAB$TAB, ")})""".stripMargin()
-        }.join(', ')
-
-        """
-        override var expansions: Map[String, VersionedSnippets] =
-            Map(${expansionEntries})
-
-        override var contractions: Map[String, VersionedSnippets] =
-            Map(${contractionEntries})
-        """.stripMargin()
+        if (transformType == EXPANSION) {
+            """
+            override var expansions: Map[String, VersionedSnippets] =
+            Map(${transformationEntries})
+            """
+        } else if (transformType == CONTRACTION) {
+            """
+            override var contractions: Map[String, VersionedSnippets] =
+            Map(${transformationEntries})
+            """
+        } else {
+            ''
+        }
     }
 
     private def toFullCollectionName(String dbName, String collectionName) {

@@ -33,16 +33,17 @@ class DeltaFilesProcessorSpecs extends Specification with Mockito {
 
        val binDir = loader.getResource(binDirURI)
        val classpathDir = loader.getResource(classpathURI)
+
+       val expansionDeltaFile = new File(myDeltas.getPath + "/expansion.delta")
+       val contractionDeltaFile = new File(myDeltas.getPath + "/contraction.delta")
+
        val deployableHolder = new DeployableHolder[Transforms] {
          def createDeployable: Transforms = new Transformations
        }
 
        def before: Any = {
          myDeltas.mkdir()
-         val expansionDeltaFile = new File(myDeltas.getPath + "/expansion.delta")
          val expansionDelta = new PrintWriter(expansionDeltaFile)
-
-         val contractionDeltaFile = new File(myDeltas.getPath + "/contraction.delta")
          val contractionDelta = new PrintWriter(contractionDeltaFile)
 
          expansionDelta.write("use someDatabase\n")
@@ -57,7 +58,9 @@ class DeltaFilesProcessorSpecs extends Specification with Mockito {
        }
 
        def after: Any = {
-         myDeltas.delete()
+         contractionDeltaFile.delete
+         expansionDeltaFile.delete
+         myDeltas.delete
        }
      }
 

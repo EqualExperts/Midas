@@ -3,11 +3,12 @@ package com.ee.midas.transform
 import org.bson.BSONObject
 import TransformType._
 import com.ee.midas.hotdeploy.Deployable
+import scala.collection.immutable.TreeMap
 
 abstract class Transforms extends Versioner with Deployable[Transforms] {
   type Snippet = BSONObject => BSONObject
   type Snippets = Iterable[Snippet]
-  type VersionedSnippets = Map[Double, Snippet]
+  type VersionedSnippets = TreeMap[Double, Snippet]
   var expansions : Map[String, VersionedSnippets]
   var contractions : Map[String, VersionedSnippets]
 
@@ -37,7 +38,7 @@ abstract class Transforms extends Versioner with Deployable[Transforms] {
       expansions(fullCollectionName)
     else if(transformType == CONTRACTION)
       contractions(fullCollectionName)
-    else Map.empty
+    else TreeMap.empty
 
   def snippetsFrom(version: Double, versionedSnippets: VersionedSnippets) =
     versionedSnippets.filterKeys(v => v >= version).unzip._2

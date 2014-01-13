@@ -23,7 +23,7 @@ public class ScalaGenerator implements Generator {
 
         def transformationEntries = snippets.collect { fullCollectionName, versionedSnippets ->
             """\"$fullCollectionName\" ->
-                Map(${versionedSnippets.join("$TAB$TAB, ")})"""
+                TreeMap(${versionedSnippets.join("$TAB$TAB, ")})"""
         }.join(', ')
 
         if (transformType == EXPANSION) {
@@ -68,10 +68,10 @@ public class ScalaGenerator implements Generator {
     }
 
     //------------------- operations ------------------------------
-    private String remove(jsonString) {
+    private String remove(String json) {
         """
             ((document: BSONObject) => {
-                val json = \"""$jsonString\"""
+                val json = \"""$json\"""
                 val fields = JSON.parse(json).asInstanceOf[BSONObject]
                 document -- fields
             })
@@ -107,4 +107,9 @@ public class ScalaGenerator implements Generator {
         """.stripMargin()
     }
 
+    private String split(String splitField, String regex, String json) {
+        """
+            ((document: BSONObject) => document <~> (\"$splitField\", Pattern.compile(\"$regex\"), \"""$json\"""))
+        """.stripMargin()
+    }
 }

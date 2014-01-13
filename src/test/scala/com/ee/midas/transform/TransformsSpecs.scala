@@ -5,6 +5,7 @@ import org.bson.{BasicBSONObject, BSONObject}
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 import org.specs2.mock.Mockito
+import scala.collection.immutable.TreeMap
 
 @RunWith(classOf[JUnitRunner])
 class TransformsSpecs extends Specification with Mockito {
@@ -29,8 +30,8 @@ class TransformsSpecs extends Specification with Mockito {
       bsonObj
     }
 
-    val dummyVersionExpansion: VersionedSnippets = Map(1d -> dummyExpansionFunc1, 2d -> dummyExpansionFunc2)
-    val dummyVersionContraction: VersionedSnippets = Map(1d -> dummyContractionFunc1, 2d -> dummyContractionFunc2)
+    val dummyVersionExpansion: VersionedSnippets = TreeMap(1d -> dummyExpansionFunc1, 2d -> dummyExpansionFunc2)
+    val dummyVersionContraction: VersionedSnippets = TreeMap(1d -> dummyContractionFunc1, 2d -> dummyContractionFunc2)
 
     override var expansions : Map[String, VersionedSnippets] = Map("validCollectionForExpansion" -> dummyVersionExpansion)
     override var contractions : Map[String, VersionedSnippets] = Map("validCollectionForContraction" -> dummyVersionContraction)

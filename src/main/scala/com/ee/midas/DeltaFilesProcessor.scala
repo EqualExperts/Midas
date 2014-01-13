@@ -15,7 +15,7 @@ class DeltaFilesProcessor(val translator: Translator, val deployableHolder: Depl
   private def fillTemplate(scalaTemplateFilename: String, translations: String): String = {
     val scalaTemplateContents = scala.io.Source.fromFile(scalaTemplateFilename).mkString
     log.info(s"Scala Template to fill = ${scalaTemplateContents}")
-    val scalaFileContents = scalaTemplateContents.replaceAll("###EXPANSIONS-CONTRACTIONS###", translations)
+    val scalaFileContents = scalaTemplateContents.replaceAllLiterally("###EXPANSIONS-CONTRACTIONS###", translations)
     scalaFileContents
   }
 

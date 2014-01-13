@@ -11,7 +11,8 @@ public enum Grammar {
     @Expansion @ArgsSpecs({ ArgType.Identifier, ArgType.Identifier })
     copy,
 
-//    @Expansion   split,
+    @Expansion @ArgsSpecs({ ArgType.Identifier, ArgType.String, ArgType.JSON })
+    split,
 
     @Expansion @ArgsSpecs({ ArgType.Identifier, ArgType.String, ArgType.JSON })
     mergeInto,

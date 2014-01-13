@@ -1,5 +1,7 @@
 package com.ee.midas.transform
 
+import scala.collection.immutable.TreeMap
+import java.util.regex.Pattern
 import com.mongodb.util.JSON
 import org.bson.BSONObject
 import com.ee.midas.transform.DocumentOperations._

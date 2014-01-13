@@ -27,7 +27,8 @@ case object MidasUtils {
       case e:Exception => println("midas is closed")
     }
     println("Faking done... sleeping")
-    Thread.sleep(100)
+    while(midasProcess.isRunning())
+        Thread.sleep(100)
     !midasProcess.isRunning()
   }
 }

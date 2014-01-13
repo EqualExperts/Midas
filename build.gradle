@@ -203,6 +203,7 @@ apply plugin: 'cobertura'
 
 repositories {
     mavenCentral()
+    mavenLocal()
     maven {
         url 'http://code.google.com/p/google-maven-repository'
         url 'https://oss.sonatype.org/content/repositories/snapshots'

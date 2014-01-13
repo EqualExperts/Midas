@@ -11,14 +11,7 @@ import java.util.regex.{Matcher, Pattern}
 class DocumentOperations private (document: BSONObject) extends Loggable {
 
   private def isFieldADocument(fieldName: String, document: BSONObject) =
-    try {
-      document.get(fieldName).asInstanceOf[BSONObject]
-      true
-    } catch {
-      case e: Throwable => false
-    }
-
-  private def isEmpty(document: BSONObject) = document.keySet().size() == 0
+    document.get(fieldName).isInstanceOf[BSONObject]
 
   final def + [T] (field: String, value: T, overrideOldValue: Boolean = true): BSONObject = {
     log.debug("Adding/Updating Field %s with Value %s on Document %s".format(field, value.toString, document))
@@ -29,16 +22,16 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
         }
       case topLevelField :: rest =>
         if(isFieldADocument(topLevelField, document)) {
-          if(!isEmpty(document)) {
-            val innerDocument = document.get(topLevelField).asInstanceOf[BSONObject]
-            val remaining = rest mkString "."
-            DocumentOperations(innerDocument) + (remaining, value, overrideOldValue)
-          }
+          log.debug("After Adding/Updating Field %s on Document %s\n".format(field, document))
+          val innerDocument = document.get(topLevelField).asInstanceOf[BSONObject]
+          val remaining = rest mkString "."
+          DocumentOperations(innerDocument) + (remaining, value, overrideOldValue)
+        } else {
+          val innerEmptyDocument = new BasicBSONObject()
+          val remaining = rest mkString "."
+          document.put(topLevelField, innerEmptyDocument)
+          DocumentOperations(innerEmptyDocument) + (remaining, value, overrideOldValue)
         }
-        val innerEmptyDocument = new BasicBSONObject()
-        val remaining = rest mkString "."
-        document.put(topLevelField, innerEmptyDocument)
-        DocumentOperations(innerEmptyDocument) + (remaining, value, overrideOldValue)
     }
     log.debug("After Adding/Updating Field %s on Document %s\n".format(field, document))
     document

@@ -92,6 +92,31 @@ class DocumentOperationsSpecs extends Specification {
         level2Document.get("1") mustEqual "Some Road"
       }
 
+      "Adding a new level-2 nested field in the document" in {
+        //Given
+        val document = new BasicBSONObject()
+
+        //When
+        val transformedDocument = DocumentOperations(document) + ("address.line", "Some Road")
+
+        //Then
+        val level1Document = transformedDocument.get("address").asInstanceOf[BSONObject]
+        level1Document.get("line") must beEqualTo("Some Road")
+      }
+
+      "Adding a new field at level-2 nested field in the document" in {
+        //Given
+        val document = new BasicBSONObject("address", new BasicBSONObject("line1", "Some Road"))
+
+        //When
+        val transformedDocument = DocumentOperations(document) + ("address.line2", "Near Some Landmark")
+
+        //Then
+        val level1Document = transformedDocument.get("address").asInstanceOf[BSONObject]
+        level1Document.get("line1") must beEqualTo("Some Road")
+        level1Document.get("line2") must beEqualTo("Near Some Landmark")
+      }
+
       "Remove a single field from the document" in new setup {
         //When
         val transformedDocument = documentOperations - "removeSingle"
@@ -125,6 +150,20 @@ class DocumentOperationsSpecs extends Specification {
 
         //Then
         transformedDocument.get("name") mustEqual "midas"
+      }
+
+      "Adding a new field at level-2 nested field in the document using multiple fields add" in {
+        //Given
+        val document = new BasicBSONObject("address", new BasicBSONObject("line1", "Some Road"))
+        val deltas = new BasicBSONObject("address.line2", "Near Some Landmark")
+
+        //When
+        val transformedDocument = DocumentOperations(document) ++ deltas
+
+        //Then
+        val level1Document = transformedDocument.get("address").asInstanceOf[BSONObject]
+        level1Document.get("line1") must beEqualTo("Some Road")
+        level1Document.get("line2") must beEqualTo("Near Some Landmark")
       }
 
       "Remove multiple fields from the document" in new setup {

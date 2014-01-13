@@ -28,7 +28,7 @@ class ScalaGeneratorSpecs extends Specification {
               """
               override var expansions: Map[String, VersionedSnippets] =
               Map(\"someDatabase.collectionName\" ->
-                                  Map(1d ->
+                                  TreeMap(1d ->
                               ((document: BSONObject) => {
                                   val json = \"\"\"{\"newField\" : \"newValue\"}\"\"\"
                                   val fields = JSON.parse(json).asInstanceOf[BSONObject]
@@ -63,7 +63,7 @@ class ScalaGeneratorSpecs extends Specification {
 
                    override var contractions: Map[String, VersionedSnippets] =
                    Map(\"someDatabase.collectionName\" ->
-                          Map(1d ->
+                          TreeMap(1d ->
                       ((document: BSONObject) => {
                           val json = \"\"\"[\"newField\"]\"\"\"
                           val fields = JSON.parse(json).asInstanceOf[BSONObject]

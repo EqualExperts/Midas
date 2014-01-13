@@ -2,6 +2,7 @@ package com.ee.midas.dsl.generator
 
 import com.ee.midas.dsl.interpreter.representation.Tree
 import com.ee.midas.transform.TransformType
+import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 
 import static com.ee.midas.transform.TransformType.CONTRACTION
@@ -77,31 +78,31 @@ public class ScalaGenerator implements Generator {
         """.stripMargin()
     }
 
-    private String add(jsonString) {
+    private String add(String json) {
         """
             ((document: BSONObject) => {
-                val json = \"""$jsonString\"""
+                val json = \"""$json\"""
                 val fields = JSON.parse(json).asInstanceOf[BSONObject]
                 document ++ fields
             })
         """.stripMargin()
     }
 
-    private String copy(fromFieldString, toFieldString) {
+    private String copy(String fromField, String toField) {
         """
             ((document: BSONObject) => {
-                val fromFieldValue = document.get(\"$fromFieldString\")
-                document + (\"$toFieldString\", fromFieldValue)
+                val fromFieldValue = document.get(\"$fromField\")
+                document + (\"$toField\", fromFieldValue)
             })
         """.stripMargin()
     }
 
-    private String mergeInto(mergeFieldString, separatorString, fieldsJsonString) {
+    private String mergeInto(String mergeField, String separator, String fieldsArray) {
+        def fields = fieldsArray.substring(1, fieldsArray.length() - 1)
         """
             ((document: BSONObject) => {
-                val json = \"""$fieldsJsonString\"""
-                val fields = JSON.parse(json).asInstanceOf[BSONObject]
-                document >~< (\"$mergeFieldString\", \"$separatorString\",fields)
+                val fields = List($fields)
+                document >~< (\"$mergeField\", \"$separator\", fields)
             })
         """.stripMargin()
     }

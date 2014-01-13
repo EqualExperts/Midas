@@ -6,7 +6,8 @@ use users
  *
  * syntax: db.collection.add('{ "fieldOne" : "valueOne", "nested.fieldTwo" : 2, ... }')
  * syntax: db.collection.add("{ 'fieldOne' : 'valueOne', 'nested.fieldTwo' : 2, ... }")
+ * syntax: db.collection.add("{ 'arrayField' : ['one', 'two', ...] }")
  */
 
 //Add age field with default value 0 to all documents that do not have one
-db.customers.add('{"age" : 0 }')
+db.customers.add('{"age" : ["one", "two"] }')

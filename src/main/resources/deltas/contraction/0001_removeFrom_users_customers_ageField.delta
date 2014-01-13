@@ -3,8 +3,8 @@ use users
 /***
  * Remove single or multiple fields
  *
- * syntax: db.collection.remove('["fieldOne", "nested.fieldTwo", ...]')
- * syntax: db.collection.remove("['fieldOne', 'nested.fieldTwo', ...]")
+ * syntax: db.collection.remove('["fieldOne", "nested.fieldTwo", "arrayField", ...]')
+ * syntax: db.collection.remove("['fieldOne', 'nested.fieldTwo', 'arrayField', ...]")
  */
 
 // Remove age field

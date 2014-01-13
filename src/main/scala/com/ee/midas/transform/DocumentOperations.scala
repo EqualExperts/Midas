@@ -72,17 +72,11 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
   }
 
   //merge
-  def >~< (mergeFieldName: String, usingSeparator: String, fields: BSONObject) : BSONObject = {
+  def >~< (mergeField: String, usingSeparator: String, fields: List[String]) : BSONObject = {
     log.debug("Merging Fields %s in Document %s".format(fields, document))
-    val fieldValues = fields.toMap.asScala.map { case (index, field) =>
-      val fieldName = field.asInstanceOf[String]
-      if(document.containsField(fieldName)) {
-        document.get(fieldName).toString
-      }
-    }
-    val nonEmptyFieldValues = fieldValues.filter(_.isInstanceOf[String])
-    val mergedValues = nonEmptyFieldValues mkString usingSeparator
-    DocumentOperations(document) + (mergeFieldName, mergedValues)
+    val fieldValues = fields filter document.containsField map document.get
+    val mergeValue = fieldValues mkString usingSeparator
+    DocumentOperations(document) + (mergeField, mergeValue)
     log.debug("After Merging Fields in Document %s\n".format(document))
     document
   }

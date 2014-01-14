@@ -74,11 +74,25 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
     document
   }
 
+  private def getNestedValue(fields: List[String], document: BSONObject): String = {
+    val value = document.get(fields.head)
+    if(value.isInstanceOf[BSONObject]) getNestedValue(fields.tail, value.asInstanceOf[BSONObject])
+    else if(value.isInstanceOf[String]) value.asInstanceOf[String]
+    else ""
+  }
+
   //split
-  final def <~> (splitField: String, regex: Pattern, targetJsonDocument: String) : BSONObject = {
-    if(document.containsField(splitField)) {
-      log.debug("Splitting Field %s in Document %s using Pattern %s".format(splitField, document, regex))
-      val splitFieldValue = document.get(splitField).asInstanceOf[String]
+  final def <~> (splitField: String, regex: Pattern, targetJsonDocument: String, overrideOldValue: Boolean = true) : BSONObject = {
+    log.debug("Splitting Field %s in Document %s using Pattern %s".format(splitField, document, regex))
+    val splitFieldValue = splitField.split("\\.") toList match {
+      case field :: Nil => document.get(field).asInstanceOf[String]
+      case topLevelField :: rest => getNestedValue(rest, document.get(topLevelField).asInstanceOf[BSONObject])
+    }
+    if(splitFieldValue.isEmpty) {
+      log.debug("Did not Split Field %s as Document does not have one".format(splitField))
+      document
+    } else {
+      log.debug("and the value is: " + splitFieldValue)
       val matcher: Matcher = regex.matcher(splitFieldValue)
       var filledTargetJson = targetJsonDocument
       if(matcher.find) {
@@ -90,14 +104,11 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
           log.debug(s"Replaced target document: $filledTargetJson" )
         }
         val splitDocument = JSON.parse(filledTargetJson).asInstanceOf[BSONObject]
-        DocumentOperations(document) ++ splitDocument
+        DocumentOperations(document) ++ (splitDocument, overrideOldValue)
         log.debug("After Splitting Fields in Document %s\n".format(document))
       } else {
         log.debug("Pattern %s Not applicable to Split Field (%s) having Data %s".format(regex, splitField, splitFieldValue))
       }
-    } else {
-      log.debug("Did not Split Field %s as Document does not have one".format(splitField))
-      document
     }
     document
   }

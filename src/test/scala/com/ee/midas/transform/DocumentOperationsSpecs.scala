@@ -209,13 +209,16 @@ class DocumentOperationsSpecs extends Specification {
 
       }
 
-      "Splits field on basis of regex supplied " in {
+      "Splits a field on the basis of regex supplied " in {
+        //Given: A document with "name" field
         val document = new BasicBSONObject().append("name", "Mr Joe Shmo")
 
+        //When: "name" field is split into "title", "fullName.firstName" and "fullName.lastName"
         val actualDocument = DocumentOperations(document).<~>("name",
           Pattern.compile("""^(Mr|Mrs|Ms|Miss) ([a-zA-Z]+) ([a-zA-Z]+)$"""),
           """{"title": "$1", "fullName": { "firstName": "$2", "lastName": "$3" }}""")
 
+        //Then: Split operation was successful
         actualDocument.containsField("title") must beTrue
         actualDocument.get("title") mustEqual "Mr"
 
@@ -232,21 +235,50 @@ class DocumentOperationsSpecs extends Specification {
       }
 
       "Splits field while overriding an existing field" in {
+        //Given: A document with "name" and "title" fields
         val document = new BasicBSONObject()
-                      .append("name", "Mr Joe Shmo")
+                      .append("name", "Mr Bob Martin")
                       .append("title", "Mr. ")
 
+        //When: "name" field is split into "title", "fullName.firstName" and "fullName.lastName"
         val actualDocument = DocumentOperations(document).<~>("name",
           Pattern.compile("""^(Mr|Mrs|Ms|Miss) ([a-zA-Z]+) ([a-zA-Z]+)$"""),
           """{"title": "$1", "fullName": { "firstName": "$2", "lastName": "$3" }}""")
 
+        //Then: Split was successful and "title" field was over-ridden
         actualDocument.containsField("title") must beTrue
         actualDocument.get("title") mustEqual "Mr"
 
         actualDocument.containsField("fullName") must beTrue
         val expectedNestedDocument = new BasicBSONObject()
-          .append("firstName", "Joe")
-          .append ("lastName", "Shmo")
+          .append("firstName", "Bob")
+          .append ("lastName", "Martin")
+        actualDocument.get("fullName") mustEqual expectedNestedDocument
+
+
+        val nestedDocument = actualDocument.get("fullName").asInstanceOf[BSONObject]
+        nestedDocument.containsField("firstName") must beTrue
+        nestedDocument.containsField("lastName") must beTrue
+      }
+
+      "Splits a nested field based on supplied regex" in {
+        //Given: A document with nested field "details.name"
+        val document = new BasicBSONObject()
+          .append("details", new BasicBSONObject("name", "Mr Vivek Dhapola"))
+
+        //When: "details.name" field is split into "title", "fullName.firstName" and "fullName.lastName"
+        val actualDocument = DocumentOperations(document).<~>("details.name",
+          Pattern.compile("""^(Mr|Mrs|Ms|Miss) ([a-zA-Z]+) ([a-zA-Z]+)$"""),
+          """{"title": "$1", "fullName": { "firstName": "$2", "lastName": "$3" }}""")
+        println("actual doc is: " + actualDocument)
+        //Then: Split was successful
+        actualDocument.containsField("title") must beTrue
+        actualDocument.get("title") mustEqual "Mr"
+
+        actualDocument.containsField("fullName") must beTrue
+        val expectedNestedDocument = new BasicBSONObject()
+          .append("firstName", "Vivek")
+          .append ("lastName", "Dhapola")
         actualDocument.get("fullName") mustEqual expectedNestedDocument
 
 

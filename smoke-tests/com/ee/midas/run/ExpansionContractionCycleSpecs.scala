@@ -8,7 +8,8 @@ import com.ee.midas.fixtures.{CommandTerminal, MongoShell}
 
 class ExpansionContractionCycleSpecs extends Specification with Forms {
   sequential
-
+  var midasTerminal = CommandTerminal("")
+  var midasTerminal1 = CommandTerminal("")
   def is = s2"""
     Narration: IncyWincyShoppingApp stores its persistent data on MongoDB. Bob, the Business analyst
                wants to discuss about new marketing strategy. So he approches Dave,
@@ -37,19 +38,26 @@ class ExpansionContractionCycleSpecs extends Specification with Forms {
       }
 
     3. Start Midas in EXPANSION mode
-      ${  val form = CommandTerminal("--port", "27020", "--deltasDir", System.getProperty("user.dir") + "/deltaSpecs", "--mode", "EXPANSION").
-          startMidas
+      ${  midasTerminal = CommandTerminal("--port", "27020", "--deltasDir", System.getProperty("user.dir") + "/deltaSpecs", "--mode", "EXPANSION")
+          val form = midasTerminal.startMidas
           form
       }
 
     4. Connect with midas and verify that read documents contain "DOB" field
-      ${  val form = MongoShell("Upgraded IncyWincyShoppingApp Version2", "localhost", 27020).useDatabase("users").
+      ${  val form = MongoShell("IncyWincyShoppingApp UpgradedVersion", "localhost", 27020).useDatabase("users").
           find("customers", "DOB").
           retrieve()
           form
       }
 
-    5. Shutdown Midas               ${CommandTerminal("").stopMidas(27020)}
+    5. Update and write back the documents to the database
+      ${  val form =  MongoShell("IncyWincyShoppingApp UpgradedVersion", "localhost", 27017).useDatabase("users").
+          runCommand("""db.customers.update({name: "Matt"}, { $set: {"DOB":"new Date('Jun 25, 1990')", "_expansionVersion": 1}}, {$upsert: true, multi: true})""").
+          runCommand("""db.customers.update({name: "Beth"}, { $set: {"DOB":"new Date('Jun 15, 1990')", "_expansionVersion": 1}}, {$upsert: true, multi: true})""").
+          runCommand("""db.customers.update({name: "John"}, { $set: {"DOB":"new Date('Jun 05, 1990')", "_expansionVersion": 1}}, {$upsert: true, multi: true})""").
+          retrieve()
+          form
+      }
 
     6. Create delta file to remove "age" at location "deltaSpecs" in "contraction" folder
       ${  val form = Delta("users", "customers", "\"age\"")
@@ -57,9 +65,10 @@ class ExpansionContractionCycleSpecs extends Specification with Forms {
           form
       }
 
-    7. Start Midas in CONTRACTION mode
-      ${  val form = CommandTerminal("--port", "27040", "--deltasDir", System.getProperty("user.dir") + "/deltaSpecs", "--mode", "CONTRACTION").
-          startMidas
+    7. Restart Midas in CONTRACTION mode
+      ${  midasTerminal.stopMidas(27020)}
+      ${  midasTerminal = CommandTerminal("--port", "27040", "--deltasDir", System.getProperty("user.dir") + "/deltaSpecs", "--mode", "CONTRACTION")
+          val form = midasTerminal.startMidas
           form
       }
 
@@ -86,7 +95,7 @@ class ExpansionContractionCycleSpecs extends Specification with Forms {
          form
       }
 
-    11:Shutdown Midas               ${CommandTerminal("").stopMidas(27040)}
+    11:Shutdown Midas               ${midasTerminal.stopMidas(27040)}
                                                                                                    """
 }
 

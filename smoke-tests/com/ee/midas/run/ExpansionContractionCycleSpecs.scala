@@ -4,7 +4,7 @@ import java.io.{File, FileWriter}
 import org.specs2._
 import specification._
 import form._
-import com.ee.midas.fixtures.{CommandTerminal, MongoShell}
+import com.ee.midas.fixtures.{Delta, CommandTerminal, MongoShell}
 
 class ExpansionContractionCycleSpecs extends Specification with Forms {
   sequential
@@ -66,7 +66,8 @@ class ExpansionContractionCycleSpecs extends Specification with Forms {
       }
 
     7. Restart Midas in CONTRACTION mode
-      ${  midasTerminal.stopMidas(27020)}
+      ${ midasTerminal.stopMidas(27020)
+       }
       ${  midasTerminal = CommandTerminal("--port", "27040", "--deltasDir", System.getProperty("user.dir") + "/deltaSpecs", "--mode", "CONTRACTION")
           val form = midasTerminal.startMidas
           form
@@ -95,59 +96,8 @@ class ExpansionContractionCycleSpecs extends Specification with Forms {
          form
       }
 
-    11:Shutdown Midas               ${midasTerminal.stopMidas(27040)}
+    11:Shutdown Midas            ${ midasTerminal.stopMidas(27040)}
                                                                                                    """
 }
 
-import specification.Forms._
-case class Delta(db: String, collection: String, field: String, defaultValue: String = "") {
-  val expansionDeltaStr = s"use $db" + "\n" + s"db.${collection}.add('{${field} : ${defaultValue}}')"
-  val contractionDeltaStr = s"use $db" + "\n" + s"db.${collection}.remove('[${field}]')"
 
-  def createDeltaAt(path:String, deltaStr: String) = {
-    val file = new File(path)
-    if(file.exists())
-      file.delete()
-    file.createNewFile()
-    val writer = new FileWriter(file)
-    writer.write(deltaStr)
-    writer.close()
-  }
-
-  def deleteDeltaAt(path:String) = {
-    def file = new File(path)
-    for(document <- file.listFiles())
-      document.delete
-    file.delete
-    Form()
-  }
-
-  def fillExpansion(path : String) = {
-    val deltasPath = System.getProperty("user.dir") + "/deltaSpecs"
-    val expansionDirPath = deltasPath + "/expansion"
-    val deltasDir = new File(deltasPath)
-    val expansionDir = new File(expansionDirPath)
-    deltasDir.mkdir
-    expansionDir.mkdir
-
-    createDeltaAt(System.getProperty("user.dir") + path, expansionDeltaStr)
-    Form("Delta").
-      tr(s"use $db").
-      tr(s"""db.$collection.add('{$field : $defaultValue}')""")
-  }
-
-  def fillContraction(path : String) = {
-    val deltasPath = System.getProperty("user.dir") + "/deltaSpecs"
-    val contractionDirPath = deltasPath + "/contraction"
-    val deltasDir = new File(deltasPath)
-    val contractionDir = new File(contractionDirPath)
-    deltasDir.mkdir
-    contractionDir.mkdir
-
-    createDeltaAt(System.getProperty("user.dir") + path, contractionDeltaStr)
-    Form("Delta").
-      tr(s"use $db").
-      tr(s"""db.$collection.remove('[$field]')""")
-  }
-
-}

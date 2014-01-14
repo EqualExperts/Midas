@@ -1,8 +1,8 @@
-package com.ee.midas.run
+package com.ee.midas.fixtures
 
 import java.net.Socket
 
-case object MidasUtils {
+object MidasUtils {
 
   var midasProcess: MidasAsThread = null
 

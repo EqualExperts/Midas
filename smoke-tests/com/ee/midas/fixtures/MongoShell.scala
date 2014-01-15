@@ -23,14 +23,14 @@ case class MongoShell(formName: String, host: String, port: Int) {
     this
   }
 
-  def find(collection: String, newField: String) = {
+  def copied(collection: String, newField: String, oldField: String) = {
     println("search")
     val documents = db.getCollection(collection).find()
     while(documents.hasNext) {
       val document = documents.next()
       println(document)
       shell = shell.tr(field(s"document", document))
-      shell = shell.tr(prop(s"document.containsField($newField)", document.containsField(newField), true))
+      shell = shell.tr(prop(s"document.get($newField)", document.get(newField), document.get(oldField)))
       shell = shell.tr(prop(s"document.get('_expansionVersion')", document.get("_expansionVersion"), 1))
     }
     this

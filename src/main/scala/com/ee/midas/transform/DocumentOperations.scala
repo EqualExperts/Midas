@@ -39,7 +39,12 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
 
   final def - (name: String): BSONObject = {
     log.debug("Removing Field %s from Document %s".format(name, document))
-    document.removeField(name)
+    name.split("\\.") toList match {
+      case topLevelField :: Nil => if(document.containsField(topLevelField)) document.removeField(topLevelField)
+
+      case topLevelField :: rest => if(document.containsField(topLevelField))
+                                   DocumentOperations(document.get(topLevelField).asInstanceOf[BSONObject]) - rest.mkString(".")
+    }
     log.debug("After Removing Field %s from Document %s\n".format(name, document))
     document
   }
@@ -58,17 +63,7 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
     log.debug("Removing Fields %s from Document %s".format(fields, document))
     fields.toMap.asScala.foreach { case(index, field) =>
       val fieldName = field.asInstanceOf[String]
-      if(fieldName.contains(".")) {
-        val currentKey = fieldName.takeWhile(_ != '.')
-        if (document.containsField(currentKey)) {
-          val nextLevelDocument = document.get(currentKey).asInstanceOf[BSONObject]
-          val remainingLevels = s"""["${fieldName.dropWhile(_ != '.').tail}"]"""
-          val fieldsToRemove = JSON.parse(remainingLevels).asInstanceOf[BSONObject] 
-          DocumentOperations(nextLevelDocument) -- fieldsToRemove
-        }
-      }
-      else
-        document.removeField(fieldName)
+      DocumentOperations(document) - fieldName
     }
     log.debug("After Removing Fields from Document %s\n".format(document))
     document
@@ -85,7 +80,8 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
   final def <~> (splitField: String, regex: Pattern, targetJsonDocument: String, overrideOldValue: Boolean = true) : BSONObject = {
     log.debug("Splitting Field %s in Document %s using Pattern %s".format(splitField, document, regex))
     val splitFieldValue = splitField.split("\\.") toList match {
-      case field :: Nil => document.get(field).asInstanceOf[String]
+      case field :: Nil => if(document.get(field).isInstanceOf[String]) document.get(field).asInstanceOf[String]
+                           else ""
       case topLevelField :: rest => getNestedValue(rest, document.get(topLevelField).asInstanceOf[BSONObject])
     }
     if(splitFieldValue.isEmpty) {

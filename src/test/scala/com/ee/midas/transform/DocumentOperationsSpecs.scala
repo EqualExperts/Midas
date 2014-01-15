@@ -9,6 +9,7 @@ import com.mongodb.util.JSON
 import java.io.ByteArrayInputStream
 import com.ee.midas.transform.DocumentOperations._
 import java.util.regex.Pattern
+import java.util.Date
 
 @RunWith(classOf[JUnitRunner])
 class DocumentOperationsSpecs extends Specification {
@@ -32,7 +33,7 @@ class DocumentOperationsSpecs extends Specification {
       }
 
 
-      "Add a single field to the document" in {
+      "+ Adds a single field to the document" in {
         //Given
         val document = new BasicBSONObject("version" , "2.0")
 
@@ -43,7 +44,7 @@ class DocumentOperationsSpecs extends Specification {
         transformedDocument.get("version") must beEqualTo("1.0")
       }
 
-      "Does not override value of single field added to the document" in {
+      "+ Does not override value of single field added to the document" in {
         //Given
         val document = new BasicBSONObject("version" , "1.0")
 
@@ -54,7 +55,7 @@ class DocumentOperationsSpecs extends Specification {
         transformedDocument.get("version") must beEqualTo("1.0")
       }
 
-      "Add a single level-1 nested field to the document" in {
+      "+ Adds a single level-1 nested field to the document" in {
         //Given
         val document = new BasicBSONObject("address" , "some address")
 
@@ -66,7 +67,7 @@ class DocumentOperationsSpecs extends Specification {
         innerDocument.get("city") mustEqual "Mumbai"
       }
 
-      "Add a single level-2 nested field to the document" in {
+      "+ Adds a single level-2 nested field to the document" in {
         //Given
         val document = new BasicBSONObject("address", "some address")
 
@@ -79,7 +80,7 @@ class DocumentOperationsSpecs extends Specification {
         level2Document.get("1") mustEqual "Some Road"
       }
 
-      "Add to a nested field an additional level in the document" in {
+      "+ Adds to a nested field an additional level in the document" in {
         //Given
         val document = new BasicBSONObject("address", new BasicBSONObject("line", "Some Road"))
 
@@ -92,7 +93,7 @@ class DocumentOperationsSpecs extends Specification {
         level2Document.get("1") mustEqual "Some Road"
       }
 
-      "Adding a new level-2 nested field in the document" in {
+      "+ Adds a new level-2 nested field in the document" in {
         //Given
         val document = new BasicBSONObject()
 
@@ -104,7 +105,7 @@ class DocumentOperationsSpecs extends Specification {
         level1Document.get("line") must beEqualTo("Some Road")
       }
 
-      "Adding a new field at level-2 nested field in the document" in {
+      "+ Adds a new field at level-2 nested field in the document" in {
         //Given
         val document = new BasicBSONObject("address", new BasicBSONObject("line1", "Some Road"))
 
@@ -117,15 +118,26 @@ class DocumentOperationsSpecs extends Specification {
         level1Document.get("line2") must beEqualTo("Near Some Landmark")
       }
 
-      "Remove a single field from the document" in new setup {
+      "+ Adds a new array field in a document" in {
+        //Given
+        val document = new BasicBSONObject("name", "James Tarver")
+        val addresses = Array("addressOne", "addressTwo")
+
         //When
-        val transformedDocument = documentOperations - "removeSingle"
+        val transformedDocument = DocumentOperations(document) + ("addresses", addresses)
 
         //Then
-        transformedDocument.containsField("removeSingle") must beFalse
+        transformedDocument.containsField("addresses") must beTrue
+        transformedDocument.get("addresses").isInstanceOf[Array[String]] must beTrue
+        val addressesField = transformedDocument.get("addresses").asInstanceOf[Array[String]]
+        addressesField(0) mustEqual "addressOne"
+        addressesField(1) mustEqual "addressTwo"
+        val expectedDocument = new BasicBSONObject("name", "James Tarver")
+          .append("addresses", addresses)
+        transformedDocument mustEqual expectedDocument
       }
 
-      "Add multiple fields to the document" in {
+      "++ Adds multiple fields to the document" in {
         //Given
         val document = new BasicBSONObject("address", new BasicBSONObject("line", "Some Road"))
         val deltas = new BasicBSONObject().append("version", 1).append("id", 1)
@@ -138,12 +150,10 @@ class DocumentOperationsSpecs extends Specification {
         transformedDocument.get("id") must beEqualTo(1)
       }
 
-
-      "Don't override fields that already exist" in {
+      "++ Doesn't override fields that already exist" in {
         //Given
         val document = new BasicBSONObject("address", new BasicBSONObject("line", "Some Road")).append("name", "midas")
         val deltas = new BasicBSONObject().append("name", "notMidas")
-
 
         //When
         val transformedDocument = DocumentOperations(document) ++ (deltas, false)
@@ -152,7 +162,7 @@ class DocumentOperationsSpecs extends Specification {
         transformedDocument.get("name") mustEqual "midas"
       }
 
-      "Adding a new field at level-2 nested field in the document using multiple fields add" in {
+      "++ Adds a new field at level-2 nested field in the document" in {
         //Given
         val document = new BasicBSONObject("address", new BasicBSONObject("line1", "Some Road"))
         val deltas = new BasicBSONObject("address.line2", "Near Some Landmark")
@@ -166,47 +176,167 @@ class DocumentOperationsSpecs extends Specification {
         level1Document.get("line2") must beEqualTo("Near Some Landmark")
       }
 
-      "Remove multiple fields from the document" in new setup {
-        val deltas = JSON.parse("[\"removeSingle\", \"removeMultiple\"]").asInstanceOf[BSONObject]
+      "++ Adds a new array field in a document" in {
+        //Given
+        val document = new BasicBSONObject("name", "Julie Tarver")
+        val addresses = Array("addressOne", "addressTwo")
+        val deltas = new BasicBSONObject("addresses", addresses)
 
         //When
-        val transformedDocument = documentOperations -- deltas
+        val transformedDocument = DocumentOperations(document) ++ deltas
 
         //Then
-        transformedDocument.containsField("removeSingle") must beFalse
-        transformedDocument.containsField("removeMultiple") must beFalse
+        transformedDocument.containsField("addresses") must beTrue
+        transformedDocument.get("addresses").isInstanceOf[Array[String]] must beTrue
+        val addressesField = transformedDocument.get("addresses").asInstanceOf[Array[String]]
+        addressesField(0) mustEqual "addressOne"
+        addressesField(1) mustEqual "addressTwo"
+        val expectedDocument = new BasicBSONObject("name", "Julie Tarver")
+                                     .append("addresses", addresses)
+        transformedDocument mustEqual expectedDocument
       }
 
-      "Remove a field from nested document" in new setup {
-
-        val deltas = JSON.parse("[\"nestedField.removeNestedField\"]").asInstanceOf[BSONObject]
+      "- Removes a single field from the document" in  {
+        //Given
+        val document = new BasicBSONObject("name" , "midas")
+          .append("redundantField", "some value")
 
         //When
-        val transformedDocument = documentOperations -- deltas
+        val transformedDocument = DocumentOperations(document) - "redundantField"
 
         //Then
-        transformedDocument.containsField("nestedField") must beTrue
-        val nestedDoc = transformedDocument.get("nestedField").asInstanceOf[BasicBSONObject]
-        nestedDoc.containsField("removeNestedField") must beFalse
+        transformedDocument.containsField("redundantField") must beFalse
       }
 
-      "Remove fields from deeply nested document" in new setup {
-        document.append("deeplyNestedField", new BasicBSONObject("level1", new BasicBSONObject("level2",
-                    new BasicBSONObject("level3", 3).append("removeNestedField", "field"))))
-
-        val deltas = JSON.parse("[\"removeSingle\", \"removeMultiple\", \"nestedField.removeNestedField\", \"deeplyNestedField.level1.level2.removeNestedField\"]").asInstanceOf[BSONObject]
+      "- Removes a single nested field from the document" in  {
+        //Given
+        val document = new BasicBSONObject("name" , new BasicBSONObject()
+                                                      .append("title", "Mr")
+                                                      .append("firstName", "Jerrin")
+                                                      .append("lastName", "James"))
 
         //When
-        val transformedDocument = documentOperations -- deltas
+        val transformedDocument = DocumentOperations(document) - "name.title"
 
         //Then
-        val expectedDocument = new BasicBSONObject("name" , "midas").
-          append("nestedField", new BasicBSONObject("innerField1", "innerValue1")).
-          append("deeplyNestedField", new BasicBSONObject("level1", new BasicBSONObject("level2",
-          new BasicBSONObject("level3", 3))))
+        val expectedDocument = new BasicBSONObject("name" , new BasicBSONObject()
+                                                      .append("firstName", "Jerrin")
+                                                      .append("lastName", "James"))
+        transformedDocument mustEqual expectedDocument
+      }
 
-        expectedDocument mustEqual transformedDocument
+      "- Removes a single array field from a document" in {
+        //Given
+        val addresses = Array("addressOne", "addressTwo")
+        val document = new BasicBSONObject("name", "Liz Tarver")
+          .append("addresses", addresses)
 
+        //When
+        val transformedDocument = DocumentOperations(document) - ("addresses")
+
+        //Then
+        transformedDocument.containsField("addresses") must beFalse
+        val expectedDocument = new BasicBSONObject("name", "Liz Tarver")
+        transformedDocument mustEqual expectedDocument
+      }
+
+      "- leaves the document unchanged when the target field doesn't exist" in {
+        //Given
+        val document = new BasicBSONObject("name", "Sue Tarver")
+          .append("address", "some road, some city")
+
+        //When
+        val transformedDocument = DocumentOperations(document) - ("lane")
+
+        //Then
+        transformedDocument.containsField("address") must beTrue
+        val expectedDocument = new BasicBSONObject("name", "Sue Tarver")
+          .append("address", "some road, some city")
+        transformedDocument mustEqual expectedDocument
+      }
+
+      "-- Removes multiple fields from the document" in {
+        //Given
+        val document = new BasicBSONObject("name" , "midas")
+          .append("redundantFieldOne", "some value")
+          .append("redundantFieldTwo", "some other value")
+
+        val deltas = JSON.parse("[\"redundantFieldOne\", \"redundantFieldTwo\"]").asInstanceOf[BSONObject]
+
+        //When
+        val transformedDocument = DocumentOperations(document) -- deltas
+
+        //Then
+        transformedDocument.containsField("redundantFieldOne") must beFalse
+        transformedDocument.containsField("redundantFieldTwo") must beFalse
+      }
+
+      "-- Removes a field from nested document" in {
+        val document = new BasicBSONObject("name" , "midas")
+          .append("details", new BasicBSONObject("name", "old-midas").append("dob", "12-12-1988"))
+        val deltas = JSON.parse("[\"details.name\"]").asInstanceOf[BSONObject]
+
+        //When
+        val transformedDocument = DocumentOperations(document) -- deltas
+
+        //Then
+        transformedDocument.containsField("details") must beTrue
+        val nestedDoc = transformedDocument.get("details").asInstanceOf[BasicBSONObject]
+        nestedDoc.containsField("name") must beFalse
+        nestedDoc.containsField("dob") must beTrue
+
+        val expectedDocument = new BasicBSONObject("name" , "midas")
+          .append("details", new BasicBSONObject().append("dob", "12-12-1988"))
+
+        transformedDocument mustEqual expectedDocument
+      }
+
+      "-- Removes fields from deeply nested document" in {
+
+        val document = new BasicBSONObject()
+          .append("details", new BasicBSONObject("name", new BasicBSONObject("firstName", "Paulo")
+                                                          .append("lastName", "Coelho"))
+                            .append("dob", "12-12-1988"))
+        val deltas = JSON.parse("[\"details.dob\", \"details.name.lastName\"]").asInstanceOf[BSONObject]
+
+        //When
+        val transformedDocument = DocumentOperations(document) -- deltas
+
+        //Then
+        val expectedDocument = new BasicBSONObject().
+          append("details", new BasicBSONObject("name", new BasicBSONObject("firstName", "Paulo")))
+
+        transformedDocument mustEqual expectedDocument
+      }
+
+      "-- Removes an array field from a document" in {
+        //Given
+        val addresses = Array("addressOne", "addressTwo")
+        val document = new BasicBSONObject("name", "Sarah Tarver")
+          .append("addresses", addresses)
+
+        //When
+        val transformedDocument = DocumentOperations(document) -- JSON.parse("['addresses']").asInstanceOf[BSONObject]
+
+        //Then
+        transformedDocument.containsField("addresses") must beFalse
+        val expectedDocument = new BasicBSONObject("name", "Sarah Tarver")
+        transformedDocument mustEqual expectedDocument
+      }
+
+      "-- leaves the document unchanged when the target field doesn't exist" in {
+        //Given
+        val document = new BasicBSONObject("name", "Beth Tarver")
+          .append("address", "some road, some city")
+
+        //When
+        val transformedDocument = DocumentOperations(document) -- JSON.parse("['lane.house','city']").asInstanceOf[BSONObject]
+
+        //Then
+        transformedDocument.containsField("address") must beTrue
+        val expectedDocument = new BasicBSONObject("name", "Beth Tarver")
+          .append("address", "some road, some city")
+        transformedDocument mustEqual expectedDocument
       }
 
       "Splits a field on the basis of regex supplied " in {
@@ -285,6 +415,48 @@ class DocumentOperationsSpecs extends Specification {
         val nestedDocument = actualDocument.get("fullName").asInstanceOf[BSONObject]
         nestedDocument.containsField("firstName") must beTrue
         nestedDocument.containsField("lastName") must beTrue
+      }
+
+      "Splitting a non-existent field results in no change in document" in {
+        //Given: A document
+        val document = new BasicBSONObject()
+          .append("details", new BasicBSONObject("name", "Mr Non Existent"))
+
+        //When: A non-existent field "name" is split into "title", "fullName.firstName" and "fullName.lastName"
+        val actualDocument = DocumentOperations(document).<~>("name",
+          Pattern.compile("""^(Mr|Mrs|Ms|Miss) ([a-zA-Z]+) ([a-zA-Z]+)$"""),
+          """{"title": "$1", "fullName": { "firstName": "$2", "lastName": "$3" }}""")
+
+        //Then: Split was successful
+        actualDocument.containsField("title") must beFalse
+
+        actualDocument.containsField("fullName") must beFalse
+        actualDocument mustEqual document
+      }
+
+      "Splits a field containing numeric data" in {
+        //Given: A document
+        val document = new BasicBSONObject()
+          .append("details", new BasicBSONObject("telephone", "200-6666"))
+
+        //When: A non-existent field "name" is split into "title", "fullName.firstName" and "fullName.lastName"
+        val actualDocument = DocumentOperations(document).<~>("details.telephone",
+          Pattern.compile("""^([0-9]+)-([0-9]+)$"""),
+          """{"stdCode": "$1", "number": "$2"}""")
+        println("number: " + actualDocument)
+        //Then: Split was successful
+        actualDocument.containsField("stdCode") must beTrue
+        actualDocument.get("stdCode") mustEqual "200"
+
+        actualDocument.containsField("number") must beTrue
+        actualDocument.get("number") mustEqual "6666"
+
+        val expectedDocument = new BasicBSONObject()
+          .append("details", new BasicBSONObject("telephone", "200-6666"))
+          .append("stdCode", "200")
+          .append("number", "6666")
+
+        actualDocument mustEqual expectedDocument
       }
 
       "Merge 2 simple fields into a new field using the provided separator" in {
@@ -389,7 +561,7 @@ class DocumentOperationsSpecs extends Specification {
         actualDocument mustEqual expectedNestedDocument
       }
 
-      "Merge 2 fields into a new nested field using given separator" in {
+      "Merge 2 array fields into a new nested field using given separator" in {
         //Given: A document with nested field "details.name"
         val document = new BasicBSONObject()
           .append("firstName","Mike")
@@ -409,15 +581,11 @@ class DocumentOperationsSpecs extends Specification {
           .append("firstName","Mike")
         actualDocument mustEqual expectedNestedDocument
       }
+
     }
 
   trait setup extends Scope {
-    val document = new BasicBSONObject("name" , "midas").
-      append("removeSingle", "field").
-      append("removeMultiple", "fields").
-      append("nestedField", new BasicBSONObject("innerField1", "innerValue1").append("removeNestedField", "field"))
-
-    val documentOperations = DocumentOperations(document)
+    val document = new BasicBSONObject("name" , "midas")
     val encoder : BSONEncoder = new BasicBSONEncoder()
   }
 }

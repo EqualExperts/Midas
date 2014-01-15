@@ -31,7 +31,7 @@ case class MongoShell(formName: String, host: String, port: Int) {
       println(document)
       shell = shell.tr(field(s"document", document))
       shell = shell.tr(prop(s"document.get($newField)", document.get(newField), document.get(oldField)))
-      shell = shell.tr(prop(s"document.get('_expansionVersion')", document.get("_expansionVersion"), 1))
+     // shell = shell.tr(prop(s"document.get('_expansionVersion')", document.get("_expansionVersion"), 1))
     }
     this
   }

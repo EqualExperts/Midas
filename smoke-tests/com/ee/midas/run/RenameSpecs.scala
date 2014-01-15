@@ -52,14 +52,26 @@ class RenameSpecs extends Specification with Forms {
           form
       }
 
-    4. Connect with midas and verify that read documents contain "DOB" field
+    4. Create delta file "0002_copy_transactions_orders_ZipcodeToPincodeField.delta" to copy "zipcode"
+       to "pincode" at location "deltaSpecs" in "expansion" folder
+      ${  val baseDeltaDir = "/deltaSpecs"
+          expansionDelta2 = Delta(baseDeltaDir, "EXPANSION", () => {
+            """use transactions
+               db.orders.copy("ShippingAddress.zipcode", "ShippingAddress.pincode")
+            """
+          } )
+          val form = expansionDelta2.saveAs("0002_copy_transactions_orders_ZipcodeToPincodeField.delta")
+          form
+      }
+
+    5. Connect with midas and verify that read documents contain "DOB" field
       ${  val form = MongoShell("IncyWincyShoppingApp UpgradedVersion", "localhost", 27020).useDatabase("transactions").
           copied("orders", "YourCart", "OrderList").
           retrieve()
           form
       }
 
-    5. Update and write back the documents to the database
+    6. Update and write back the documents to the database
       ${  val form =  MongoShell("IncyWincyShoppingApp UpgradedVersion", "localhost", 27017).useDatabase("transactions").
           runCommand("""db.orders.update({name: "Vivek"}, { $set: {"YourCart": ['shoes', 'sipper'], "_expansionVersion": 1}}, {$upsert: true, multi: true})""").
           runCommand("""db.orders.update({name: "Komal"}, { $set: {"YourCart": ['shoes', 'sipper'], "_expansionVersion": 1}}, {$upsert: true, multi: true})""").
@@ -68,7 +80,7 @@ class RenameSpecs extends Specification with Forms {
           form
       }
 
-    6. Create delta file "0001_removeFrom_transactions_orders_OrderListField.delta" to remove "age" at
+    7. Create delta file "0001_removeFrom_transactions_orders_OrderListField.delta" to remove "age" at
        location "deltaSpecs" in "contraction" folder
       ${  val baseDeltaDir = "/deltaSpecs"
           contractionDelta = Delta(baseDeltaDir, "CONTRACTION", () => {
@@ -81,22 +93,23 @@ class RenameSpecs extends Specification with Forms {
       }
 
 
-    7. Restart Midas in CONTRACTION mode
-      ${ midasTerminal.stopMidas(27020)
+    8. Restart Midas in CONTRACTION mode
+      ${ val form = midasTerminal.stopMidas(27020)
+         form
        }
       ${  midasTerminal = CommandTerminal("--port", "27040", "--deltasDir", System.getProperty("user.dir") + "/deltaSpecs", "--mode", "CONTRACTION")
           val form = midasTerminal.startMidas
           form
       }
 
-    8. Connect with midas and verify that read documents do not contain "OrderList" field
+    9. Connect with midas and verify that read documents do not contain "OrderList" field
       ${  val form = MongoShell("Open Command Terminal", "localhost", 27040).useDatabase("transactions").
           removed("orders", "OrderList").
           retrieve()
           form
       }
 
-    9. Clean up the database
+    10. Clean up the database
       ${  val form = MongoShell("Open MongoShell", "localhost", 27017).
           useDatabase("transactions").
           runCommand(s"""db.dropDatabase()""").
@@ -104,12 +117,13 @@ class RenameSpecs extends Specification with Forms {
           form
       }
 
-    10. Cleanup Deltas Directory
+    11. Cleanup Deltas Directory
       ${ expansionDelta1.delete("0001_copy_transactions_orders_OrderListToYourCartField.delta")
+
          contractionDelta.delete("0001_removeFrom_transactions_orders_OrderListField.delta")
       }
 
-    11:Shutdown Midas            ${ midasTerminal.stopMidas(27040)}
+    12:Shutdown Midas            ${ val form = midasTerminal.stopMidas(27040); form}
                                                                                                    """
 }
 

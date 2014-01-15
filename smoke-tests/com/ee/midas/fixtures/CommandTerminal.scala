@@ -14,7 +14,10 @@ case class CommandTerminal(args: String*) {
       tr(field(">", s"midas ${commandLine}"))
   }
   def stopMidas(port: Int) = {
+    println("in stop midas................"+port)
     terminal.stopMidas(port)
+    Form("Open Command Terminal").
+    tr(field("Shut Down Midas"))
   }
 
 }

@@ -12,4 +12,4 @@ use users
  * Note: split currently does not work for nested fields.
  */
 
-db.customers.split('name', '^(Mr|Mrs|Ms|Miss) ([a-zA-Z]+) ([a-zA-Z]+)$', '{"title": "$1", "fullName": { "firstName": "$2", "lastName": "$3" }}')
+db.customers.split('details.name', '^(Mr|Mrs|Ms|Miss) ([a-zA-Z]+) ([a-zA-Z]+)$', '{"title": "$1", "fullName": { "firstName": "$2", "lastName": "$3" }}')

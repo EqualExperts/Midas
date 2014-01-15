@@ -8,4 +8,4 @@ use users
  *
  * Note: copy currently does not work for nested fields.
  */
-db.customers.copy('pin', 'zip')
+db.customers.copy('address.pin', 'address.zip')

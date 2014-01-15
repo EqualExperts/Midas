@@ -15,24 +15,16 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
 
   final def + [T] (field: String, value: T, overrideOldValue: Boolean = true): BSONObject = {
     log.debug("Adding/Updating Field %s with Value %s on Document %s".format(field, value.toString, document))
-    field.split("\\.").toList match {
-      case topLevelField :: Nil =>
+    apply(field) match {
+      case Some(fieldValue) =>
         if(overrideOldValue) {
-          document.put(topLevelField, value)
-        }
-      case topLevelField :: rest =>
-        if(isFieldADocument(topLevelField, document)) {
-          log.debug("After Adding/Updating Field %s on Document %s\n".format(field, document))
-          val innerDocument = document.get(topLevelField).asInstanceOf[BSONObject]
-          val remaining = rest mkString "."
-          DocumentOperations(innerDocument) + (remaining, value, overrideOldValue)
+          update(field, Some(value))
         } else {
-          val innerEmptyDocument = new BasicBSONObject()
-          val remaining = rest mkString "."
-          document.put(topLevelField, innerEmptyDocument)
-          DocumentOperations(innerEmptyDocument) + (remaining, value, overrideOldValue)
+          document
         }
+      case None => update(field, Some(value))
     }
+
     log.debug("After Adding/Updating Field %s on Document %s\n".format(field, document))
     document
   }
@@ -69,62 +61,101 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
     document
   }
 
-  private def getNestedValue(fields: List[String], document: BSONObject): String = {
-    val value = document.get(fields.head)
-    if(value.isInstanceOf[BSONObject]) getNestedValue(fields.tail, value.asInstanceOf[BSONObject])
-    else if(value.isInstanceOf[String]) value.asInstanceOf[String]
-    else ""
-  }
-
   //split
   final def <~> (splitField: String, regex: Pattern, targetJsonDocument: String, overrideOldValue: Boolean = true) : BSONObject = {
     log.debug("Splitting Field %s in Document %s using Pattern %s".format(splitField, document, regex))
-    val splitFieldValue = splitField.split("\\.") toList match {
-      case field :: Nil => if(document.get(field).isInstanceOf[String]) document.get(field).asInstanceOf[String]
-                           else ""
-      case topLevelField :: rest => getNestedValue(rest, document.get(topLevelField).asInstanceOf[BSONObject])
-    }
-    if(splitFieldValue.isEmpty) {
-      log.debug("Did not Split Field %s as Document does not have one".format(splitField))
-      document
-    } else {
-      log.debug("and the value is: " + splitFieldValue)
-      val matcher: Matcher = regex.matcher(splitFieldValue)
-      var filledTargetJson = targetJsonDocument
-      if(matcher.find) {
-        val count = matcher.groupCount()
-        (1 to count).foreach { i =>
-          val groupValue = matcher.group(i)
-          val replace = "$" + i
-          filledTargetJson = filledTargetJson.replaceAllLiterally(replace, groupValue)
-          log.debug(s"Replaced target document: $filledTargetJson" )
+    apply(splitField) match {
+      case Some(fieldValue) =>
+        log.debug("and the value is: " + fieldValue)
+        val matcher: Matcher = regex.matcher(fieldValue.asInstanceOf[String])
+        var filledTargetJson = targetJsonDocument
+        if(matcher.find) {
+          val count = matcher.groupCount()
+          (1 to count).foreach { token =>
+            val groupValue = matcher.group(token)
+            val replace = "$" + token
+            filledTargetJson = filledTargetJson.replaceAllLiterally(replace, groupValue)
+            log.debug(s"Replaced target document: $filledTargetJson" )
+          }
+          val splitDocument = JSON.parse(filledTargetJson).asInstanceOf[BSONObject]
+          DocumentOperations(document) ++ (splitDocument, overrideOldValue)
+          log.debug("After Splitting Fields in Document %s\n".format(document))
+        } else {
+          log.debug("Pattern %s Not applicable to Split Field (%s) having Data %s".format(regex, splitField, fieldValue))
         }
-        val splitDocument = JSON.parse(filledTargetJson).asInstanceOf[BSONObject]
-        DocumentOperations(document) ++ (splitDocument, overrideOldValue)
-        log.debug("After Splitting Fields in Document %s\n".format(document))
-      } else {
-        log.debug("Pattern %s Not applicable to Split Field (%s) having Data %s".format(regex, splitField, splitFieldValue))
-      }
+        document
+      case None =>
+        log.debug("Did not Split Field %s as Document does not have one".format(splitField))
+        document
     }
-    document
   }
 
   //merge
   final def >~< (mergeField: String, usingSeparator: String, fields: List[String]) : BSONObject = {
     log.debug("Merging Fields %s in Document %s".format(fields, document))
-    val fieldValues = fields map { field =>
-      field.split("\\.") toList match {
-        case topLevelField :: Nil => document.get(topLevelField).asInstanceOf[String]
-        case topLevelField :: rest => getNestedValue(rest, document.get(topLevelField).asInstanceOf[BSONObject])
-      }
-    }
-    val mergeValue = fieldValues mkString usingSeparator
+    val fieldValues = fields map apply
+    val mergeValue = fieldValues filterNot (_.isEmpty) map (_.get) mkString usingSeparator
     DocumentOperations(document) + (mergeField, mergeValue)
     log.debug("After Merging Fields in Document %s\n".format(document))
     document
   }
 
   final def toBytes: Array[Byte] = DocumentOperations.ENCODER.encode(document)
+
+  //todo: move nesting logic here
+  final def apply(fieldName: String) = {
+    fieldName.split("\\.") toList match {
+      case topLevelField :: Nil => if (document.containsField(fieldName)) Some(document.get(fieldName)) else None
+      case topLevelField :: rest =>
+        if(isFieldADocument(topLevelField, document)) {
+          getNestedValue(rest, document.get(topLevelField).asInstanceOf[BSONObject])
+        } else {
+          Some(document.get(topLevelField))
+        }
+    }
+  }
+
+  private def getNestedValue(fields: List[String], document: BSONObject): Option[AnyRef] = {
+    if(document.containsField(fields.head)) {
+      val value = document.get(fields.head)
+      if(value.isInstanceOf[BSONObject])
+        getNestedValue(fields.tail, value.asInstanceOf[BSONObject])
+      else
+        Some(value)
+    } else {
+      None
+    }
+  }
+
+  def createNestedValue(fieldNames: List[String], document: BSONObject, value: Any): AnyRef = {
+    fieldNames match {
+      case field :: Nil => document.put(field, value)
+      case topLevelField :: rest =>
+        if(!isFieldADocument(topLevelField, document)) {
+          document.put(topLevelField, new BasicBSONObject())
+        }
+        createNestedValue(rest, document.get(topLevelField).asInstanceOf[BSONObject], value)
+    }
+    document
+  }
+
+  final def update(fieldName: String, value: Any) = {
+    value match {
+      case Some(validValue) =>
+        fieldName.split("\\.") toList match {
+          case topLevelField :: Nil => document.put(topLevelField, validValue)
+          case topLevelField :: rest => {
+          if(!isFieldADocument(topLevelField, document)) {
+            document.put(topLevelField, new BasicBSONObject())
+          }
+          createNestedValue(rest, document.get(topLevelField).asInstanceOf[BSONObject], validValue)
+          }
+        }
+      case None => document
+    }
+
+    document
+  }
 }
 
 object DocumentOperations {

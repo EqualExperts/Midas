@@ -91,8 +91,7 @@ public class ScalaGenerator implements Generator {
     private String copy(String fromField, String toField) {
         """
             ((document: BSONObject) => {
-                val fromFieldValue = document.get(\"$fromField\")
-                document + (\"$toField\", fromFieldValue)
+                document(\"$toField\") = document(\"$fromField\")
             })
         """.stripMargin()
     }

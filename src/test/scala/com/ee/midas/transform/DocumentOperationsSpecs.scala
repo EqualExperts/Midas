@@ -9,7 +9,6 @@ import com.mongodb.util.JSON
 import java.io.ByteArrayInputStream
 import com.ee.midas.transform.DocumentOperations._
 import java.util.regex.Pattern
-import java.util.Date
 
 @RunWith(classOf[JUnitRunner])
 class DocumentOperationsSpecs extends Specification {
@@ -38,7 +37,7 @@ class DocumentOperationsSpecs extends Specification {
         val document = new BasicBSONObject("version" , "2.0")
 
         //When
-        val transformedDocument = DocumentOperations(document) + ("version", "1.0")
+        val transformedDocument = document + ("version", "1.0")
 
         //Then
         transformedDocument.get("version") must beEqualTo("1.0")
@@ -400,7 +399,6 @@ class DocumentOperationsSpecs extends Specification {
         val actualDocument = DocumentOperations(document).<~>("details.name",
           Pattern.compile("""^(Mr|Mrs|Ms|Miss) ([a-zA-Z]+) ([a-zA-Z]+)$"""),
           """{"title": "$1", "fullName": { "firstName": "$2", "lastName": "$3" }}""")
-        println("actual doc is: " + actualDocument)
         //Then: Split was successful
         actualDocument.containsField("title") must beTrue
         actualDocument.get("title") mustEqual "Mr"
@@ -443,7 +441,7 @@ class DocumentOperationsSpecs extends Specification {
         val actualDocument = DocumentOperations(document).<~>("details.telephone",
           Pattern.compile("""^([0-9]+)-([0-9]+)$"""),
           """{"stdCode": "$1", "number": "$2"}""")
-        println("number: " + actualDocument)
+
         //Then: Split was successful
         actualDocument.containsField("stdCode") must beTrue
         actualDocument.get("stdCode") mustEqual "200"
@@ -580,6 +578,56 @@ class DocumentOperationsSpecs extends Specification {
           .append("lastName","Russo")
           .append("firstName","Mike")
         actualDocument mustEqual expectedNestedDocument
+      }
+
+      "returns document value using indexing by field name" in {
+         val document = new BasicBSONObject("pin", 400001)
+         document("pin") mustEqual Some(400001)
+      }
+
+      "assigns document value using indexing by field name" in {
+        val document = new BasicBSONObject("pin", 400001)
+        val address = new BasicBSONObject("line1", "Some Address")
+        //When
+        document("address") = Some(address)
+        //Then
+        document("address") mustEqual Some(address)
+      }
+
+      "assigns document value using another document value" in {
+        val document = new BasicBSONObject("pin", 400001)
+        val targetDocument = new BasicBSONObject()
+        //When
+        targetDocument("zip") = document("pin")
+        //Then
+        targetDocument("zip") mustEqual Some(400001)
+      }
+
+      "assigns nested value of a document to another document value" in {
+        val document = new BasicBSONObject("address", new BasicBSONObject("pin", 400001))
+        val targetDocument = new BasicBSONObject()
+        //When
+        targetDocument("zip") = document("address.pin")
+        //Then
+        targetDocument("zip") mustEqual Some(400001)
+      }
+
+      "assigns nested value of a document to another document's nested field" in {
+        val document = new BasicBSONObject("address", new BasicBSONObject("pin", 400001))
+        val targetDocument = new BasicBSONObject()
+        //When
+        targetDocument("address.zip") = document("address.pin")
+        //Then
+        targetDocument("address.zip") mustEqual Some(400001)
+      }
+
+      "assigns simple value of a document to another document's nested field" in {
+        val document = new BasicBSONObject("pin", 400001)
+        val targetDocument = new BasicBSONObject()
+        //When
+        targetDocument("address.zip") = document("pin")
+        //Then
+        targetDocument("address.zip") mustEqual Some(400001)
       }
 
     }

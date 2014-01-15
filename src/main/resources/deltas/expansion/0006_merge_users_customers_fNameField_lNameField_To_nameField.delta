@@ -10,4 +10,4 @@ use users
  *
  * Note: mergeInto currently does not work for nested fields.
  */
-db.customers.mergeInto('name', ' ', '["title", "lname", "fname"]')
+db.customers.mergeInto('details.name', ' ', '["title", "lname", "fname"]')

@@ -1,15 +1,15 @@
 package com.ee.midas.run
 
-import java.io.{File, FileWriter}
 import org.specs2._
 import specification._
-import form._
 import com.ee.midas.fixtures.{Delta, CommandTerminal, MongoShell}
 
 class ExpansionContractionCycleSpecs extends Specification with Forms {
   sequential
   var midasTerminal = CommandTerminal("")
-  var midasTerminal1 = CommandTerminal("")
+  var expansionDelta: Delta = null
+  var contractionDelta: Delta = null
+
   def is = s2"""
     Narration: IncyWincyShoppingApp stores its persistent data on MongoDB. Bob, the Business analyst
                wants to discuss about new marketing strategy. So he approches Dave,
@@ -32,8 +32,13 @@ class ExpansionContractionCycleSpecs extends Specification with Forms {
       }
 
     2. Create delta file to add "DOB" at location "deltaSpecs" in "expansion" folder
-      ${  val form = Delta("users", "customers", "\"DOB\"", "\"new Date(\\'Jun 23, 1912\\')\"")
-          .fillExpansion("/deltaSpecs/expansion/expansion.delta")
+      ${  val baseDeltaDir = "/deltaSpecs"
+          expansionDelta = Delta(baseDeltaDir, "EXPANSION", () => {
+            """use users
+               db.customers.add('{"DOB": "new Date(\'Jun 23, 1912\')"}')
+            """
+          } )
+          val form = expansionDelta.saveAs("0001_addTo_users_customers_DOBField.delta")
           form
       }
 
@@ -60,10 +65,16 @@ class ExpansionContractionCycleSpecs extends Specification with Forms {
       }
 
     6. Create delta file to remove "age" at location "deltaSpecs" in "contraction" folder
-      ${  val form = Delta("users", "customers", "\"age\"")
-          .fillContraction("/deltaSpecs/contraction/contraction.delta")
+      ${  val baseDeltaDir = "/deltaSpecs"
+          contractionDelta = Delta(baseDeltaDir, "CONTRACTION", () => {
+            """use users
+               db.customers.remove("['age']")
+            """
+          } )
+          val form = contractionDelta.saveAs("0001_removeFrom_users_customers_DOBField.delta")
           form
       }
+
 
     7. Restart Midas in CONTRACTION mode
       ${ midasTerminal.stopMidas(27020)
@@ -89,11 +100,8 @@ class ExpansionContractionCycleSpecs extends Specification with Forms {
       }
 
     10. Cleanup Deltas Directory
-      ${ Delta("", "", "")
-         .deleteDeltaAt(System.getProperty("user.dir") + "/deltaSpecs/expansion")
-         val form = Delta("", "", "")
-         .deleteDeltaAt(System.getProperty("user.dir") + "/deltaSpecs/contraction")
-         form
+      ${ expansionDelta.delete("0001_addTo_users_customers_DOBField.delta")
+         contractionDelta.delete("0001_removeFrom_users_customers_DOBField.delta")
       }
 
     11:Shutdown Midas            ${ midasTerminal.stopMidas(27040)}

@@ -51,7 +51,8 @@ object DeployerSpecs extends Specification with Deployer with ScalaCompiler {
       //given: a random class name
       val clazzName = "com.ee.midas.hotdeploy.DeployerExceptionClass"
 
-      //when
+      //when: the class is deployed
+      //then: it throws an exception
       deploy[TestBaseClass](getClass.getClassLoader, Array(binDir), clazzName) must throwA[RuntimeException]
 
     }

@@ -165,18 +165,24 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers {
 
   @Test
   def itStopsWatchingADirectoryWhenRequested() {
+    //Given
     var watching: Boolean = false
     val watcher = new DirectoryWatcher(path, List(ENTRY_CREATE, ENTRY_DELETE))(watchEvent => {
         watching = true
       }
     )
     watcher.start
+
+    //When
     watcher.stopWatching
+
+    //Then
     watcher.isRunning must beFalse
   }
 
   @Test
   def itStopsWatchingADirectoryInCaseOfAnException() {
+    //Given
     val watcher = new DirectoryWatcher(path, List(ENTRY_CREATE, ENTRY_DELETE), 0)(watchEvent => {
         println("Throwing exception")
         throw new Exception("Exception forcibly throw from within a test case.")
@@ -184,6 +190,7 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers {
     )
     watcher.start
 
+    //When
     val file = new File(path + "/exceptionFile.txt")
     file.createNewFile()
     file.deleteOnExit()
@@ -192,6 +199,7 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers {
       Thread.sleep(100)
     }
 
+    //Then
     watcher.isRunning must beFalse
   }
 }

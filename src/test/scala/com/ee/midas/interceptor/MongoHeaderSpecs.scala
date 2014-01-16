@@ -11,14 +11,19 @@ class MongoHeaderSpecs extends Specification with Mockito {
 
   "Mongo Header" should {
      "Create a Mongo Header" in {
+       //given
        val headerBytes: Array[Byte] = Array(0x45.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x1d.toByte, 0x00.toByte,
          0x00.toByte, 0x00.toByte, 0x21.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x01.toByte, 0x00.toByte, 0x00.toByte,
          0x00.toByte, 0x08.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte,
          0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x01.toByte,
          0x00.toByte, 0x00.toByte, 0x00.toByte)
        val inputStream: InputStream = new ByteArrayInputStream(headerBytes)
+
+       //when
        val mongoHeader = MongoHeader(inputStream)
-        mongoHeader.isInstanceOf[MongoHeader]
+
+       //then
+       mongoHeader.isInstanceOf[MongoHeader]
      }
   }
 

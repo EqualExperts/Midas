@@ -19,10 +19,12 @@ public class GrammarSpecs {
         //Given
         Grammar add = Grammar.add;
         List<String> args = Arrays.asList("{\"age\" : 0 }");
+
         //When
         try {
             add.validate(args);
-            //Then
+
+        //Then
             assertThat(true, is(true));
         } catch (InvalidGrammar ig) {
             fail("Should have passed for the valid JSON input");
@@ -34,12 +36,14 @@ public class GrammarSpecs {
         //Given
         Grammar add = Grammar.add;
         List<String> args = Arrays.asList("age : 0");
+
         //When
         try {
             add.validate(args);
             fail("Should not have passed for the invalid JSON input");
         } catch (InvalidGrammar ig) {
-            //Then
+
+        //Then
             assertThat(ig, instanceOf(RuntimeException.class));
         }
     }

@@ -35,7 +35,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
        //given
        val reqInterceptor = new RequestInterceptor(tracker)
 
-       //when:
+       //when
        reqInterceptor.read(mockSrc, header)
 
        //then
@@ -51,7 +51,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
        header.payloadSize returns collectionBytes.size
        val reqInterceptor = new RequestInterceptor(tracker)
 
-       //when:
+       //when
        reqInterceptor.read(src, header)
 
        //then
@@ -67,7 +67,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
        header.opCode returns BaseMongoHeader.OpCode.OP_GET_MORE
        val reqInterceptor = new RequestInterceptor(tracker)
 
-       //when:
+       //when
        reqInterceptor.read(src, header)
 
        //then
@@ -82,7 +82,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
        header.opCode returns BaseMongoHeader.OpCode.OP_QUERY
        val reqInterceptor = new RequestInterceptor(tracker)
 
-       //when:
+       //when
        reqInterceptor.read(src, header)
 
        //then
@@ -96,7 +96,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
 
        val reqInterceptor = new RequestInterceptor(tracker)
 
-       //when:
+       //when
        reqInterceptor.write(data, tgt)
 
        //then
@@ -104,13 +104,18 @@ class RequestInterceptorSpecs extends Specification with Mockito {
      }
 
      "Read header" in {
+       //given
        val headerBytes: Array[Byte] = Array(0x45.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x1d.toByte, 0x00.toByte,
          0x00.toByte, 0x00.toByte, 0x21.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x01.toByte, 0x00.toByte, 0x00.toByte,
          0x00.toByte, 0x08.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte)
        val inputStream: InputStream = new ByteArrayInputStream(headerBytes)
        val tracker = mock[MessageTracker]
        val reqInterceptor = new RequestInterceptor(tracker)
+
+       //when
        val header = reqInterceptor.readHeader(inputStream)
+
+       //then
        header.isInstanceOf[BaseMongoHeader]
      }
    }

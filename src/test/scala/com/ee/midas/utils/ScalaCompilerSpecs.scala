@@ -26,19 +26,27 @@ object ScalaCompilerSpecs extends Specification with ScalaCompiler {
 
   "Scala Compiler" should {
     "throw exception in case of errors" in {
+      //Given: A scala file that doesn't exist
       if(srcScalaFile.exists()) {
         srcScalaFile.delete()
       }
+
+      //When: The file is compiled
+      //Then: RuntimeException must be thrown
       compile(classpathDir.getPath, binDir.getPath, srcScalaFile.getPath) must throwA[RuntimeException]
     }
 
     "compile successfully" in {
+      //Given: A scala file with some scala code
       if(!srcScalaFile.exists()) {
         srcScalaFile.createNewFile()
         val writer = new FileWriter(srcScalaFile)
         writer.write(s"""class ScalaCompilerTest {println("Hello World")}""")
         writer.close()
       }
+
+      //When: The file is compiled
+      //Then: No exception must be thrown and compilation must succeed
       compile(classpathDir.getPath, binDir.getPath, srcScalaFile.getPath) must throwA[RuntimeException].not
     }
   }

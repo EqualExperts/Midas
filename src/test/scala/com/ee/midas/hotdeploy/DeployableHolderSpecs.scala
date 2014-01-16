@@ -31,11 +31,12 @@ class DeployableHolderSpecs extends Specification with Mockito {
       //given: a deployable intance and a deployable holder
       val deployableInstance = new TestBaseClass()
 
+      //when: new deployableHolder is created
       val testHolder = new DeployableHolder[TestBaseClass] {
         def createDeployable: TestBaseClass = deployableInstance
       }
 
-      //when: new deployable is set in the holder
+      //then: new deployable instance is returned
       testHolder.get mustEqual deployableInstance
     }
 
@@ -48,8 +49,11 @@ class DeployableHolderSpecs extends Specification with Mockito {
         def createDeployable: TestBaseClass = deployableInstance
       }
 
-      //when: new deployable is set in the holder
-      testHolder.toString contains deployableInstance.toString
+      //when: deployable holder is stringified
+      val deployableHolderString = testHolder.toString
+
+      //then: deployable instance is also stringified
+      deployableHolderString contains deployableInstance.toString
     }
   }
 }

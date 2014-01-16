@@ -10,61 +10,73 @@ import org.bson.BasicBSONObject
 @RunWith(classOf[JUnitRunner])
 class TransformerSpecs extends Specification with Mockito {
       "Transformer" should {
-         "check if document can be transformed in EXPANSION mode" in {
-             val deployableHolder =  mock[DeployableHolder[Transforms]]
-             val transforms = mock[Transforms]
-             val fullCollectionName = "testCollection"
-             deployableHolder.get returns transforms
-             transforms.canBeApplied(fullCollectionName) returns true
+        "check if document can be transformed in EXPANSION mode" in {
+          //Given
+          val deployableHolder =  mock[DeployableHolder[Transforms]]
+          val transforms = mock[Transforms]
+          val fullCollectionName = "testCollection"
+          deployableHolder.get returns transforms
+          transforms.canBeApplied(fullCollectionName) returns true
 
-             val transformer = new Transformer(TransformType.EXPANSION , deployableHolder)
+          //When
+          val transformer = new Transformer(TransformType.EXPANSION , deployableHolder)
 
-             transformer.canTransformDocuments(fullCollectionName)  mustEqual true
-             there was one(transforms).canBeApplied(fullCollectionName)
-         }
+          //Then
+          transformer.canTransformDocuments(fullCollectionName)  mustEqual true
+          there was one(transforms).canBeApplied(fullCollectionName)
+        }
 
         "check if document can be transformed in CONTRACTION mode" in {
+          //Given
           val deployableHolder =  mock[DeployableHolder[Transforms]]
           val transforms = mock[Transforms]
           deployableHolder.get returns transforms
           val fullCollectionName = "testCollection"
           transforms.canBeApplied(fullCollectionName) returns true
 
+          //When
           val transformer = new Transformer(TransformType.CONTRACTION , deployableHolder)
 
+          //Then
           transformer.canTransformDocuments(fullCollectionName) mustEqual true
           there was one(transforms).canBeApplied(fullCollectionName)
         }
 
         "transforms document in EXPANSION mode" in {
+          //Given
           val deployableHolder =  mock[DeployableHolder[Transforms]]
           val transforms = mock[Transforms]
           val fullCollectionName : String = "name"
           val transformType = TransformType.EXPANSION
           deployableHolder.get returns transforms
           val document = new BasicBSONObject("name","testCollection")
-          val transformedDocument = document.append("new","value")
-          transforms.map(document)(fullCollectionName, transformType) returns transformedDocument
+          val expectedDocument = document.append("new","value")
+          transforms.map(document)(fullCollectionName, transformType) returns expectedDocument
 
+          //When
           val transformer = new Transformer(TransformType.EXPANSION, deployableHolder)
 
-          transformer.transform(document)(fullCollectionName)  mustEqual  transformedDocument
+          //Then
+          transformer.transform(document)(fullCollectionName)  mustEqual  expectedDocument
           there was one(transforms).map(document)(fullCollectionName, transformType)
         }
 
         "transforms document in CONTRACTION mode" in {
+          //Given
           val deployableHolder =  mock[DeployableHolder[Transforms]]
           val transforms = mock[Transforms]
           val fullCollectionName : String = "name"
           val transformType = TransformType.CONTRACTION
           deployableHolder.get returns transforms
           val document = new BasicBSONObject("name","testCollection")
-          val transformedDocument = document.append("new","value")
-          transforms.map(document)(fullCollectionName, transformType) returns transformedDocument
+          val expectedDocument = document.append("new","value")
+          transforms.map(document)(fullCollectionName, transformType) returns expectedDocument
 
+          //When
           val transformer = new Transformer(TransformType.CONTRACTION, deployableHolder)
 
-          transformer.transform(document)(fullCollectionName)  mustEqual  transformedDocument
+          //Then
+          transformer.transform(document)(fullCollectionName)  mustEqual  expectedDocument
           there was one(transforms).map(document)(fullCollectionName, transformType)
         }
       }

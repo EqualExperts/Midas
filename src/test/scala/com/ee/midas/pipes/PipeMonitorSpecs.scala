@@ -35,7 +35,8 @@ class PipeMonitorSpecs extends Specification with Mockito {
          }
          //when
          moniterablePipe.start
-                 //then
+
+         //then
          moniterablePipe.isStartCalled must beTrue
          moniterablePipe.forceStopCalled must beFalse
        }

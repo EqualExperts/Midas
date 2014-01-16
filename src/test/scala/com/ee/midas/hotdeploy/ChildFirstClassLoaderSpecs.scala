@@ -24,6 +24,7 @@ class ChildFirstClassLoaderSpecs extends Specification with ScalaCompiler {
 
   "Child First Class Loader" should {
     "load the given class" in {
+      //given
       if(!srcScalaFile.exists()) {
         srcScalaFile.createNewFile()
         val writer = new FileWriter(srcScalaFile)
@@ -31,7 +32,11 @@ class ChildFirstClassLoaderSpecs extends Specification with ScalaCompiler {
         writer.close()
       }
       compile(classpathDir.getPath, binDir.getPath, srcScalaFile.getPath)
+
+      //when
       val classLoader = new ChildFirstClassLoader(Array(binDir),getClass.getClassLoader)
+
+      //then
       classLoader.loadClass("TestObject").getName mustEqual "TestObject"
     }
   }

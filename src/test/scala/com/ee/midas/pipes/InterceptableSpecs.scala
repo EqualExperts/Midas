@@ -9,10 +9,15 @@ import org.specs2.runner.JUnitRunner
 class InterceptableSpecs extends Specification with Interceptable {
     "Interceptable" should {
       "intercept data" in {
+        //given
         val data = "Hello World".getBytes()
         val source : ByteArrayInputStream = new ByteArrayInputStream(data)
         val destination : ByteArrayOutputStream = new ByteArrayOutputStream()
+
+        //when
         val bytesWritten = intercept(source , destination)
+
+        //then
         bytesWritten mustEqual data.length
         destination.toByteArray mustEqual data
       }

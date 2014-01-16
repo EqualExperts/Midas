@@ -42,6 +42,7 @@ class TransformsSpecs extends Specification with Mockito {
 
   "transforms trait" should {
     "apply expansion snippets" in {
+      //given
       val document = new BasicBSONObject("name", "dummy")
 
       //when
@@ -52,6 +53,7 @@ class TransformsSpecs extends Specification with Mockito {
     }
 
     "add expansion version to a virgin document" in {
+      //given
       val document = new BasicBSONObject("name", "dummy")
 
       //when
@@ -62,6 +64,7 @@ class TransformsSpecs extends Specification with Mockito {
     }
 
     "update expansion version of already transformed document" in {
+      //given
       val initialVersion = 1d
       val document = new BasicBSONObject("name", "dummy")
       document.put(TransformType.EXPANSION.versionFieldName, initialVersion)
@@ -75,6 +78,7 @@ class TransformsSpecs extends Specification with Mockito {
     }
 
     "apply contraction snippets" in {
+      //given
       val document = new BasicBSONObject("name", "dummy")
 
       //when
@@ -85,6 +89,7 @@ class TransformsSpecs extends Specification with Mockito {
     }
 
     "add contraction version to a virgin document" in {
+      //given
       val document = new BasicBSONObject("name", "dummy")
 
       //when
@@ -95,6 +100,7 @@ class TransformsSpecs extends Specification with Mockito {
     }
 
     "update contraction version of already transformed document" in {
+      //given
       val initialVersion = 1d
       val document = new BasicBSONObject("name", "dummy")
       document.put(TransformType.CONTRACTION.versionFieldName, initialVersion)
@@ -128,6 +134,7 @@ class TransformsSpecs extends Specification with Mockito {
       val collection = "invalidCollectionName"
 
       //when
+      //then
       tranformations.canBeApplied(collection) must beFalse
     }
 
@@ -136,6 +143,7 @@ class TransformsSpecs extends Specification with Mockito {
       val collection = "validCollectionForExpansion"
 
       //when
+      //then
       tranformations.canBeApplied(collection) must beTrue
     }
 
@@ -144,6 +152,7 @@ class TransformsSpecs extends Specification with Mockito {
       val collection = "validCollectionForContraction"
 
       //when
+      //then
       tranformations.canBeApplied(collection) must beTrue
     }
 

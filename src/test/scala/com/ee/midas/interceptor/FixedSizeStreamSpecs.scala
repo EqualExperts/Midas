@@ -97,9 +97,13 @@ class FixedSizeStreamSpecs extends Specification with Mockito {
      }
 
      "Throw exception when closed" in {
+       //given
        val inputStream : InputStream = mock[InputStream]
        val limit = 1
        val fixedStream : FixedSizeStream = new FixedSizeStream(inputStream, limit)
+
+       //when
+       //then
        fixedStream.close() must throwA[RuntimeException]
      }
 

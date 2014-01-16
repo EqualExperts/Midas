@@ -24,7 +24,7 @@ case class Delta(baseDeltaDir: String , transformType: String, deltaStr: () => S
     val writer = new FileWriter(file)
     writer.write(deltaStr())
     writer.close()
-    Thread.sleep(8000)
+    Thread.sleep(5000)
     Form("Write Delta").
     tr(field(deltaStr()))
   }
@@ -34,7 +34,7 @@ case class Delta(baseDeltaDir: String , transformType: String, deltaStr: () => S
     file.delete
     typeDir.delete
     deltasDir.delete
-    Form()
+    Form("Delete Delta")
   }
 
 }

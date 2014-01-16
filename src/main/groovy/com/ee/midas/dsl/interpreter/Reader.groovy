@@ -59,6 +59,8 @@ public class Reader {
             } catch (Throwable t) {
                 throw new InvalidGrammar("$deltaFileName --> ${t.message}")
             }
+            //http://groovy.dzone.com/news/groovyshell-and-memory-leaks
+            shell = null
         }
         parser.ast()
     }

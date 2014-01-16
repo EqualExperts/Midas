@@ -2,7 +2,6 @@ package com.ee.midas.dsl.generator
 
 import com.ee.midas.dsl.interpreter.representation.Tree
 import com.ee.midas.transform.TransformType
-import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 
 import static com.ee.midas.transform.TransformType.CONTRACTION
@@ -110,6 +109,16 @@ public class ScalaGenerator implements Generator {
     private String split(String splitField, String regex, String json) {
         """
             ((document: BSONObject) => document <~> (\"$splitField\", Pattern.compile(\"$regex\"), \"""$json\"""))
+        """.stripMargin()
+    }
+
+    private String transform(String outputField, String expressionJson) {
+        """
+            ((document: BSONObject) => {
+                val expression = expressionBuilder.build(\"$expressionJson\")
+                val value = expression.evaluate(document)
+                document + (\"$outputField\", value)
+            })
         """.stripMargin()
     }
 }

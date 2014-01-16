@@ -18,11 +18,11 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
     apply(field) match {
       case Some(fieldValue) =>
         if(overrideOldValue) {
-          update(field, Some(value))
+          update(field, value)
         } else {
           document
         }
-      case None => update(field, Some(value))
+      case None => update(field, value)
     }
 
     log.debug("After Adding/Updating Field %s on Document %s\n".format(field, document))
@@ -34,8 +34,10 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
     name.split("\\.") toList match {
       case topLevelField :: Nil => if(document.containsField(topLevelField)) document.removeField(topLevelField)
 
-      case topLevelField :: rest => if(document.containsField(topLevelField))
-                                   DocumentOperations(document.get(topLevelField).asInstanceOf[BSONObject]) - rest.mkString(".")
+      case topLevelField :: rest => if(document.containsField(topLevelField)){
+                            val nestedDocument = DocumentOperations(document.get(topLevelField).asInstanceOf[BSONObject])
+                            nestedDocument - rest.mkString(".")
+      }
     }
     log.debug("After Removing Field %s from Document %s\n".format(name, document))
     document
@@ -93,9 +95,12 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
   //merge
   final def >~< (mergeField: String, usingSeparator: String, fields: List[String]) : BSONObject = {
     log.debug("Merging Fields %s in Document %s".format(fields, document))
-    val fieldValues = fields map apply
-    val mergeValue = fieldValues filterNot (_.isEmpty) map (_.get) mkString usingSeparator
-    DocumentOperations(document) + (mergeField, mergeValue)
+    val fieldValues = (fields map apply) collect {
+      case fieldValue: Option[Any] if(!fieldValue.isEmpty) => fieldValue.get
+    }
+
+    val mergedValue = fieldValues mkString usingSeparator
+    DocumentOperations(document) + (mergeField, mergedValue)
     log.debug("After Merging Fields in Document %s\n".format(document))
     document
   }
@@ -108,18 +113,19 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
       case topLevelField :: Nil => if (document.containsField(fieldName)) Some(document.get(fieldName)) else None
       case topLevelField :: rest =>
         if(isFieldADocument(topLevelField, document)) {
-          getNestedValue(rest, document.get(topLevelField).asInstanceOf[BSONObject])
+          val nestedDocument = document.get(topLevelField).asInstanceOf[BSONObject]
+          readNestedValue(rest, nestedDocument)
         } else {
           Some(document.get(topLevelField))
         }
     }
   }
 
-  private def getNestedValue(fields: List[String], document: BSONObject): Option[AnyRef] = {
+  private def readNestedValue(fields: List[String], document: BSONObject): Option[AnyRef] = {
     if(document.containsField(fields.head)) {
       val value = document.get(fields.head)
       if(value.isInstanceOf[BSONObject])
-        getNestedValue(fields.tail, value.asInstanceOf[BSONObject])
+        readNestedValue(fields.tail, value.asInstanceOf[BSONObject])
       else
         Some(value)
     } else {
@@ -127,33 +133,29 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
     }
   }
 
-  def createNestedValue(fieldNames: List[String], document: BSONObject, value: Any): AnyRef = {
+  def writeNestedValue(fieldNames: List[String], document: BSONObject, value: Any): AnyRef = {
     fieldNames match {
       case field :: Nil => document.put(field, value)
       case topLevelField :: rest =>
         if(!isFieldADocument(topLevelField, document)) {
           document.put(topLevelField, new BasicBSONObject())
         }
-        createNestedValue(rest, document.get(topLevelField).asInstanceOf[BSONObject], value)
+        val nestedDocument = document.get(topLevelField).asInstanceOf[BSONObject]
+        writeNestedValue(rest, nestedDocument, value)
     }
     document
   }
 
   final def update(fieldName: String, value: Any) = {
-    value match {
-      case Some(validValue) =>
-        fieldName.split("\\.") toList match {
-          case topLevelField :: Nil => document.put(topLevelField, validValue)
-          case topLevelField :: rest => {
-          if(!isFieldADocument(topLevelField, document)) {
-            document.put(topLevelField, new BasicBSONObject())
-          }
-          createNestedValue(rest, document.get(topLevelField).asInstanceOf[BSONObject], validValue)
-          }
-        }
-      case None => document
+    fieldName.split("\\.") toList match {
+      case topLevelField :: Nil => document.put(topLevelField, value)
+      case topLevelField :: rest =>
+      if(!isFieldADocument(topLevelField, document)) {
+        document.put(topLevelField, new BasicBSONObject())
+      }
+      val nestedDocument = document.get(topLevelField).asInstanceOf[BSONObject]
+      writeNestedValue(rest, nestedDocument, value)
     }
-
     document
   }
 }

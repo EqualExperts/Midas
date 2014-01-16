@@ -15,14 +15,23 @@ class DocumentOperationsSpecs extends Specification {
 
     "Document Operations" should {
 
-      "Decode documents from input stream" in new setup {
+      "Decode documents from input stream" in {
+        //Given
+        val document = new BasicBSONObject("name" , "midas")
+        val encoder : BSONEncoder = new BasicBSONEncoder()
+
+        //when
         val encodedDocumentStream = new ByteArrayInputStream(encoder.encode(document))
         val decodedDocument : BSONObject = encodedDocumentStream
+
+        //Then
         decodedDocument mustEqual document
       }
 
-
-      "Encode documents to bytes" in new setup {
+      "Encode documents to bytes" in {
+        //Given
+        val document = new BasicBSONObject("name" , "midas")
+        val encoder : BSONEncoder = new BasicBSONEncoder()
 
         //When
         val expectedEncodedDocument = document toBytes
@@ -271,6 +280,7 @@ class DocumentOperationsSpecs extends Specification {
       }
 
       "-- Removes a field from nested document" in {
+        //Given
         val document = new BasicBSONObject("name" , "midas")
           .append("details", new BasicBSONObject("name", "old-midas").append("dob", "12-12-1988"))
         val deltas = JSON.parse("[\"details.name\"]").asInstanceOf[BSONObject]
@@ -291,7 +301,7 @@ class DocumentOperationsSpecs extends Specification {
       }
 
       "-- Removes fields from deeply nested document" in {
-
+        //Given
         val document = new BasicBSONObject()
           .append("details", new BasicBSONObject("name", new BasicBSONObject("firstName", "Paulo")
                                                           .append("lastName", "Coelho"))
@@ -399,6 +409,7 @@ class DocumentOperationsSpecs extends Specification {
         val actualDocument = DocumentOperations(document).<~>("details.name",
           Pattern.compile("""^(Mr|Mrs|Ms|Miss) ([a-zA-Z]+) ([a-zA-Z]+)$"""),
           """{"title": "$1", "fullName": { "firstName": "$2", "lastName": "$3" }}""")
+
         //Then: Split was successful
         actualDocument.containsField("title") must beTrue
         actualDocument.get("title") mustEqual "Mr"
@@ -427,7 +438,6 @@ class DocumentOperationsSpecs extends Specification {
 
         //Then: Split was successful
         actualDocument.containsField("title") must beFalse
-
         actualDocument.containsField("fullName") must beFalse
         actualDocument mustEqual document
       }
@@ -580,60 +590,86 @@ class DocumentOperationsSpecs extends Specification {
         actualDocument mustEqual expectedNestedDocument
       }
 
+      "Merging fields with no values results in new field with separator as its value" in {
+        //Given
+        val document = new BasicBSONObject()
+                          .append("stdCode", "")
+                          .append("number", "")
+        val separator = ":"
+
+        //When
+        document >~< ("telephone", separator, List("stdCode", "number"))
+
+        //Then
+        document.containsField("telephone") must beTrue
+        document.get("telephone").asInstanceOf[String] mustEqual separator
+      }
+
       "returns document value using indexing by field name" in {
          val document = new BasicBSONObject("pin", 400001)
          document("pin") mustEqual Some(400001)
       }
 
       "assigns document value using indexing by field name" in {
+        //Given
         val document = new BasicBSONObject("pin", 400001)
         val address = new BasicBSONObject("line1", "Some Address")
+
         //When
-        document("address") = Some(address)
+        document("address") = address
+
         //Then
         document("address") mustEqual Some(address)
       }
 
       "assigns document value using another document value" in {
+        //Given
         val document = new BasicBSONObject("pin", 400001)
         val targetDocument = new BasicBSONObject()
+
         //When
-        targetDocument("zip") = document("pin")
+        targetDocument("zip") = document("pin").get
+
         //Then
         targetDocument("zip") mustEqual Some(400001)
       }
 
       "assigns nested value of a document to another document value" in {
+        //Given
         val document = new BasicBSONObject("address", new BasicBSONObject("pin", 400001))
         val targetDocument = new BasicBSONObject()
+
         //When
-        targetDocument("zip") = document("address.pin")
+        targetDocument("zip") = document("address.pin").get
+
         //Then
         targetDocument("zip") mustEqual Some(400001)
       }
 
       "assigns nested value of a document to another document's nested field" in {
+        //Given
         val document = new BasicBSONObject("address", new BasicBSONObject("pin", 400001))
         val targetDocument = new BasicBSONObject()
+
         //When
-        targetDocument("address.zip") = document("address.pin")
+        targetDocument("address.zip") = document("address.pin").get
+
         //Then
         targetDocument("address.zip") mustEqual Some(400001)
       }
 
       "assigns simple value of a document to another document's nested field" in {
+        //Given
         val document = new BasicBSONObject("pin", 400001)
         val targetDocument = new BasicBSONObject()
+
         //When
-        targetDocument("address.zip") = document("pin")
+        targetDocument("address.zip") = document("pin").get
+
         //Then
         targetDocument("address.zip") mustEqual Some(400001)
       }
 
     }
 
-  trait setup extends Scope {
-    val document = new BasicBSONObject("name" , "midas")
-    val encoder : BSONEncoder = new BasicBSONEncoder()
-  }
 }

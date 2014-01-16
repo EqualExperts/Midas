@@ -3,6 +3,7 @@ package com.ee.midas.fixtures
 import com.mongodb.{DB, MongoClient}
 import org.specs2.form.Form
 import org.specs2.specification.Forms._
+import org.bson.BSONObject
 
 case class MongoShell(formName: String, host: String, port: Int) {
   val mongoClient = new MongoClient(host, port)
@@ -33,7 +34,17 @@ case class MongoShell(formName: String, host: String, port: Int) {
         {
           val newField = newOldField._1
           val oldField = newOldField._2
-          shell = shell.tr(prop(s"document.get(${newField})", document.get(newField), document.get(oldField)))
+          val newFieldValue = if(newField.contains("."))
+                                 readNestedValue(newField, document)
+                              else
+                                 document.get(newField)
+          println("new value "+newFieldValue)
+          val oldFieldValue = if(oldField.contains("."))
+                                readNestedValue(oldField, document)
+                              else
+                                document.get(oldField)
+          println("old value "+oldFieldValue)
+          shell = shell.tr(prop(s"document.get(${newField})", newFieldValue, oldFieldValue))
         }
       shell = shell.tr(prop(s"document.get('_expansionVersion')", document.get("_expansionVersion"), newOldFields.length))
     }
@@ -51,6 +62,16 @@ case class MongoShell(formName: String, host: String, port: Int) {
       shell = shell.tr(prop(s"document.get('_contractionVersion')", document.get("_contractionVersion"), fields.length))
     }
     this
+  }
+
+  private def readNestedValue(fieldName: String, document: Object): Object = {
+    val nestedFields = fieldName.split("\\.")
+    var fieldValue = document
+    for(field <- nestedFields)
+    {
+      fieldValue = fieldValue.asInstanceOf[BSONObject].get(field)
+    }
+    fieldValue
   }
 
   def retrieve() = {

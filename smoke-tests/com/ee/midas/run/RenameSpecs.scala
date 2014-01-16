@@ -27,9 +27,9 @@ class RenameSpecs extends Specification with Forms {
 
     1. Insert documents in the database .
       ${  val form = MongoShell("Open MongoShell", "localhost", 27017).useDatabase("transactions").
-          runCommand(s"""db.orders.insert({name:"Vivek", "OrderList": ['shoes', 'sipper'], "TotalAmount": 6000, ShippingAddress: {line1: "enter house/street", line2: "enter city", zipcode: 411006} })""").
-          runCommand(s"""db.orders.insert({name:"Komal", "OrderList": ['scarf', 'footwear'], "TotalAmount": 3000, ShippingAddress: {line1: "enter house/street", line2: "enter city", zipcode: 411006} })""").
-          runCommand(s"""db.orders.insert({name:"Dhaval", "OrderList": ['headsets'], "TotalAmount": 8000, ShippingAddress: {line1: "enter house/street", line2: "enter city", zipcode: 110007} })""").
+          runCommand(s"""db.orders.insert({name:"Vivek", "OrderList": ['shoes', 'sipper'], "TotalAmount": 6000, ShippingAddress: {line1: "enter house/street", line2: "enter city", "zipcode": 411006} })""").
+          runCommand(s"""db.orders.insert({name:"Komal", "OrderList": ['scarf', 'footwear'], "TotalAmount": 3000, ShippingAddress: {line1: "enter house/street", line2: "enter city", "zipcode": 411004} })""").
+          runCommand(s"""db.orders.insert({name:"Dhaval", "OrderList": ['headsets'], "TotalAmount": 8000, ShippingAddress: {line1: "enter house/street", line2: "enter city", "zipcode": 110007} })""").
           retrieve()
           form
       }
@@ -57,36 +57,36 @@ class RenameSpecs extends Specification with Forms {
       ${  val baseDeltaDir = "/deltaSpecs"
           expansionDelta2 = Delta(baseDeltaDir, "EXPANSION", () => {
             """use transactions
-               db.orders.copy("ShippingAddress", "BillingAddress")
+               db.orders.copy("ShippingAddress.zipcode", "ShippingAddress.pincode")
             """
           } )
           val form = expansionDelta2.saveAs("0002_copy_transactions_orders_ZipcodeToPincodeField.delta")
           form
       }
 
-    5. Connect with midas and verify that read documents contain "Your Cart" and "BillingAddress" field
+    5. Connect with midas and verify that read documents contain "Your Cart" and "ShippingAddress.pincode" field
       ${  val form = MongoShell("IncyWincyShoppingApp UpgradedVersion", "localhost", 27020).useDatabase("transactions").
-          copied("orders", Array(("YourCart", "OrderList"), ("BillingAddress","ShippingAddress"))).
+          copied("orders", Array(("YourCart", "OrderList"), ("ShippingAddress.pincode","ShippingAddress.zipcode"))).
           retrieve()
           form
       }
 
     6. Update and write back the documents to the database
       ${  val form =  MongoShell("IncyWincyShoppingApp UpgradedVersion", "localhost", 27017).useDatabase("transactions").
-          runCommand("""db.orders.update({name: "Vivek"}, { $set: {"YourCart": ['shoes', 'sipper'], "_expansionVersion": 1}}, {$upsert: true, multi: true})""").
-          runCommand("""db.orders.update({name: "Komal"}, { $set: {"YourCart": ['shoes', 'sipper'], "_expansionVersion": 1}}, {$upsert: true, multi: true})""").
-          runCommand("""db.orders.update({name: "Dhaval"}, { $set: {"YourCart": ['shoes', 'sipper'], "_expansionVersion": 1}}, {$upsert: true, multi: true})""").
+          runCommand("""db.orders.update({name: "Vivek"}, { $set: {"YourCart": ['shoes', 'sipper'], "ShippingAddress.pincode": 411006, "_expansionVersion": 2}}, {$upsert: true, multi: true})""").
+          runCommand("""db.orders.update({name: "Komal"}, { $set: {"YourCart": ['scarf', 'footwear'], "ShippingAddress.pincode": 411004, "_expansionVersion": 2}}, {$upsert: true, multi: true})""").
+          runCommand("""db.orders.update({name: "Dhaval"}, { $set: {"YourCart": ['headsets'], "ShippingAddress.pincode": 110007, "_expansionVersion": 2}}, {$upsert: true, multi: true})""").
           retrieve()
           form
       }
 
     7. Create delta file "0001_removeFrom_transactions_orders_OrderListField.delta" to remove "age"
-       and "ShippingAddress" at location "deltaSpecs" in "contraction" folder
+       and "ShippingAddress.zipcode" at location "deltaSpecs" in "contraction" folder
       ${  val baseDeltaDir = "/deltaSpecs"
           contractionDelta = Delta(baseDeltaDir, "CONTRACTION", () => {
             """use transactions
                db.orders.remove("['OrderList']")
-               db.orders.remove("['ShippingAddress']")
+               db.orders.remove("['ShippingAddress.zipcode']")
             """
           } )
           val form = contractionDelta.saveAs("0001_removeFrom_transactions_orders_OrderListField.delta")
@@ -102,9 +102,9 @@ class RenameSpecs extends Specification with Forms {
           form
       }
 
-    9. Connect with midas and verify that read documents do not contain "OrderList" field
+    9. Connect with midas and verify that read documents do not contain "OrderList" and "ShippingAddress.zipcode" field
       ${  val form = MongoShell("Open Command Terminal", "localhost", 27040).useDatabase("transactions").
-          removed("orders", Array("OrderList", "ShippingAddress")).
+          removed("orders", Array("OrderList", "ShippingAddress.zipcode")).
           retrieve()
           form
       }

@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 
 public enum ArgType {
     JSON(new JSONValidator("%s is an invalid json: %s")),
-    Identifier(new RegexValidator(Pattern.compile("[a-zA-Z_][a-zA-Z0-9_.]*",
+    Identifier(new RegexValidator(Pattern.compile("[a-zA-Z_][a-zA-Z0-9_. ]*",
                               Pattern.UNICODE_CASE),
                               "%s needs to be a valid identifier!")),
     //Letters = \p{L}

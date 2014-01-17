@@ -32,6 +32,9 @@ public enum Grammar {
         } catch (NoSuchFieldException e) {
             throw new InvalidGrammar(
                     "Sorry!! Midas Compiler bombed - " + e.getMessage());
+        } catch (ClassCastException e) {
+            throw new InvalidGrammar(
+                    "Please check the type of arguments - " + e.getMessage());
         }
     }
 

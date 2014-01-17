@@ -33,5 +33,7 @@ class FieldExpressionSpecs extends Specification {
       //Then
       result mustEqual null
     }
+
+    //todo: specs for nested fields
   }
 }

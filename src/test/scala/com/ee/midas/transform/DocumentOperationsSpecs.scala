@@ -602,15 +602,15 @@ class DocumentOperationsSpecs extends Specification {
 
       "Merge Operation " should {
         "Merge 2 simple fields into a new field using the provided separator" in {
-          //Given: A document with nested field "details.name"
+          //Given: A document
           val document = new BasicBSONObject()
             .append("fName", "Rafael")
             .append("lName", "Nadal")
 
-          //When: "details.name" field is split into "title", "fullName.firstName" and "fullName.lastName"
+          //When: fields "fName" and "lName" are merged into new field "name"
           val actualDocument = DocumentOperations(document).>~<("name", " ", List("fName","lName"))
 
-          //Then: Split was successful
+          //Then: Merge was successful
           actualDocument.containsField("name") must beTrue
           actualDocument.get("name") mustEqual "Rafael Nadal"
 
@@ -623,16 +623,16 @@ class DocumentOperationsSpecs extends Specification {
         }
 
         "Merge 3 simple fields into a new field using the provided separator" in {
-          //Given: A document with nested field "details.name"
+          //Given: A document
           val document = new BasicBSONObject()
             .append("title", "Mr.")
             .append("fName", "Rafael")
             .append("lName", "Nadal")
 
-          //When: "details.name" field is split into "title", "fullName.firstName" and "fullName.lastName"
+          //When: fields "title", "fName" and "lName" are merged into new field "name"
           val actualDocument = DocumentOperations(document).>~<("name", " ", List("title","fName","lName"))
 
-          //Then: Split was successful
+          //Then: Merge was successful
           actualDocument.containsField("name") must beTrue
           actualDocument.get("name") mustEqual "Mr. Rafael Nadal"
 
@@ -645,14 +645,14 @@ class DocumentOperationsSpecs extends Specification {
         }
 
         "Merging 1 simple fields falls back to simple copy" in {
-          //Given: A document with nested field "details.name"
+          //Given: A document with 1 field
           val document = new BasicBSONObject()
             .append("fName", "Andy")
 
-          //When: "details.name" field is split into "title", "fullName.firstName" and "fullName.lastName"
+          //When: field "fName" is merged into new field "name"
           val actualDocument = DocumentOperations(document).>~<("name", " ", List("fName"))
 
-          //Then: Split was successful
+          //Then: Merge was successful
           actualDocument.containsField("name") must beTrue
           actualDocument.get("name") mustEqual "Andy"
 
@@ -662,16 +662,16 @@ class DocumentOperationsSpecs extends Specification {
           actualDocument mustEqual expectedNestedDocument
         }
 
-        "Merge 2 nested fields into a new field using given separator" in {
-          //Given: A document with nested field "details.name"
+        "Merge 2 fields with one nested into a new field using given separator" in {
+          //Given: A document with nested field "details.firstName" and a simple field "lastName"
           val document = new BasicBSONObject()
             .append("details", new BasicBSONObject("firstName","Roger"))
             .append("lastName","Federer")
 
-          //When: "details.name" field is split into "title", "fullName.firstName" and "fullName.lastName"
+          //When: field "details.firstName" and "lastName" are merged into new simple field "name"
           val actualDocument = DocumentOperations(document).>~<("name", " ", List("details.firstName", "lastName"))
 
-          //Then: Split was successful
+          //Then: Merge was successful
           actualDocument.containsField("name") must beTrue
           actualDocument.get("name") mustEqual "Roger Federer"
 
@@ -683,15 +683,15 @@ class DocumentOperationsSpecs extends Specification {
         }
 
         "Merge 2 fields into a new nested field using given separator" in {
-          //Given: A document with nested field "details.name"
+          //Given: A document with 2 simple fields
           val document = new BasicBSONObject()
             .append("firstName","Mike")
             .append("lastName","Russo")
 
-          //When: "details.name" field is split into "title", "fullName.firstName" and "fullName.lastName"
+          //When: fields "firstName" and "lastName" are merged into new nested field "details.name"
           val actualDocument = DocumentOperations(document).>~<("details.name", " ", List("firstName", "lastName"))
 
-          //Then: Split was successful
+          //Then: Merge was successful
           actualDocument.containsField("details") must beTrue
           val details = actualDocument.get("details").asInstanceOf[BSONObject]
           details.get("name") mustEqual "Mike Russo"

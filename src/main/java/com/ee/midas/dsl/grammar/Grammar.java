@@ -17,6 +17,9 @@ public enum Grammar {
     @Expansion @ArgsSpecs({ ArgType.Identifier, ArgType.String, ArgType.JSON })
     mergeInto,
 
+    @Expansion @ArgsSpecs({ ArgType.Identifier, ArgType.JSON })
+    transform,
+
     @Contraction @ArgsSpecs(ArgType.JSON)
     remove;
 

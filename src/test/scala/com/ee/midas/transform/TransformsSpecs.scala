@@ -9,7 +9,7 @@ import scala.collection.immutable.TreeMap
 
 @RunWith(classOf[JUnitRunner])
 class TransformsSpecs extends Specification with Mockito {
-  val tranformations = new Transforms {
+  val transformations = new Transforms {
     def dummyExpansionFunc1: Snippet = (bsonObj: BSONObject) => {
       bsonObj.put("expansion1", "applied")
       bsonObj
@@ -46,7 +46,7 @@ class TransformsSpecs extends Specification with Mockito {
       val document = new BasicBSONObject("name", "dummy")
 
       //when
-      val transformedDocument = tranformations.map(document)("validCollectionForExpansion", TransformType.EXPANSION)
+      val transformedDocument = transformations.map(document)("validCollectionForExpansion", TransformType.EXPANSION)
 
       //then
       transformedDocument.containsField("expansion1") && transformedDocument.containsField("expansion2")
@@ -57,10 +57,10 @@ class TransformsSpecs extends Specification with Mockito {
       val document = new BasicBSONObject("name", "dummy")
 
       //when
-      val transformedDocument = tranformations.map(document)("validCollectionForExpansion", TransformType.EXPANSION)
+      val transformedDocument = transformations.map(document)("validCollectionForExpansion", TransformType.EXPANSION)
 
       //then
-      transformedDocument.get(TransformType.EXPANSION.versionFieldName()) must_== (tranformations.dummyVersionExpansion.size)
+      transformedDocument.get(TransformType.EXPANSION.versionFieldName()) must_== (transformations.dummyVersionExpansion.size)
     }
 
     "update expansion version of already transformed document" in {
@@ -70,11 +70,11 @@ class TransformsSpecs extends Specification with Mockito {
       document.put(TransformType.EXPANSION.versionFieldName, initialVersion)
 
       //when
-      val transformedDocument = tranformations.map(document)("validCollectionForExpansion", TransformType.EXPANSION)
+      val transformedDocument = transformations.map(document)("validCollectionForExpansion", TransformType.EXPANSION)
 
       //then
       !transformedDocument.containsField("expansion1") &&
-        (transformedDocument.get(TransformType.EXPANSION.versionFieldName) must_== tranformations.dummyVersionExpansion.size)
+        (transformedDocument.get(TransformType.EXPANSION.versionFieldName) must_== transformations.dummyVersionExpansion.size)
     }
 
     "apply contraction snippets" in {
@@ -82,7 +82,7 @@ class TransformsSpecs extends Specification with Mockito {
       val document = new BasicBSONObject("name", "dummy")
 
       //when
-      val transformedDocument = tranformations.map(document)("validCollectionForContraction", TransformType.CONTRACTION)
+      val transformedDocument = transformations.map(document)("validCollectionForContraction", TransformType.CONTRACTION)
 
       //then
       transformedDocument.containsField("contraction1") && transformedDocument.containsField("contraction2")
@@ -93,10 +93,10 @@ class TransformsSpecs extends Specification with Mockito {
       val document = new BasicBSONObject("name", "dummy")
 
       //when
-      val transformedDocument = tranformations.map(document)("validCollectionForContraction", TransformType.CONTRACTION)
+      val transformedDocument = transformations.map(document)("validCollectionForContraction", TransformType.CONTRACTION)
 
       //then
-      transformedDocument.get(TransformType.CONTRACTION.versionFieldName()) must_== (tranformations.dummyVersionContraction.size)
+      transformedDocument.get(TransformType.CONTRACTION.versionFieldName()) must_== (transformations.dummyVersionContraction.size)
     }
 
     "update contraction version of already transformed document" in {
@@ -106,11 +106,11 @@ class TransformsSpecs extends Specification with Mockito {
       document.put(TransformType.CONTRACTION.versionFieldName, initialVersion)
 
       //when
-      val transformedDocument = tranformations.map(document)("validCollectionForContraction", TransformType.CONTRACTION)
+      val transformedDocument = transformations.map(document)("validCollectionForContraction", TransformType.CONTRACTION)
 
       //then
       !transformedDocument.containsField("expansion1") &&
-        (transformedDocument.get(TransformType.CONTRACTION.versionFieldName) must_== tranformations.dummyVersionContraction.size)
+        (transformedDocument.get(TransformType.CONTRACTION.versionFieldName) must_== transformations.dummyVersionContraction.size)
     }
 
     "accept new expansions and contractions" in {
@@ -122,11 +122,11 @@ class TransformsSpecs extends Specification with Mockito {
       newTransformsMock.contractions returns mockContractions
 
       //when
-      tranformations.injectState(newTransformsMock)
+      transformations.injectState(newTransformsMock)
 
       //then
-      tranformations.expansions mustEqual mockExpansions
-      tranformations.contractions mustEqual mockContractions
+      transformations.expansions mustEqual mockExpansions
+      transformations.contractions mustEqual mockContractions
     }
 
     "return false if transformations cannot be applied for a collection name" in {
@@ -135,7 +135,7 @@ class TransformsSpecs extends Specification with Mockito {
 
       //when
       //then
-      tranformations.canBeApplied(collection) must beFalse
+      transformations.canBeApplied(collection) must beFalse
     }
 
     "return true if expansion can be applied for a collection name" in {
@@ -144,7 +144,7 @@ class TransformsSpecs extends Specification with Mockito {
 
       //when
       //then
-      tranformations.canBeApplied(collection) must beTrue
+      transformations.canBeApplied(collection) must beTrue
     }
 
     "return true if contraction can be applied for a collection name" in {
@@ -153,7 +153,7 @@ class TransformsSpecs extends Specification with Mockito {
 
       //when
       //then
-      tranformations.canBeApplied(collection) must beTrue
+      transformations.canBeApplied(collection) must beTrue
     }
 
   }

@@ -1,4 +1,5 @@
-import com.ee.midas.dsl.Translator
+package com.ee.midas.dsl
+
 import com.ee.midas.dsl.generator.ScalaGenerator
 import com.ee.midas.dsl.interpreter.Reader
 

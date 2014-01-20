@@ -1,4 +1,4 @@
-package com.ee.midas.transform.expressions
+package com.ee.midas.dsl.expressions
 
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner

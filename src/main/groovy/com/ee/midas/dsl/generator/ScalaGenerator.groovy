@@ -40,7 +40,11 @@ public class ScalaGenerator implements Generator {
             Map(${transformationEntries})
             """
         } else {
-            ''
+            """
+            override var expansions: Map[String, VersionedSnippets] = Map()
+
+            override var contractions: Map[String, VersionedSnippets] = Map()
+            """
         }
     }
 

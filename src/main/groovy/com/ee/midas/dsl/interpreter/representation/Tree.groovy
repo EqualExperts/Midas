@@ -21,12 +21,6 @@ public class Tree {
             databases[name] = new Database(name)
         }
     }
-    @CompileStatic
-    def each(TransformType transformType, Closure closure) {
-        databases.each { name, Database database ->
-            database.each(transformType, closure)
-        }
-    }
 
     @CompileStatic
     def eachWithVersionedMap(TransformType transformType, Closure closure) {

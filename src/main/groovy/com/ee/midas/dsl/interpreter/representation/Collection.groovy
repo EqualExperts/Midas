@@ -65,22 +65,6 @@ class Collection {
         }
     }
 
-    def each(TransformType transformType, String dbName, Closure closure) {
-        def versionedTransforms = null
-        if(transformType == EXPANSION) {
-            versionedTransforms = versionedExpansions
-        }
-
-        if(transformType == CONTRACTION) {
-            versionedTransforms = versionedContractions
-        }
-
-        versionedTransforms.each { version, grammarWithArgs ->
-            def (grammar, args) = grammarWithArgs
-            closure(dbName, name, version, grammar.name(), args)
-        }
-    }
-
     @CompileStatic
     def asVersionedMap(TransformType transformType) {
         Map<Long, Tuple> versionedTransforms = null

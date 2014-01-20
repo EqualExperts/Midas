@@ -33,7 +33,7 @@ project.ext {
 
     //libs
     mongoDriver = 'org.mongodb:mongo-java-driver:2.11.3'
-    groovy = 'org.codehaus.groovy:groovy-all:2.1.8'
+    groovy = 'org.codehaus.groovy:groovy-all:2.2.0'
     scala = 'org.scala-lang:scala-library:2.10.2'
     scalaCompiler = 'org.scala-lang:scala-compiler:2.10.2'
     junit = 'junit:junit:4.8.1'

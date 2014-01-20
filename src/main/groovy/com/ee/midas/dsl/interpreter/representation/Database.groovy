@@ -28,14 +28,6 @@ class Database {
     }
 
     @CompileStatic
-    def each(TransformType transformType, Closure closure) {
-        def dbName = this.name
-        collections.each { name, Collection collection ->
-            collection.each(transformType, dbName, closure)
-        }
-    }
-
-    @CompileStatic
     def eachWithVersionedMap(TransformType transformType, Closure closure) {
         def dbName = this.name
         collections.each { String name, Collection collection ->

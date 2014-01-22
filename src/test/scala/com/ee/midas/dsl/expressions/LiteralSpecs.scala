@@ -7,16 +7,16 @@ import org.specs2.runner.JUnitRunner
 import org.bson.BasicBSONObject
 
 @RunWith(classOf[JUnitRunner])
-class ConstantSpecs extends Specification {
-  "Constant Function" should {
+class LiteralSpecs extends Specification {
+  "Literal" should {
     "always return the same value for an Integer" in {
       //Given
       val one = 1
-      val constant = Constant(one)
+      val literal = Literal(one)
       val document = new BasicBSONObject()
 
       //When
-      val result = constant.evaluate(document)
+      val result = literal.evaluate(document).value
 
       //Then
       result mustEqual one
@@ -25,11 +25,11 @@ class ConstantSpecs extends Specification {
     "always return the same value for a Double" in {
       //Given
       val one = 1d
-      val constant = Constant(one)
+      val constant = Literal(one)
       val document = new BasicBSONObject()
 
       //When
-      val result = constant.evaluate(document)
+      val result = constant.evaluate(document).value
 
       //Then
       result mustEqual one
@@ -38,11 +38,11 @@ class ConstantSpecs extends Specification {
     "always return the same value for a String" in {
       //Given
       val one = "one"
-      val constant = Constant(one)
+      val literal = Literal(one)
       val document = new BasicBSONObject()
 
       //When
-      val result = constant.evaluate(document)
+      val result = literal.evaluate(document).value
 
       //Then
       result mustEqual one

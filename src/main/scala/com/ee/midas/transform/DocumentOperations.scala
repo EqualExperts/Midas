@@ -3,10 +3,12 @@ package com.ee.midas.transform
 import org.bson.{BasicBSONObject, BasicBSONEncoder, BSONObject}
 import scala.collection.JavaConverters._
 import java.io.InputStream
-import com.mongodb.{DefaultDBDecoder}
+import com.mongodb.{BasicDBList, DefaultDBDecoder}
 import com.ee.midas.utils.Loggable
 import com.mongodb.util.JSON
 import java.util.regex.{Matcher, Pattern}
+import com.ee.midas.dsl.expressions.{Literal, Expression}
+import org.bson.types.BasicBSONList
 
 class DocumentOperations private (document: BSONObject) extends Loggable {
 
@@ -107,8 +109,7 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
 
   final def toBytes: Array[Byte] = DocumentOperations.ENCODER.encode(document)
 
-  //todo: move nesting logic here
-  final def apply(fieldName: String) = {
+  final def apply(fieldName: String): Option[Any] = {
     fieldName.split("\\.") toList match {
       case topLevelField :: Nil => if (document.containsField(fieldName)) Some(document.get(fieldName)) else None
       case topLevelField :: rest =>
@@ -123,17 +124,16 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
 
   private def readNestedValue(fields: List[String], document: BSONObject): Option[AnyRef] = {
     if(document.containsField(fields.head)) {
-      val value = document.get(fields.head)
-      if(value.isInstanceOf[BSONObject])
-        readNestedValue(fields.tail, value.asInstanceOf[BSONObject])
-      else
-        Some(value)
+      document.get(fields.head) match {
+        case (value: BSONObject) => readNestedValue(fields.tail, value)
+        case v => Some(v)
+      }
     } else {
       None
     }
   }
 
-  def writeNestedValue(fieldNames: List[String], document: BSONObject, value: Any): AnyRef = {
+  private def writeNestedValue(fieldNames: List[String], document: BSONObject, value: Any): AnyRef = {
     fieldNames match {
       case field :: Nil => document.put(field, value)
       case topLevelField :: rest =>
@@ -157,6 +157,23 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
       writeNestedValue(rest, nestedDocument, value)
     }
     document
+  }
+
+  final def toExpression : List[Expression] = {
+    def parse0(acc: List[Expression], document: BSONObject): List[Expression] =
+      apply("$add") match {
+        case Some(args: BasicDBList) => {
+            val argsAsScalaMap: List[Any] = args.toMap.asScala.unzip._2.toList
+            val transformed = argsAsScalaMap.map {
+              case nestedDocument : BSONObject => parse0(acc, nestedDocument)
+              case value => Literal(value)
+            }.asInstanceOf[List[Expression]]
+          transformed
+        }
+        case Some(args) => acc
+        case None => acc
+      }
+    parse0(Nil, document)
   }
 }
 

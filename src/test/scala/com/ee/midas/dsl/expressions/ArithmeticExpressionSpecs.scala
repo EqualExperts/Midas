@@ -7,14 +7,14 @@ import org.specs2.mutable.Specification
 
 @RunWith(classOf[JUnitRunner])
 class ArithmeticExpressionSpecs extends Specification {
-  "Add Function" should {
+  "Add" should {
     "returns 0 when no arguments are supplied" in {
       //Given
-      val add = Add[Int]()
+      val add = Add()
       val document = new BasicBSONObject()
 
       //When
-      val result = add.evaluate(document)
+      val result = add.evaluate(document).value
 
       //Then
       result mustEqual 0
@@ -22,23 +22,23 @@ class ArithmeticExpressionSpecs extends Specification {
 
     "returns sum of arguments supplied for Int" in {
       //Given
-      val add = Add(Constant(1), Constant(3))
+      val add = Add(Literal(1), Literal(3))
       val document = new BasicBSONObject()
 
       //When
-      val result = add.evaluate(document)
+      val result = add.evaluate(document).value
 
       //Then
       result mustEqual 4
     }
 
-    "returns sum of arguments supplied for Double" in {
+    "returns sum of homogenous arg types" in {
       //Given
-      val add = Add(Constant(1d), Constant(3.5))
+      val add = Add(Literal(1d), Literal(3.5))
       val document = new BasicBSONObject()
 
       //When
-      val result = add.evaluate(document)
+      val result = add.evaluate(document).value
 
       //Then
       result mustEqual 4.5
@@ -46,42 +46,42 @@ class ArithmeticExpressionSpecs extends Specification {
 
   }
 
-  "Multiply Function" should {
+  "Multiply" should {
     "returns 0 when no arguments are supplied" in {
       //Given
-      val multiply = Multiply[Int]()
+      val multiply = Multiply()
       val document = new BasicBSONObject()
 
       //When
       val result = multiply.evaluate(document)
 
       //Then
-      result mustEqual 0
+      result mustEqual Literal(0)
     }
 
     "returns argument value when 1 argument is supplied" in {
       //Given
       val value = 3.5
-      val multiply = Multiply(Constant(value))
+      val multiply = Multiply(Literal(value))
       val document = new BasicBSONObject()
 
       //When
       val result = multiply.evaluate(document)
 
       //Then
-      result mustEqual value
+      result mustEqual Literal(value)
     }
 
-    "returns product when multiple args are supplied" in {
+    "returns product of homogeneous args type" in {
       //Given
-      val multiply = Multiply(Constant(.5), Constant(2d))
+      val multiply = Multiply(Literal(.5), Literal(2d))
       val document = new BasicBSONObject()
 
       //When
       val result = multiply.evaluate(document)
 
       //Then
-      result mustEqual 1.0
+      result mustEqual Literal(1.0)
     }
 
   }

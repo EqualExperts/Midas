@@ -41,6 +41,9 @@ class Collection {
                 versionedContractions[curContractionVersion++] = [grammar, args]
                 return
             }
+        } else {
+            log.error("${this.name} No arguments found for $name.")
+            throw new RuntimeException("No argument found!")
         }
     }
 

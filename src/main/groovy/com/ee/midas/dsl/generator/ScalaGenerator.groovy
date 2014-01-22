@@ -30,11 +30,13 @@ public class ScalaGenerator implements Generator {
             override var expansions: Map[String, VersionedSnippets] =
             Map(${transformationEntries})
 
-            override var contractions: Map[String, VersionedSnippets] = Map()
+            override var contractions: Map[String, VersionedSnippets] =
+            Map()
             """
         } else if (transformType == CONTRACTION) {
             """
-            override var expansions: Map[String, VersionedSnippets] = Map()
+            override var expansions: Map[String, VersionedSnippets] =
+            Map()
 
             override var contractions: Map[String, VersionedSnippets] =
             Map(${transformationEntries})
@@ -64,7 +66,8 @@ public class ScalaGenerator implements Generator {
                 "${version}d -> $snippet"
             }
             def fullCollectionName = toFullCollectionName(dbName, collectionName)
-            snippets[fullCollectionName] = versionedSnippets
+            if(!versionedSnippets.isEmpty())
+                snippets[fullCollectionName] = versionedSnippets
         }
         log.info("Completed snippets generation for $transformType TransformType!")
         snippets

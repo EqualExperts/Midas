@@ -6,74 +6,165 @@ import spock.lang.Specification
 
 class CollectionSpecs extends Specification {
 
-   def "Versioned map for single EXPANSION"() {
-       given : "A Collection"
-       Collection collection = new Collection("testCollection")
-       LinkedHashMap expectedMap  = [1:['name':Grammar.add.name(), 'args':['{"age":0}']]]
+    def "it accepts valid expansion operations"() {
+        given: "A Collection"
+            Collection collection = new Collection("testCollection")
 
-       when : "it creates a versioned Map for EXPANSION type"
-       collection.add('{"age":0}')
-       LinkedHashMap versionedMap = collection.asVersionedMap(TransformType.EXPANSION)
+        when: "it creates a versioned Map for CONTRACTION type"
+            collection.add("{\"newField\":\"defaultValue\"}")
+            collection.copy("sourceField","targetField")
+            collection.mergeInto("targetField", "separator", "[\"field1\", \"field2\"]")
+            collection.split("sourceField", "regex", "{\"field1\":\"\$1\",\"field2\":\"\$2\"}")
 
-       then : "the map should contain operation of expansion type"
-       areMapsEqual(versionedMap,expectedMap)
+        then: "the map should contain operations of contraction type"
+            notThrown(InvalidGrammar)
+    }
+
+    def "it accepts valid contraction operation"() {
+        given: "A Collection"
+            Collection collection = new Collection("testCollection")
+
+        when: "it creates a versioned Map for CONTRACTION type"
+            collection.remove("[\"field1\", \"field2\"]")
+
+        then: "the map should contain operations of contraction type"
+            notThrown(InvalidGrammar)
 
     }
 
-    def "Versioned map for single CONTRACTION"() {
-        given : "A Collection"
-        Collection collection = new Collection("testCollection")
-        LinkedHashMap expectedMap  = [1:['name':Grammar.remove.name(), 'args':['{"age":0}']]]
+    def "it throws an exception for unknown operations"() {
+        given: "A Collection"
+            Collection collection = new Collection("testCollection")
 
-        when : "it creates a versioned Map for CONTRACTION type"
-        collection.remove('{"age":0}')
-        LinkedHashMap versionedMap = collection.asVersionedMap(TransformType.CONTRACTION)
+        when: "it creates a versioned Map for CONTRACTION type"
+            collection.unknownMethod(args)
 
-        then : "the map should contain operation of contraction type"
-        areMapsEqual(versionedMap,expectedMap)
+        then: "the map should contain operations of contraction type"
+            thrown(InvalidGrammar)
 
-    }
-
-    def "Versioned map for multiple EXPANSION"() {
-        given : "A Collection"
-        Collection collection = new Collection("testCollection")
-        LinkedHashMap expectedMap  = [1:['name':Grammar.add.name(), 'args':['{"age":0}']], 2:['name':Grammar.add.name(), 'args':['{"city":"pune"}']]]
-
-        when : "it creates a versioned Map for EXPANSION type"
-        collection.add('{"age":0}')
-        collection.add('{"city":"pune"}')
-        LinkedHashMap versionedMap = collection.asVersionedMap(TransformType.EXPANSION)
-
-        then : "the map should contain operations of expansion type"
-        areMapsEqual(versionedMap,expectedMap)
-    }
-
-    def "Versioned map for multiple CONTRACTION"() {
-        given : "A Collection"
-        Collection collection = new Collection("testCollection")
-        LinkedHashMap expectedMap  = [1:['name':Grammar.remove.name(), 'args':['{"age":0}']], 2:['name':Grammar.remove.name(), 'args':['{"city":"pune"}']]]
-
-        when : "it creates a versioned Map for CONTRACTION type"
-        collection.remove('{"age":0}')
-        collection.remove('{"city":"pune"}')
-        LinkedHashMap versionedMap = collection.asVersionedMap(TransformType.CONTRACTION)
-
-        then : "the map should contain operations of contraction type"
-        areMapsEqual(versionedMap,expectedMap)
+        where:
+            args << [
+                    '{"age":0}',
+                    '',
+                    null
+            ]
 
     }
 
-    def areMapsEqual(map1, map2) {
-        map1.every {k , v ->
-            if ( !map2.containsKey(Eval.me(k))){ println("contains key "+k); return false }
-            if ( v instanceof Map) {
-                if (!v.equals(map2[Eval.me(k)]) ) return false
-            }
-            else{
-                if ( v != map2[Eval.me(k)] ) return false
-            }
-            true
-        }
+    def "it throws an exception for operations with no args"() {
+        given: "A Collection"
+           Collection collection = new Collection("testCollection")
+
+        when: "it creates a versioned Map for CONTRACTION type"
+            collection.remove()
+
+        then: "the map should contain operations of contraction type"
+            thrown(RuntimeException)
+
+    }
+
+    def "it creates a versioned map for single EXPANSION"() {
+        given: "A Collection with expansion operation"
+            Collection collection = new Collection("testCollection")
+            collection.add('{"age":0}')
+
+        when: "it creates a versioned Map for EXPANSION type"
+            LinkedHashMap versionedMap = collection.asVersionedMap(TransformType.EXPANSION)
+
+        then: "the map should contain operation of expansion type"
+            LinkedHashMap expectedMap  = ["${1}":[name:Grammar.add.name(), args:['{"age":0}']]]
+            versionedMap.equals(expectedMap)
+    }
+
+    def "it creates a versioned map for single CONTRACTION"() {
+        given: "A Collection with contration operation"
+            Collection collection = new Collection("testCollection")
+            collection.remove('{"age":0}')
+
+        when: "it creates a versioned Map for CONTRACTION type"
+            LinkedHashMap versionedMap = collection.asVersionedMap(TransformType.CONTRACTION)
+
+        then: "the map should contain operation of contraction type"
+            LinkedHashMap expectedMap  = ["${1}":['name':Grammar.remove.name(), 'args':['{"age":0}']]]
+            versionedMap.equals(expectedMap)
+    }
+
+    def "it creates a versioned map for multiple EXPANSIONs"() {
+        given: "A Collection with multiple expansion operations"
+            Collection collection = new Collection("testCollection")
+            collection.add('{"age":0}')
+            collection.add('{"city":"pune"}')
+
+        when: "it creates a versioned Map for EXPANSION type"
+            LinkedHashMap versionedMap = collection.asVersionedMap(TransformType.EXPANSION)
+
+        then: "the map should contain operations of expansion type"
+            LinkedHashMap expectedMap  = ["${1}":['name':Grammar.add.name(),
+                                                  'args':['{"age":0}']],
+                                          "${2}":['name':Grammar.add.name(),
+                                                  'args':['{"city":"pune"}']]]
+            versionedMap.equals(expectedMap)
+    }
+
+    def "it creates a versioned map for multiple CONTRACTIONs"() {
+        given: "A Collection with multiple contraction operations"
+            Collection collection = new Collection("testCollection")
+            collection.remove('{"age":0}')
+            collection.remove('{"city":"pune"}')
+
+        when: "it creates a versioned Map for CONTRACTION type"
+            LinkedHashMap versionedMap = collection.asVersionedMap(TransformType.CONTRACTION)
+
+        then: "the map should contain operations of contraction type"
+            LinkedHashMap expectedMap  = ["${1}":['name':Grammar.remove.name(),
+                                                  'args':['{"age":0}']],
+                                          "${2}":['name':Grammar.remove.name(),
+                                                  'args':['{"city":"pune"}']]]
+            versionedMap.equals(expectedMap)
+    }
+
+    def "it ignores contraction operations when versioning EXPANSIONs"() {
+        given: "A Collection with few expansion and contraction operations"
+            Collection collection = new Collection("testCollection")
+            collection.add('{"age":0}')
+            collection.add('{"city":"pune"}')
+            collection.remove('["dob"]')
+            collection.remove('["city"]')
+
+        when: "it creates a versioned Map for EXPANSION type"
+            LinkedHashMap versionedExpansionMap = collection.asVersionedMap(TransformType.EXPANSION)
+
+        then: "the map should contain operations of expansion type only"
+            LinkedHashMap expectedExpansionMap = [
+                    "${1}" : ['name': Grammar.add.name(),
+                         'args': ['{"age":0}']],
+                    "${2}" : ['name': Grammar.add.name(),
+                         'args':['{"city":"pune"}']]
+                    ]
+
+            versionedExpansionMap.equals(expectedExpansionMap)
+    }
+
+    def "it ignores expansion operations when versioning CONTRACTIONs"() {
+        given: "A Collection with few expansion and contraction operations"
+            Collection collection = new Collection("testCollection")
+            collection.add('{"age":0}')
+            collection.add('{"city":"pune"}')
+            collection.remove('["dob"]')
+            collection.remove('["city"]')
+
+        when: "it creates a versioned Map for CONTRACTION type"
+            LinkedHashMap versionedContractionMap = collection.asVersionedMap(TransformType.CONTRACTION)
+
+
+        then: "the map should contain operations of contraction type only"
+            LinkedHashMap expectedContractionMap  = [
+                    "${1}" : ['name': Grammar.remove.name(),
+                            'args': ['["dob"]']],
+                    "${2}" : ['name': Grammar.remove.name(),
+                            'args': ['["city"]']]
+            ]
+            versionedContractionMap.equals(expectedContractionMap)
 
     }
 

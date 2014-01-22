@@ -8,69 +8,237 @@ import spock.lang.Specification
 
 class ScalaGeneratorSpecs extends Specification {
 
-   def "Generate Snippets for Expansion"() {
-       given : "A Parser builds a Tree"
-           Parser parser = new Parser()
-           parser.parse { ->
-               using someDatabase
-               db.collectionName.add('{"newField" : "newValue"}')
-           }
-           Tree tree = parser.ast()
+    def "Generate Snippets for Add operation"() {
+        given: "A Parser builds a Tree"
+            Parser parser = new Parser()
+            parser.parse { ->
+                using someDatabase
+                db.collectionName.add('{"newField" : "newValue"}')
+            }
+            Tree tree = parser.ast()
 
-       and : "A Scala generator"
+        and: "A Scala generator"
             ScalaGenerator generator = new ScalaGenerator()
 
-       when : "generator generates scala code"
+        when: "generator generates scala code"
             def result = generator.generate(EXPANSION, tree)
 
-       then : "generates Scala snippets"
-           def expansionSnippets =
-              """
-              override var expansions: Map[String, VersionedSnippets] =
-              Map(\"someDatabase.collectionName\" ->
-                                  TreeMap(1d ->
-                              ((document: BSONObject) => {
-                                  val json = \"\"\"{\"newField\" : \"newValue\"}\"\"\"
-                                  val fields = JSON.parse(json).asInstanceOf[BSONObject]
-                                 document ++ fields
-                           })
-                       ))
+        then: "generates Scala snippets"
+            def expansionSnippets =
+                """
+                    override var expansions: Map[String, VersionedSnippets] =
+                    Map(\"someDatabase.collectionName\" ->
+                        TreeMap(1d ->
+                            ((document: BSONObject) => {
+                              val json = \"\"\"{\"newField\" : \"newValue\"}\"\"\"
+                              val fields = JSON.parse(json).asInstanceOf[BSONObject]
+                              document ++ fields
+                            })
+                    ))
 
-              override var contractions: Map[String, VersionedSnippets] = Map()
-              """
-           result.replaceAll(' ', '') == expansionSnippets.replaceAll(' ', '')
+                    override var contractions: Map[String, VersionedSnippets] =
+                    Map()
+                """
+            result.replaceAll(' ', '') == expansionSnippets.replaceAll(' ', '')
    }
 
-   def "Generate Snippets for Contraction"() {
-       given : "A Parser builds a Tree"
-           Parser parser  = new Parser()
-           parser.parse { ->
-               using someDatabase
-               db.collectionName.remove('["newField"]')
-           }
-           Tree tree = parser.ast()
+    def "Generate Snippets for Remove operation"() {
+        given: "A Parser builds a Tree"
+            Parser parser  = new Parser()
+            parser.parse { ->
+                using someDatabase
+                db.collectionName.remove('["newField"]')
+            }
+            Tree tree = parser.ast()
 
-       and : "A Scala generator"
+        and: "A Scala generator"
             ScalaGenerator generator = new ScalaGenerator()
 
-       when : "generator generates scala code"
+        when: "generator generates scala code"
             def result = generator.generate(CONTRACTION, tree)
 
-       then : "generates Scala snippets"
-           def contractionSnippets =
-                   """
-                   override var expansions: Map[String, VersionedSnippets] = Map()
+        then: "generates Scala snippets"
+            def contractionSnippets =
+                """
+                    override var expansions: Map[String, VersionedSnippets] =
+                    Map()
 
-                   override var contractions: Map[String, VersionedSnippets] =
-                   Map(\"someDatabase.collectionName\" ->
-                          TreeMap(1d ->
-                      ((document: BSONObject) => {
-                          val json = \"\"\"[\"newField\"]\"\"\"
-                          val fields = JSON.parse(json).asInstanceOf[BSONObject]
-                          document -- fields
-                      })
-                   ))
-                   """
+                    override var contractions: Map[String, VersionedSnippets] =
+                    Map(\"someDatabase.collectionName\" ->
+                        TreeMap(1d ->
+                            ((document: BSONObject) => {
+                              val json = \"\"\"[\"newField\"]\"\"\"
+                              val fields = JSON.parse(json).asInstanceOf[BSONObject]
+                              document -- fields
+                            })
+                    ))
+                """
             result.replaceAll(' ', '') == contractionSnippets.replaceAll(' ', '')
-   }
+    }
+
+    def "Generate Snippets for Copy operation"() {
+        given: "A Parser builds a Tree for a copy operation"
+            Parser parser  = new Parser()
+            parser.parse { ->
+                using someDatabase
+                db.collectionName.copy("fromOldField", "toNewField")
+            }
+            Tree tree = parser.ast()
+
+        and: "A Scala generator"
+            ScalaGenerator generator = new ScalaGenerator()
+
+        when: "generator generates scala code"
+            def result = generator.generate(EXPANSION, tree)
+
+        then: "it generates Scala snippets for copy operation"
+            def expectedCopySnippets =
+                """
+                    override var expansions: Map[String, VersionedSnippets] =
+                    Map(\"someDatabase.collectionName\" ->
+                        TreeMap(1d ->
+                            ((document: BSONObject) => {
+                              document(\"fromOldField\") match {
+                                case Some(fromFieldValue) => document(\"toNewField\") = fromFieldValue
+                                case None => document
+                              }
+                            })
+                    ))
+
+                    override var contractions: Map[String, VersionedSnippets] =
+                    Map()
+                """
+            result.replaceAll(' ', '') == expectedCopySnippets.replaceAll(' ', '')
+    }
+
+    def "Generate Snippets for Split operation"() {
+
+        given: "a delta for split operation with regex that produces 2 tokens"
+            def splitDelta = {
+                using someDatabase
+                db.collectionName.split("sourceField", "some regex", "{ \"token1\": \"\$1\", \"token2\": \"\$2\"}")
+            }
+
+        and: "A Parser builds a Tree for a split operation"
+            Parser parser  = new Parser()
+            parser.parse(splitDelta)
+            Tree tree = parser.ast()
+
+        and: "A Scala generator"
+            ScalaGenerator generator = new ScalaGenerator()
+
+        when: "generator generates scala code"
+            def result = generator.generate(EXPANSION, tree)
+
+        then : "it generates Scala snippets for split operation"
+            def expectedSplitSnippets =
+                """
+                    override var expansions: Map[String, VersionedSnippets] =
+                    Map(\"someDatabase.collectionName\" ->
+                        TreeMap(1d ->
+                            ((document: BSONObject) => document <~> ("sourceField", Pattern.compile("someregex"), \"""{"token1": "\$1", "token2": "\$2" }""\"))
+                    ))
+
+                    override var contractions: Map[String, VersionedSnippets] =
+                    Map()
+                """
+            result.replaceAll(' ', '') == expectedSplitSnippets.replaceAll(' ', '')
+    }
+
+    def "Generate Snippets for MergeInto operation"() {
+
+        given: "a delta for mergeInto operation with separator"
+            def mergeIntoDelta = {
+                using someDatabase
+                db.collectionName.mergeInto("targetField", "separator", "[\"field1\",\"field2\"]")
+            }
+
+        and: "A Parser builds a Tree for a mergeInto operation"
+            Parser parser = new Parser()
+            parser.parse(mergeIntoDelta)
+            Tree tree = parser.ast()
+
+        and: "A Scala generator"
+            ScalaGenerator generator = new ScalaGenerator()
+
+        when: "generator generates scala code"
+            def result = generator.generate(EXPANSION, tree)
+
+        then: "it generates Scala snippets for mergeInto operation"
+            def expectedMergeIntoSnippets =
+                """
+                    override var expansions: Map[String, VersionedSnippets] =
+                    Map(\"someDatabase.collectionName\" ->
+                        TreeMap(1d ->
+                            ((document: BSONObject) => {
+                              val fields = List("field1","field2")
+                              document >~< ("targetField", "separator", fields)
+                            })
+                    ))
+
+                    override var contractions: Map[String, VersionedSnippets] =
+                    Map()
+                """
+            result.replaceAll(' ', '') == expectedMergeIntoSnippets.replaceAll(' ', '')
+    }
+
+    def "Generates empty maps for expansion delta in contraction mode"() {
+        given: "An expansion delta"
+            def expansionDelta = {
+                using someDatabase
+                db.collectionName.add("{\"field1\": \"value1\",\"field2\": \"value2\"}")
+            }
+
+        and: "A Parser builds a Tree for expansion operation"
+            Parser parser = new Parser()
+            parser.parse(expansionDelta)
+            Tree tree = parser.ast()
+
+        and: "A Scala generator"
+            ScalaGenerator generator = new ScalaGenerator()
+
+        when: "generator generates scala code in contraction mode"
+            def result = generator.generate(CONTRACTION, tree)
+
+        then: "it generates Scala snippet of empty maps for expansion operation in contraction mode"
+        def expectedSnippets =
+            """
+                override var expansions: Map[String, VersionedSnippets] =
+                Map()
+
+                override var contractions: Map[String, VersionedSnippets] =
+                Map()
+            """
+        result.replaceAll(' ', '') == expectedSnippets.replaceAll(' ', '')
+    }
+
+    def "Generates empty maps for contraction delta in expansion mode"() {
+        given: "A contraction delta"
+            def contractionDelta = {
+                using someDatabase
+                db.collectionName.remove("[\"field1\",\"field2\"]")
+            }
+
+        and: "A Parser builds a Tree for contraction operation"
+            Parser parser = new Parser()
+            parser.parse(contractionDelta)
+            Tree tree = parser.ast()
+
+        and: "A Scala generator"
+            ScalaGenerator generator = new ScalaGenerator()
+
+        when: "generator generates scala code in contraction mode"
+            def result = generator.generate(EXPANSION, tree)
+
+        then: "it generates Scala snippet of empty maps for contraction operation in expansion mode"
+            def expectedSnippets =
+                """
+                    override var expansions: Map[String, VersionedSnippets] =
+                    Map()
+
+                    override var contractions: Map[String, VersionedSnippets] =
+                    Map()
+                """
+            result.replaceAll(' ', '') == expectedSnippets.replaceAll(' ', '')
+    }
 }

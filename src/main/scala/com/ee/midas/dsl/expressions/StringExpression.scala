@@ -2,7 +2,7 @@ package com.ee.midas.dsl.expressions
 
 import org.bson.BSONObject
 
-@ExpressionFunction(classOf[Concat])
+@FunctionExpression(classOf[Concat])
 final case class Concat(expressions: Expression*) extends Function(expressions: _*) {
   def evaluate(document: BSONObject) = {
     val result = expressions.foldLeft("") { (concatenated, expression) =>

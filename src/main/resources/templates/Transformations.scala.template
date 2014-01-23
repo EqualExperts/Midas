@@ -5,9 +5,10 @@ import java.util.regex.Pattern
 import com.mongodb.util.JSON
 import org.bson.BSONObject
 import com.ee.midas.transform.DocumentOperations._
+import com.ee.midas.dsl.expressions._
 
 // WARNING: THIS FILE IS AUTO-GENERATED, DO NOT HAND-CODE HERE, IT WILL BE OVER-WRITTEN
 // UPON NEXT RE-GENERATION.
-class Transformations extends Transforms {
+class Transformations extends Transforms with Parser {
     ###EXPANSIONS-CONTRACTIONS###
 }

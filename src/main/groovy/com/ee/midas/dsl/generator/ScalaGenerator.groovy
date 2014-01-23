@@ -89,7 +89,7 @@ public class ScalaGenerator implements Generator {
             ((document: BSONObject) => {
                 val json = \"""$json\"""
                 val fields = JSON.parse(json).asInstanceOf[BSONObject]
-                document ++ fields
+                document ++ (fields, false)
             })
         """.stripMargin()
     }
@@ -124,9 +124,9 @@ public class ScalaGenerator implements Generator {
     private String transform(String outputField, String expressionJson) {
         """
             ((document: BSONObject) => {
-                val expression = expressionBuilder.build(\"""$expressionJson\""")
-                val value = expression.evaluate(document)
-                document + (\"$outputField\", value)
+                val expression = parse(\"""$expressionJson\""")
+                val literal = expression.evaluate(document)
+                document + (\"$outputField\", literal.value)
             })
         """.stripMargin()
     }

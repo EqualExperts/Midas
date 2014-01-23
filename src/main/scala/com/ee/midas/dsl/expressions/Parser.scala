@@ -14,8 +14,8 @@ trait Parser extends JavaTokenParsers {
    * ----
    * value ::= obj | floatingPointNumber "null" | "true" | "false" | quotedField | stringLiteralWithoutDotAndDollar.
    * obj ::= "{" function "}".
-   * function ::= functionName ":" args.
-   * args ::= "[" [values] "]".
+   * fn ::= fnName ":" fnArgs.
+   * fnArgs ::= "[" [values] "]".
    * values ::= value { "," value }.
    */
   def value: Parser[Expression] =
@@ -31,12 +31,18 @@ trait Parser extends JavaTokenParsers {
 
   def quotedField = "\"$" ~> """([a-zA-Z_]\w*([\.][a-zA-Z_0-9]\w*)*)""".r <~ "\""
   def stringLiteralWithoutDotAndDollar = ("\"" + """([^"\p{Cntrl}\\\$\.]|\\[\\'"bfnrt]|\\u[a-fA-F0-9]{4})*""" + "\"").r
-  def obj: Parser[Expression] = "{"~> function <~"}"
+  def obj: Parser[Expression] = "{"~> fn <~"}"
   def fnArgs: Parser[List[Expression]] = "["~> repsep(value, ",") <~"]"
   def fnName: Parser[String] = "$"~> """[a-zA-Z_]\w*""".r
-  def function: Parser[Expression] = fnName~":"~fnArgs ^^ {
+  def fn: Parser[Expression] = fnName~":"~fnArgs ^^ {
     case "add"~":"~args      =>  Add(args: _*)
     case "multiply"~":"~args =>  Multiply(args: _*)
     case "concat"~":"~args   =>  Concat(args: _*)
+  }
+  //todo: memoize this for performance
+  def parse(input: String) = parseAll(obj, input) match {
+    case Success(value, _) => value
+    case NoSuccess(message, _) =>
+      throw new IllegalArgumentException(s"Parsing Failed: $message")
   }
 }

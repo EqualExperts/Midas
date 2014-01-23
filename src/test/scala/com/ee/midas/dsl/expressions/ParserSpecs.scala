@@ -249,7 +249,7 @@ class ParserSpecs extends Specification {
       val input = """$add: [1, "$age"]"""
 
       //When
-      val add = Result(parseAll(function, input))
+      val add = Result(parseAll(fn, input))
 
       //Then
       add mustEqual Add(Literal(1), Field("age"))
@@ -260,7 +260,7 @@ class ParserSpecs extends Specification {
       val input = """$add: []"""
 
       //When
-      val add = Result(parseAll(function, input))
+      val add = Result(parseAll(fn, input))
 
       //Then
       add mustEqual Add()
@@ -271,7 +271,7 @@ class ParserSpecs extends Specification {
       val input = """$add: [1, { $add: [2, "$age"]}]"""
 
       //When
-      val add = Result(parseAll(function, input))
+      val add = Result(parseAll(fn, input))
 
       //Then
       add mustEqual Add(Literal(1), Add(Literal(2), Field("age")))
@@ -282,7 +282,7 @@ class ParserSpecs extends Specification {
       val input = """$multiply: [1, "$age"]"""
 
       //When
-      val multiply = Result(parseAll(function, input))
+      val multiply = Result(parseAll(fn, input))
 
       //Then
       multiply mustEqual Multiply(Literal(1), Field("age"))
@@ -293,7 +293,7 @@ class ParserSpecs extends Specification {
       val input = """$multiply: []"""
 
       //When
-      val multiply = Result(parseAll(function, input))
+      val multiply = Result(parseAll(fn, input))
 
       //Then
       multiply mustEqual Multiply()
@@ -304,7 +304,7 @@ class ParserSpecs extends Specification {
       val input = """$multiply: [1, { $multiply: [2, "$age"]}]"""
 
       //When
-      val multiply = Result(parseAll(function, input))
+      val multiply = Result(parseAll(fn, input))
 
       //Then
       multiply mustEqual Multiply(Literal(1), Multiply(Literal(2), Field("age")))
@@ -315,7 +315,7 @@ class ParserSpecs extends Specification {
       val input = """$concat: [1, "$age"]"""
 
       //When
-      val concat = Result(parseAll(function, input))
+      val concat = Result(parseAll(fn, input))
 
       //Then
       concat mustEqual Concat(Literal(1), Field("age"))
@@ -326,7 +326,7 @@ class ParserSpecs extends Specification {
       val input = """$concat: []"""
 
       //When
-      val concat = Result(parseAll(function, input))
+      val concat = Result(parseAll(fn, input))
 
       //Then
       concat mustEqual Concat()
@@ -337,7 +337,7 @@ class ParserSpecs extends Specification {
       val input = """$concat: [1, { $concat: [2, "$age"]}]"""
 
       //When
-      val concat = Result(parseAll(function, input))
+      val concat = Result(parseAll(fn, input))
 
       //Then
       concat mustEqual Concat(Literal(1), Concat(Literal(2), Field("age")))

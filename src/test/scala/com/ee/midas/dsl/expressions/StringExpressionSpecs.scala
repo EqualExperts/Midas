@@ -17,7 +17,7 @@ class StringExpressionSpecs extends Specification {
       val result = concat.evaluate(document).value
 
       //Then
-      result must beEmpty
+      result mustEqual ""
     }
 
     "concatenate string literals" in {

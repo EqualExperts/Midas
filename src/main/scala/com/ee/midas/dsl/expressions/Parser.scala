@@ -1,6 +1,7 @@
 package com.ee.midas.dsl.expressions
 
 import scala.util.parsing.combinator.JavaTokenParsers
+import com.ee.midas.utils.Memoize
 
 trait Parser extends JavaTokenParsers {
 
@@ -9,10 +10,9 @@ trait Parser extends JavaTokenParsers {
    * --------
    * """{ $multiply: ["$age", 1, { $concat : ["$fname", ", ", "$lname" ], true },  ] }"""
    *
-   *
    * BNF:
    * ----
-   * value ::= obj | floatingPointNumber "null" | "true" | "false" | quotedField | stringLiteralWithoutDotAndDollar.
+   * value ::= obj | floatingPointNumber | "null" | "true" | "false" | quotedField | stringLiteralWithoutDotAndDollar.
    * obj ::= "{" function "}".
    * fn ::= fnName ":" fnArgs.
    * fnArgs ::= "[" [values] "]".
@@ -39,10 +39,12 @@ trait Parser extends JavaTokenParsers {
     case "multiply"~":"~args =>  Multiply(args: _*)
     case "concat"~":"~args   =>  Concat(args: _*)
   }
-  //todo: memoize this for performance
-  def parse(input: String) = parseAll(obj, input) match {
+
+  def parseFresh(input: String): Expression = parseAll(obj, input) match {
     case Success(value, _) => value
     case NoSuccess(message, _) =>
       throw new IllegalArgumentException(s"Parsing Failed: $message")
   }
+
+  def parse(input: String): Expression = Memoize(parseFresh)(input)
 }

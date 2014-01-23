@@ -4,11 +4,6 @@ import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import org.bson.BasicBSONObject
-
-//import com.mongodb.util.JSON
-//import com.ee.midas.transform.DocumentOperations._
-//import org.bson.BSONObject
 
 @RunWith(classOf[JUnitRunner])
 class ParserSpecs extends Specification {

@@ -32,7 +32,7 @@ class ScalaGeneratorSpecs extends Specification {
                             ((document: BSONObject) => {
                               val json = \"\"\"{\"newField\" : \"newValue\"}\"\"\"
                               val fields = JSON.parse(json).asInstanceOf[BSONObject]
-                              document ++ fields
+                              document ++ (fields, false)
                             })
                     ))
 

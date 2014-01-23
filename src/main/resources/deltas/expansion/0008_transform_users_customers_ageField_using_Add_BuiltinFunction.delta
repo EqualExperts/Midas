@@ -31,5 +31,6 @@ use users
  * --------------------------------------------------------------------------------------
  */
 
+//Increment age by 1
 db.customers.transform('age', '{ $add: ["$age", 1] }')
 /* db.customers.transform("age", "{ $add: ['$age', 1]}") */

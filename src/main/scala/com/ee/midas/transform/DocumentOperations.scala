@@ -158,23 +158,6 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
     }
     document
   }
-
-  final def toExpression : List[Expression] = {
-    def parse0(acc: List[Expression], document: BSONObject): List[Expression] =
-      apply("$add") match {
-        case Some(args: BasicDBList) => {
-            val argsAsScalaMap: List[Any] = args.toMap.asScala.unzip._2.toList
-            val transformed = argsAsScalaMap.map {
-              case nestedDocument : BSONObject => parse0(acc, nestedDocument)
-              case value => Literal(value)
-            }.asInstanceOf[List[Expression]]
-          transformed
-        }
-        case Some(args) => acc
-        case None => acc
-      }
-    parse0(Nil, document)
-  }
 }
 
 object DocumentOperations {

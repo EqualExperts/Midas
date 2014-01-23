@@ -49,8 +49,8 @@ configuration {
 		}
         //JBoss Versioning Convention
 		version {
-			major = 0 //number related to production release
-			minor = 1 //changes or feature additions
+			major = 1 //number related to production release
+			minor = 0 //changes or feature additions
 			micro = 0 //patches and bug fixes
 			qualifier {
 				alphaNumeric = 'Alpha1' //Alpha# or Beta# or CR# or GA, or SP#

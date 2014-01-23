@@ -131,7 +131,7 @@ task ('acceptance-tests', dependsOn: ['unzip', 'cleanAcceptanceReportsDir']) << 
 
 task ('startMidas', dependsOn: ['killMidas', 'unzip']) << {
     def os = System.getProperty("os.name")
-    def winCmd = """cmd /c midas.bat localhost 27020 localhost ${project.ext.portPrefix}17"""
+    def winCmd = """cmd /c midas.bat --host localhost --port 27020 --source localhost --mongoPort ${project.ext.portPrefix}17"""
     def command = os ==~ /Win.*/ ? "$winCmd" : "sh midas.sh localhost 27020 localhost ${project.ext.portPrefix}17"
     command.execute(null, new File(project.ext.explodedDir))
     println "started midas... using mongo on port ${project.ext.portPrefix}."

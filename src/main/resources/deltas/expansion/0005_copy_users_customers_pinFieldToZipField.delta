@@ -6,6 +6,5 @@ use users
  * syntax: db.collection.copy('fromFieldName', 'toFieldName')
  * syntax: db.collection.copy("fromFieldName", "toFieldName")
  *
- * Note: copy currently does not work for nested fields.
  */
 db.customers.copy('pin', 'address.zip')

@@ -3,12 +3,10 @@ package com.ee.midas.transform
 import org.bson.{BasicBSONObject, BasicBSONEncoder, BSONObject}
 import scala.collection.JavaConverters._
 import java.io.InputStream
-import com.mongodb.{BasicDBList, DefaultDBDecoder}
+import com.mongodb.{DefaultDBDecoder}
 import com.ee.midas.utils.Loggable
 import com.mongodb.util.JSON
 import java.util.regex.{Matcher, Pattern}
-import com.ee.midas.dsl.expressions.{Literal, Expression}
-import org.bson.types.BasicBSONList
 
 class DocumentOperations private (document: BSONObject) extends Loggable {
 

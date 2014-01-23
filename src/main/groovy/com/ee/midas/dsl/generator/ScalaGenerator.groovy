@@ -115,6 +115,7 @@ public class ScalaGenerator implements Generator {
         """.stripMargin()
     }
 
+    //todo: make split more performant by removing Pattern.compile at runtime, use memoization?.
     private String split(String splitField, String regex, String json) {
         """
             ((document: BSONObject) => document <~> (\"$splitField\", Pattern.compile(\"$regex\"), \"""$json\"""))

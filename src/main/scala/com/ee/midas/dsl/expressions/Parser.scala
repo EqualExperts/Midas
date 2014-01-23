@@ -29,11 +29,12 @@ trait Parser extends JavaTokenParsers {
        | stringLiteralWithoutDotAndDollar ^^ (s => Literal(s.replace("\"", "")))
     )
 
-  def quotedField = "\"$" ~> """([a-zA-Z_]\w*([\.][a-zA-Z_0-9]\w*)*)""".r <~ "\""
-  def stringLiteralWithoutDotAndDollar = ("\"" + """([^"\p{Cntrl}\\\$\.]|\\[\\'"bfnrt]|\\u[a-fA-F0-9]{4})*""" + "\"").r
+  def quotedField: Parser[String] = "\"$" ~> """([a-zA-Z_]\w*([\.][a-zA-Z_0-9]\w*)*)""".r <~ "\""
+  def stringLiteralWithoutDotAndDollar: Parser[String] = ("\"" + """([^"\p{Cntrl}\\\$\.]|\\[\\'"bfnrt]|\\u[a-fA-F0-9]{4})*""" + "\"").r
   def obj: Parser[Expression] = "{"~> fn <~"}"
   def fnArgs: Parser[List[Expression]] = "["~> repsep(value, ",") <~"]"
   def fnName: Parser[String] = "$"~> """[a-zA-Z_]\w*""".r
+  //todo: seal this - use annotations
   def fn: Parser[Expression] = fnName~":"~fnArgs ^^ {
     case "add"~":"~args      =>  Add(args: _*)
     case "multiply"~":"~args =>  Multiply(args: _*)

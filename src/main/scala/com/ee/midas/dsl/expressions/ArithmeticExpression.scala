@@ -2,6 +2,7 @@ package com.ee.midas.dsl.expressions
 
 import org.bson.BSONObject
 
+@ExpressionFunction(classOf[Add])
 final case class Add(expressions: Expression*) extends Function(expressions: _*) {
   def evaluate(document: BSONObject) = {
     val result = expressions.foldLeft(0d) { (sum, expression) =>
@@ -14,6 +15,7 @@ final case class Add(expressions: Expression*) extends Function(expressions: _*)
   }
 }
 
+@ExpressionFunction(classOf[Multiply])
 final case class Multiply(expressions: Expression*) extends Function(expressions: _*) {
   def evaluate(document: BSONObject) =
     if(expressions.length == 0) {

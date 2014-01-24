@@ -43,4 +43,7 @@ db.customers.transform('age', '{ $subtract: [{ $add: ["$age", 1]}, 1] }')
 // make age twice
 db.customers.transform('age', '{ $multiply: ["$age", 2] }')
 
+// make age 1/3rd
+db.customers.transform('age', '{ $divide: ["$age", 3] }')
+
 /* db.customers.transform("age", "{ $add: ['$age', 1]}") */

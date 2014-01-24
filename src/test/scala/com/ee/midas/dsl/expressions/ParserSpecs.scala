@@ -401,5 +401,49 @@ class ParserSpecs extends Specification {
       subtract mustEqual Subtract(Literal(1), Subtract(Literal(2), Field("age")))
     }
 
+    "return Divide function" in new ExpressionParser {
+      //Given
+      val input = """$divide: [1, "$age"]"""
+
+      //When
+      val divide = Result(parseAll(fn, input))
+
+      //Then
+      divide mustEqual Divide(Literal(1), Field("age"))
+    }
+
+    "return empty Divide function" in new ExpressionParser {
+      //Given
+      val input = """$divide: []"""
+
+      //When
+      val divide = Result(parseAll(fn, input))
+
+      //Then
+      divide mustEqual Divide()
+    }
+
+    "return Divide function with 1 argument" in new ExpressionParser {
+      //Given
+      val input = """$divide: [1.0]"""
+
+      //When
+      val divide = Result(parseAll(fn, input))
+
+      //Then
+      divide mustEqual Divide(Literal(1d))
+    }
+
+    "return recursive Divide function" in new ExpressionParser {
+      //Given
+      val input = """$divide: [1, { $divide: [2, "$age"]}]"""
+
+      //When
+      val divide = Result(parseAll(fn, input))
+
+      //Then
+      divide mustEqual Divide(Literal(1), Divide(Literal(2), Field("age")))
+    }
+
   }
 }

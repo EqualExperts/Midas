@@ -219,4 +219,78 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual -5
     }
   }
+
+  "Divide" should {
+    "return 0 when no arguments are supplied" in {
+      //Given
+      val divide = Divide()
+      val document = new BasicBSONObject()
+
+      //When
+      val result = divide.evaluate(document)
+
+      //Then
+      result mustEqual Literal(0)
+    }
+
+    "return 0 when 1 argument is supplied" in {
+      //Given
+      val divide = Divide(Literal(3))
+      val document = new BasicBSONObject()
+
+      //When
+      val result = divide.evaluate(document)
+
+      //Then
+      result mustEqual Literal(0)
+    }
+
+    "return division of homogeneous args type" in {
+      //Given
+      val divide = Divide(Literal(-4), Literal(2d))
+      val document = new BasicBSONObject()
+
+      //When
+      val result = divide.evaluate(document)
+
+      //Then
+      result mustEqual Literal(-2.0)
+    }
+
+    "return division of field value and literal" in {
+      //Given
+      val divide = Divide(Field("age"), Literal(2d))
+      val document = new BasicBSONObject().append("age", 2)
+
+      //When
+      val result = divide.evaluate(document).value
+
+      //Then
+      result mustEqual 1.0
+    }
+
+    "return division as 0 when field does not exist" in {
+      //Given
+      val divide = Divide(Field("age"), Literal(5))
+      val document = new BasicBSONObject()
+
+      //When
+      val result = divide.evaluate(document).value
+
+      //Then
+      result mustEqual 0
+    }
+
+    "return 0 when a value is divided by 0" in {
+      //Given
+      val divide = Divide(Literal(5), Literal(0))
+      val document = new BasicBSONObject()
+
+      //When
+      val result = divide.evaluate(document).value
+
+      //Then
+      result mustEqual 0
+    }
+  }
 }

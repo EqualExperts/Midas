@@ -39,6 +39,7 @@ trait Parser extends JavaTokenParsers {
     case "add"~":"~args      =>  Add(args: _*)
     case "subtract"~":"~args =>  Subtract(args: _*)
     case "multiply"~":"~args =>  Multiply(args: _*)
+    case "divide"~":"~args =>  Divide(args: _*)
     case "concat"~":"~args   =>  Concat(args: _*)
   }
 

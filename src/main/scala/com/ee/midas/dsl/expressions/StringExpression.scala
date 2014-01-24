@@ -3,13 +3,10 @@ package com.ee.midas.dsl.expressions
 import org.bson.BSONObject
 
 @FunctionExpression(classOf[Concat])
-final case class Concat(expressions: Expression*) extends Function(expressions: _*) {
+final case class Concat(expressions: Expression*) extends StringFunction(expressions: _*) {
   def evaluate(document: BSONObject) = {
     val result = expressions.foldLeft("") { (concatenated, expression) =>
-      expression.evaluate(document) match {
-        case Literal(null) => concatenated
-        case Literal(value) => concatenated + value
-      }
+        concatenated + value(expression.evaluate(document))
     }
     Literal(result)
   }

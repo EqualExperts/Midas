@@ -357,6 +357,49 @@ class ParserSpecs extends Specification {
       Result(parseAll(obj, input)) must throwA[IllegalArgumentException]
     }
 
+    "return Subtract function" in new ExpressionParser {
+      //Given
+      val input = """$subtract: [1, "$age"]"""
+
+      //When
+      val subtract = Result(parseAll(fn, input))
+
+      //Then
+      subtract mustEqual Subtract(Literal(1), Field("age"))
+    }
+
+    "return empty Subtract function" in new ExpressionParser {
+      //Given
+      val input = """$subtract: []"""
+
+      //When
+      val subtract = Result(parseAll(fn, input))
+
+      //Then
+      subtract mustEqual Subtract()
+    }
+
+    "return Subtract function with 1 argument" in new ExpressionParser {
+      //Given
+      val input = """$subtract: [1.0]"""
+
+      //When
+      val subtract = Result(parseAll(fn, input))
+
+      //Then
+      subtract mustEqual Subtract(Literal(1d))
+    }
+
+    "return recursive subtract function" in new ExpressionParser {
+      //Given
+      val input = """$subtract: [1, { $subtract: [2, "$age"]}]"""
+
+      //When
+      val subtract = Result(parseAll(fn, input))
+
+      //Then
+      subtract mustEqual Subtract(Literal(1), Subtract(Literal(2), Field("age")))
+    }
 
   }
 }

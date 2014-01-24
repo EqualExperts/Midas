@@ -18,5 +18,18 @@ final case class Field(name: String) extends Expression {
   }
 }
 
-abstract class Function(expressions: Expression*) extends Expression
+sealed abstract class Function(expressions: Expression*) extends Expression
 
+abstract class ArithmeticFunction(expressions: Expression*) extends Function(expressions: _*) {
+  def value(literal: Literal): Double = literal match {
+    case Literal(null) => 0
+    case Literal(x) => x.toString.toDouble
+  }
+}
+
+abstract class StringFunction(expressions: Expression*) extends Function(expressions: _*) {
+  def value(literal: Literal): String = literal match {
+    case Literal(null) => ""
+    case Literal(x) => x.toString
+  }
+}

@@ -7,8 +7,8 @@ import org.specs2.runner.JUnitRunner
 import org.bson.BasicBSONObject
 
 @RunWith(classOf[JUnitRunner])
-class FieldExpressionSpecs extends Specification {
-  "Field Expression" should {
+class FieldSpecs extends Specification {
+  "Field" should {
     "give the value of a field if present in the document" in {
       //Given
       val fieldExpression = Field("zip")

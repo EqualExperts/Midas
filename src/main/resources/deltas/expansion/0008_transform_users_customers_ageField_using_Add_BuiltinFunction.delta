@@ -33,4 +33,14 @@ use users
 
 //Increment age by 1
 db.customers.transform('age', '{ $add: ["$age", 1] }')
+
+//Decrement age by 1
+db.customers.transform('age', '{ $subtract: ["$age", 1] }')
+
+//recursive example - add 1 and subtract 1 after in the same transformation
+db.customers.transform('age', '{ $subtract: [{ $add: ["$age", 1]}, 1] }')
+
+// make age twice
+db.customers.transform('age', '{ $multiply: ["$age", 2] }')
+
 /* db.customers.transform("age", "{ $add: ['$age', 1]}") */

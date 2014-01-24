@@ -37,6 +37,7 @@ trait Parser extends JavaTokenParsers {
   //todo: seal this - use annotations
   def fn: Parser[Expression] = fnName~":"~fnArgs ^^ {
     case "add"~":"~args      =>  Add(args: _*)
+    case "subtract"~":"~args =>  Subtract(args: _*)
     case "multiply"~":"~args =>  Multiply(args: _*)
     case "concat"~":"~args   =>  Concat(args: _*)
   }

@@ -10,13 +10,13 @@ class CollectionSpecs extends Specification {
         given: "A Collection"
             Collection collection = new Collection("testCollection")
 
-        when: "it creates a versioned Map for CONTRACTION type"
+        when: "a few valid expansion operations are invoked on it"
             collection.add("{\"newField\":\"defaultValue\"}")
             collection.copy("sourceField","targetField")
             collection.mergeInto("targetField", "separator", "[\"field1\", \"field2\"]")
             collection.split("sourceField", "regex", "{\"field1\":\"\$1\",\"field2\":\"\$2\"}")
 
-        then: "the map should contain operations of contraction type"
+        then: "the operations were successful"
             notThrown(InvalidGrammar)
     }
 
@@ -24,10 +24,10 @@ class CollectionSpecs extends Specification {
         given: "A Collection"
             Collection collection = new Collection("testCollection")
 
-        when: "it creates a versioned Map for CONTRACTION type"
+        when: "a contraction operation 'remove' is invoked with correct args"
             collection.remove("[\"field1\", \"field2\"]")
 
-        then: "the map should contain operations of contraction type"
+        then: "the operation was successful"
             notThrown(InvalidGrammar)
 
     }
@@ -36,10 +36,10 @@ class CollectionSpecs extends Specification {
         given: "A Collection"
             Collection collection = new Collection("testCollection")
 
-        when: "it creates a versioned Map for CONTRACTION type"
+        when: "An unknown method is invoked on it"
             collection.unknownMethod(args)
 
-        then: "the map should contain operations of contraction type"
+        then: "It throws invalid grammar exception"
             thrown(InvalidGrammar)
 
         where:
@@ -55,11 +55,11 @@ class CollectionSpecs extends Specification {
         given: "A Collection"
            Collection collection = new Collection("testCollection")
 
-        when: "it creates a versioned Map for CONTRACTION type"
+        when: "An operation with no arguments is invoked on it"
             collection.remove()
 
-        then: "the map should contain operations of contraction type"
-            thrown(RuntimeException)
+        then: "Invalid Grammar exception is thrown"
+            thrown(InvalidGrammar)
 
     }
 
@@ -72,12 +72,12 @@ class CollectionSpecs extends Specification {
             LinkedHashMap versionedMap = collection.asVersionedMap(TransformType.EXPANSION)
 
         then: "the map should contain operation of expansion type"
-            LinkedHashMap expectedMap  = ["${1}":[name:Grammar.add.name(), args:['{"age":0}']]]
+            LinkedHashMap expectedMap  = ["${1}":[name: Grammar.add.name(), args:['{"age":0}']]]
             versionedMap.equals(expectedMap)
     }
 
     def "it creates a versioned map for single CONTRACTION"() {
-        given: "A Collection with contration operation"
+        given: "A Collection with contraction operation"
             Collection collection = new Collection("testCollection")
             collection.remove('{"age":0}')
 

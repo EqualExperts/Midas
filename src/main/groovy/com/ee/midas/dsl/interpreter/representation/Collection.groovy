@@ -28,23 +28,20 @@ class Collection {
     def invokeMethod(String name, args) {
         log.info("${this.name} invokeMethod: Operation $name with $args")
 
-        if(args) {
-            Grammar grammar = asGrammar(name)
-            grammar.validate(args as List<String>)
-            if (isExpansion(grammar)) {
-                log.info("${this.name} Adding Expansion $grammar with $args")
-                versionedExpansions[curExpansionVersion++] = [grammar, args]
-                return
-            }
-            if (isContraction(grammar)) {
-                log.info("${this.name} Adding Contraction $grammar with $args")
-                versionedContractions[curContractionVersion++] = [grammar, args]
-                return
-            }
-        } else {
-            log.error("${this.name} No arguments found for $name.")
-            throw new RuntimeException("No argument found!")
+        Grammar grammar = asGrammar(name)
+        def parameters = args? args as List<String> : []
+        grammar.validate(parameters)
+        if (isExpansion(grammar)) {
+            log.info("${this.name} Adding Expansion $grammar with $args")
+            versionedExpansions[curExpansionVersion++] = [grammar, args]
+            return
         }
+        if (isContraction(grammar)) {
+            log.info("${this.name} Adding Contraction $grammar with $args")
+            versionedContractions[curContractionVersion++] = [grammar, args]
+            return
+        }
+
     }
 
     @CompileStatic

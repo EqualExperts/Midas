@@ -218,7 +218,7 @@ class TreeSpecs extends Specification {
             Tree tree = new Tree()
             def database = tree.using("testDB")
 
-        when: "a collection property's method is invoked"
+        when: "a collection property's invalid method is invoked"
             database.testCollection.someOperation('{"age":0}')
 
         then: "Invalid Grammar exception is thrown"
@@ -230,7 +230,7 @@ class TreeSpecs extends Specification {
             Tree tree = new Tree()
             def database = tree.using("testDB")
 
-        when: "a collection property's method is invoked with string argument"
+        when: "a collection property's add method is invoked with one non-json string argument"
             database.testCollection.add("some field name")
 
         then: "Invalid Grammar exception is thrown"
@@ -242,11 +242,11 @@ class TreeSpecs extends Specification {
             Tree tree = new Tree()
             def database = tree.using("testDB")
 
-        when: "a collection property's method is invoked with string argument"
+        when: "a collection property's method is invoked with no arguments"
             database.testCollection.add()
 
-        then: "A runtime exception is thrown"
-            thrown(RuntimeException)
+        then: "Invalid Grammar exception is thrown"
+            thrown(InvalidGrammar)
     }
 
 }

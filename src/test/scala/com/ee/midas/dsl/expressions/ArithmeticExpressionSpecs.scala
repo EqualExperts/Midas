@@ -281,7 +281,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual 0
     }
 
-    "return 0 when a value is divided by 0" in {
+    "return NaN when a value is divided by 0" in {
       //Given
       val divide = Divide(Literal(5), Literal(0))
       val document = new BasicBSONObject()
@@ -290,7 +290,7 @@ class ArithmeticExpressionSpecs extends Specification {
       val result = divide.evaluate(document).value
 
       //Then
-      result mustEqual 0
+      result.asInstanceOf[Double].isNaN must beTrue
     }
   }
 }

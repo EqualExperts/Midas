@@ -48,7 +48,12 @@ final case class EmptyFunction(expressions: Expression*) extends Function(expres
 abstract class ArithmeticFunction(expressions: Expression*) extends Function(expressions: _*) {
   def value(literal: Literal): Double = literal match {
     case Literal(null) => 0
-    case Literal(x) => x.toString.toDouble
+    case Literal(x) =>
+      val doubleValue = x.toString.toDouble
+      if(doubleValue.isNaN)
+        0
+      else
+        doubleValue
   }
 }
 

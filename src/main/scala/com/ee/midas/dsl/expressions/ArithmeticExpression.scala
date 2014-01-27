@@ -47,7 +47,7 @@ final case class Divide(expressions: Expression*) extends ArithmeticFunction(exp
         val dividend = value(expressions(0).evaluate(document))
         val divisor = value(expressions(1).evaluate(document))
         divisor match {
-          case 0 => Literal(0)
+          case 0 => Literal(Double.NaN)
           case _ => Literal(dividend / divisor)
         }
     }

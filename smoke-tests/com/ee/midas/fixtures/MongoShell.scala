@@ -24,7 +24,7 @@ case class MongoShell(formName: String, host: String, port: Int) {
     this
   }
 
-  def copied(collection: String, newOldFields : Array[(String, String)]) = {
+  def verifyIfCopied(collection: String, newOldFields : Array[(String, String)]) = {
     val documents = db.getCollection(collection).find()
     while(documents.hasNext) {
       val document = documents.next()
@@ -51,7 +51,7 @@ case class MongoShell(formName: String, host: String, port: Int) {
     this
   }
 
-  def removed(collection: String, fields: Array[String]) = {
+  def verifyIfRemoved(collection: String, fields: Array[String]) = {
     val documents = db.getCollection(collection).find()
     while(documents.hasNext) {
       val document = documents.next()
@@ -67,8 +67,7 @@ case class MongoShell(formName: String, host: String, port: Int) {
   private def readNestedValue(fieldName: String, document: Object): Object = {
     val nestedFields = fieldName.split("\\.")
     var fieldValue = document
-    for(field <- nestedFields)
-    {
+    for(field <- nestedFields) {
       fieldValue = fieldValue.asInstanceOf[BSONObject].get(field)
     }
     fieldValue

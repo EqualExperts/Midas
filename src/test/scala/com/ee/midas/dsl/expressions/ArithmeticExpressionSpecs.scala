@@ -293,4 +293,78 @@ class ArithmeticExpressionSpecs extends Specification {
       result.asInstanceOf[Double].isNaN must beTrue
     }
   }
+
+  "Modulus" should {
+    "return 0 when no arguments are supplied" in {
+      //Given
+      val modulus = Modulus()
+      val document = new BasicBSONObject()
+
+      //When
+      val result = modulus.evaluate(document)
+
+      //Then
+      result mustEqual Literal(0)
+    }
+
+    "return 0 when 1 argument is supplied" in {
+      //Given
+      val modulus = Modulus(Literal(3))
+      val document = new BasicBSONObject()
+
+      //When
+      val result = modulus.evaluate(document)
+
+      //Then
+      result mustEqual Literal(0)
+    }
+
+    "return remainder from division of homogeneous args type" in {
+      //Given
+      val modulus = Modulus(Literal(-4), Literal(2d))
+      val document = new BasicBSONObject()
+
+      //When
+      val result = modulus.evaluate(document)
+
+      //Then
+      result mustEqual Literal(0)
+    }
+
+    "return remainder from division of field value and literal" in {
+      //Given
+      val modulus = Modulus(Field("age"), Literal(2d))
+      val document = new BasicBSONObject().append("age", 5)
+
+      //When
+      val result = modulus.evaluate(document).value
+
+      //Then
+      result mustEqual 1.0
+    }
+
+    "return remainder as 0 when field does not exist" in {
+      //Given
+      val modulus = Modulus(Field("age"), Literal(5))
+      val document = new BasicBSONObject()
+
+      //When
+      val result = modulus.evaluate(document).value
+
+      //Then
+      result mustEqual 0
+    }
+
+    "return 0 when a value is divided by 0" in {
+      //Given
+      val modulus = Modulus(Literal(5), Literal(0))
+      val document = new BasicBSONObject()
+
+      //When
+      val result = modulus.evaluate(document).value
+
+      //Then
+      result mustEqual 0
+    }
+  }
 }

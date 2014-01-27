@@ -55,5 +55,17 @@ class StringExpressionSpecs extends Specification {
       //Then
       result mustEqual "Mr. Test"
     }
+
+    "Treats literals with null values as empty string" in {
+      //Given
+      val concat = Concat(Literal("Mr. "), Field("name"), Field("surname"))
+      val document = new BasicBSONObject().append("name", "Test")
+
+      //When
+      val result = concat.evaluate(document).value
+
+      //Then
+      result mustEqual "Mr. Test"
+    }
   }
 }

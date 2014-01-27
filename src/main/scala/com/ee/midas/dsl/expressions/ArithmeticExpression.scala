@@ -52,3 +52,18 @@ final case class Divide(expressions: Expression*) extends ArithmeticFunction(exp
         }
     }
 }
+
+@FunctionExpression(classOf[Modulus])
+final case class Modulus(expressions: Expression*) extends ArithmeticFunction(expressions: _*) {
+  def evaluate(document: BSONObject) =
+    expressions.length match {
+      case 0 | 1 => Literal(0)
+      case _ =>
+        val dividend = value(expressions(0).evaluate(document))
+        val divisor = value(expressions(1).evaluate(document))
+        divisor match {
+          case 0 => Literal(0)
+          case _ => Literal(dividend % divisor)
+        }
+    }
+}

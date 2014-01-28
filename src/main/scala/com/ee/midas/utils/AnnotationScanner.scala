@@ -79,6 +79,6 @@ class AnnotationScanner(pkg: String, annotationClass: Class[_]) extends Loggable
     log.info(s"Classpath Classes $classes")
     classesInPackage
       .filter(className => hasAnnotation(annotationClass, className))
-      .map(className => className.replaceAllLiterally("/", "."))
+      .map(className => className.replaceAllLiterally(File.separator, "."))
   }
 }

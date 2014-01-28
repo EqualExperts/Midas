@@ -16,16 +16,24 @@ class RenameSpecs extends Specification with Forms {
                wants certain changes in the names of the terminology used. He approaches Dave,
                the Developer.
 
-    Bob: "Hey Dave, Let's call 'Order List' as 'Your Cart' because it is more closer to the domain.
-        Users will feel more comfortable with this terminology. Also, Let's change 'zipcode'
-        in address to 'pincode'."
-    Dave: "Ya true Bob, I also feel the same. We will copy values from 'Order List' field to
-        'Your Cart' in the schema and slowly bring all the orders documents to same consistent state."
-    Dave adding further: "After that , we will remove the Order List field. And will do the same
-                        for 'pincode' and 'zipcode'."
-    Bob: "Thanks, that will be great!"
+    Bob: " Hey Dave, Let's rename Order List as Your Cart because it is more closer to the domain.
+           Also, Lets rename zipcode in address to pincode"
+    Dave: " Ya true Bob, I also feel the same. Here is what we can do for zero downtime
+            deployment. First, we will run Expansion scripts and copy the current field to new field
+            this will keep our application backwards compatible with the existing version."
+    Dave adding further: "This upgradation will be done for one node of a cluster at a time. "
+    Bob: "Oh.. So Expansion will add the new field and keep the old field as well."
+    Dave: "Yes exactly. Once the system is upgraded and stable, we will run the contraction scripts
+            and remove the old field"
+    Bob: "Okay, but what if after adding new field system is not stable . Do we need to rollback DB ?"
+    Dave: "No Bob. DB Rollback can lead to loss in data and can leave database in inconsistent state.
+           In that case it will be better to rollback application instead."
+    Bob: " Oh ... right . That makes sense"
+    Dave: "So after the Expansion - Contraction cycle the system will be migrated completely."
+    Bob: "Thanks, that sounds good."
 
-    1. Insert documents in the database .
+    1. Let's assume we have following documents in the database. We simulate this by inserting
+       documents in the database .
       ${
           val form = MongoShell("Open Mongo Shell", "localhost", 27017)
             .useDatabase("transactions")
@@ -49,14 +57,7 @@ class RenameSpecs extends Specification with Forms {
           form
       }
 
-    3. Start Midas in EXPANSION mode
-      ${
-          midasTerminal = CommandTerminal("--port", "27020", "--deltasDir", System.getProperty("user.dir") + "/deltaSpecs", "--mode", "EXPANSION")
-          val form = midasTerminal.startMidas
-          form
-      }
-
-    4. Create delta file "0002_copy_transactions_orders_ZipcodeToPincodeField.delta" to copy "zipcode"
+    3. Create delta file "0002_copy_transactions_orders_ZipcodeToPincodeField.delta" to copy "zipcode"
        to "pincode" at location "deltaSpecs" in "expansion" folder
       ${
           val baseDeltaDir = "/deltaSpecs"
@@ -66,6 +67,13 @@ class RenameSpecs extends Specification with Forms {
             """
           } )
           val form = expansionDelta2.saveAs("0002_copy_transactions_orders_ZipcodeToPincodeField.delta")
+          form
+        }
+
+    4. Start Midas in EXPANSION mode
+      ${
+          midasTerminal = CommandTerminal("--port", "27020", "--deltasDir", System.getProperty("user.dir") + "/deltaSpecs", "--mode", "EXPANSION")
+          val form = midasTerminal.startMidas
           form
       }
 
@@ -78,7 +86,7 @@ class RenameSpecs extends Specification with Forms {
           form
       }
 
-    6. Update and write back the documents to database
+    6. WebApp update and write back the documents to database
       ${
           val form =  MongoShell("IncyWincyShoppingApp - UpgradedVersion", "localhost", 27017)
             .useDatabase("transactions")

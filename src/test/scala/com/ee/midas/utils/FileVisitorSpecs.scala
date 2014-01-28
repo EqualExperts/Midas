@@ -13,6 +13,9 @@ class FileVisitorSpecs extends Specification {
 
     val classLoader = FileVisitorSpecs.this.getClass.getClassLoader
 
+    val os = System.getProperty("os.name")
+
+    val separator = if (os.contains("Win"))  File.separator + File.separator else File.separator
 
     "return list of files in the directory specified" in {
       //Given
@@ -24,10 +27,10 @@ class FileVisitorSpecs extends Specification {
 
       //Then
       files must not be empty
-      files must containMatch("com"   + File.separator
-                            + "ee"    + File.separator
-                            + "midas" + File.separator
-                            + "utils" + File.separator
+      files must containMatch("com"   + separator
+                            + "ee"    + separator
+                            + "midas" + separator
+                            + "utils" + separator
                             + "FileVisitor")
     }
 

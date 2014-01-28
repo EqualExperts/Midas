@@ -54,7 +54,7 @@ class AnnotationScanner(pkg: String, annotationClass: Class[_]) extends Loggable
       // Invoked when a class level annotation is encountered
       override def visitAnnotation(desc: String, visible: Boolean): AnnotationVisitor = {
         log.debug(s"ClassVisitor.visitAnnotation($desc, $visible)")
-        val annotation = desc.substring(1, desc.length - 1)
+        val annotation = desc.substring(1, desc.length - 1).replaceAllLiterally("/", File.separator)
         if (annotation == slashifiedAnnotation)
           foundAnnotation = true
         super.visitAnnotation(desc, visible)

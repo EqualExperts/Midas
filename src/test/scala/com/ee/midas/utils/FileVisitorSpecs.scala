@@ -5,6 +5,7 @@ import org.specs2.runner.JUnitRunner
 import org.specs2.mutable.Specification
 import java.nio.file.Paths
 import java.util.regex.Pattern
+import java.io.File
 
 @RunWith(classOf[JUnitRunner])
 class FileVisitorSpecs extends Specification {
@@ -23,7 +24,11 @@ class FileVisitorSpecs extends Specification {
 
       //Then
       files must not be empty
-      files must containMatch("com/ee/midas/utils/FileVisitor")
+      files must containMatch("com"   + File.separator
+                            + "ee"    + File.separator
+                            + "midas" + File.separator
+                            + "utils" + File.separator
+                            + "FileVisitor")
     }
 
     "return empty list when the directory does not contain any files" in {

@@ -1,6 +1,8 @@
 package com.ee.midas.dsl.expressions
 
 import org.bson.BSONObject
+import com.ee.midas.dsl.interpreter.representation.InvalidGrammar
+import com.ee.midas.utils.{Loggable, AnnotationScanner}
 
 sealed trait Expression {
   def evaluate(document: BSONObject): Literal
@@ -19,6 +21,26 @@ final case class Field(name: String) extends Expression {
 }
 
 sealed abstract class Function(expressions: Expression*) extends Expression
+
+object Function extends Loggable {
+
+  lazy val functions = new AnnotationScanner("com.ee.midas", classOf[FunctionExpression])
+                          .scan
+                          .map { className =>
+                            val clazz = Class.forName(className).asInstanceOf[Class[Function]]
+                            clazz.getSimpleName.toLowerCase -> clazz
+                          }.toMap.withDefaultValue(classOf[EmptyFunction])
+
+  def apply(fnName: String, args: Expression*): Function = {
+    val fnClazz = functions(fnName.toLowerCase)
+    val constructor = fnClazz.getConstructor(classOf[Seq[Expression]])
+    constructor.newInstance(args)
+  }
+}
+
+final case class EmptyFunction(expressions: Expression*) extends Function(expressions: _*) {
+  def evaluate(document: BSONObject): Literal = Literal(null)
+}
 
 abstract class ArithmeticFunction(expressions: Expression*) extends Function(expressions: _*) {
   def value(literal: Literal): Double = literal match {

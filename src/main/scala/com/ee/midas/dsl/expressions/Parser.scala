@@ -34,14 +34,7 @@ trait Parser extends JavaTokenParsers {
   def obj: Parser[Expression] = "{"~> fn <~"}"
   def fnArgs: Parser[List[Expression]] = "["~> repsep(value, ",") <~"]"
   def fnName: Parser[String] = "$"~> """[a-zA-Z_]\w*""".r
-  //todo: seal this - use annotations
-  def fn: Parser[Expression] = fnName~":"~fnArgs ^^ {
-    case "add"~":"~args      =>  Add(args: _*)
-    case "subtract"~":"~args =>  Subtract(args: _*)
-    case "multiply"~":"~args =>  Multiply(args: _*)
-    case "divide"~":"~args =>  Divide(args: _*)
-    case "concat"~":"~args   =>  Concat(args: _*)
-  }
+  def fn: Parser[Expression] = fnName~":"~fnArgs ^^ { case name~":"~args => Function(name, args: _*) }
 
   def parseFresh(input: String): Expression = parseAll(obj, input) match {
     case Success(value, _) => value

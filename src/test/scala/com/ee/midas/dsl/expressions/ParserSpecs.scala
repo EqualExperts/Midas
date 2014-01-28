@@ -136,6 +136,15 @@ class ParserSpecs extends Specification {
       Result(parseAll(value, input)) must throwA[IllegalArgumentException]
     }
 
+    "fail to parse field without a name" in new ExpressionParser {
+      //Given
+      val input = "$"
+
+      //When-Then
+      Result(parseAll(value, input)) must throwA[IllegalArgumentException]
+    }
+
+
     "return Literal for string" in new ExpressionParser {
       //Given
       val input = """"age""""
@@ -167,6 +176,15 @@ class ParserSpecs extends Specification {
       //When-Then
       Result(parseAll(fnName, input)) must throwA[IllegalArgumentException]
     }
+
+    "fail to parse function without a name" in new ExpressionParser {
+      //Given
+      val input = "$"
+
+      //When-Then
+      Result(parseAll(fnName, input)) must throwA[IllegalArgumentException]
+    }
+
 
     "return empty args" in new ExpressionParser {
       //Given

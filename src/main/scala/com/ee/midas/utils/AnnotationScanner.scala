@@ -2,7 +2,7 @@ package com.ee.midas.utils
 
 import scala.tools.asm._
 import java.util.jar.{JarEntry, JarInputStream}
-import java.io.{IOException, FileInputStream}
+import java.io.{File, IOException, FileInputStream}
 import java.nio.file._
 import java.nio.file.attribute.BasicFileAttributes
 import com.ee.midas.dsl.expressions.FunctionExpression
@@ -11,7 +11,6 @@ import java.net.URI
 import java.util.Collections
 
 class AnnotationScanner(pkg: String, annotationClass: Class[_]) extends Loggable {
-
   private val slashifiedPkg = slashify(pkg)
 
   private val slashifiedAnnotation = slashify(annotationClass.getName)
@@ -36,7 +35,7 @@ class AnnotationScanner(pkg: String, annotationClass: Class[_]) extends Loggable
 
   private val fileVisitor = new FileVisitor(startDir, Pattern.compile(".*\\.class$"))
 
-  private def slashify(string: String) = string.replaceAllLiterally(".", "/")
+  private def slashify(string: String) = string.replaceAllLiterally(".", File.separator)
 
   private def classesInPackage: Set[String] = {
     log.info(s"Finding package $pkg in classpath...")

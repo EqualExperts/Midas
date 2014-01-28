@@ -45,17 +45,23 @@ class AnnotationScanner(pkg: String, annotationClass: Class[_]) extends Loggable
 
   private def slashify(string: String) = string.replaceAllLiterally(".", "/")
 
+  private def dotify(string: String) = string.replaceAllLiterally("/", ".").replaceAllLiterally("\\", ".")
+
   private def classesInPackage: Set[String] = {
     log.info(s"Finding package $pkg in classpath...")
     fileVisitor.visit map { file =>
-      val index = file.indexOf(slashifiedPkg)
+      val index = if(pkgURIString.startsWith("jar"))
+                    file.indexOf(slashifiedPkg)
+                  else
+                    file.indexOf(fsSlashifiedPkg)
+
       val className = file.substring(index)
       className.replaceAllLiterally(".class", "")
     }
   }
 
   private def hasAnnotation(annotationClass: Class[_], className: String): Boolean = {
-    log.info(s"Does: Whether class $className have annotation $annotationClass?")
+    log.info(s"Does class $className have annotation $annotationClass?")
     val slashifiedClassName = fsSlashify(className)
     var foundAnnotation = false
     val cv = new ClassVisitor(Opcodes.ASM4) {
@@ -78,15 +84,13 @@ class AnnotationScanner(pkg: String, annotationClass: Class[_]) extends Loggable
     } finally {
       in.close()
     }
-    log.info(s"Answer: class $className has annotation $annotationClass = $foundAnnotation")
+    log.info(s"class $className has annotation $annotationClass = $foundAnnotation")
     foundAnnotation
   }
 
   def scan = {
     val classes = classesInPackage
     log.info(s"Classpath Classes $classes")
-    classesInPackage
-      .filter(className => hasAnnotation(annotationClass, className))
-      .map(className => className.replaceAllLiterally(File.separator, "."))
+    classesInPackage.filter(className => hasAnnotation(annotationClass, className)).map(dotify)
   }
 }

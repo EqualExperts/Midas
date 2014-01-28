@@ -11,11 +11,17 @@ import java.net.URI
 import java.util.Collections
 
 class AnnotationScanner(pkg: String, annotationClass: Class[_]) extends Loggable {
+  private val fsSlashifiedPkg = fsSlashify(pkg)
+
   private val slashifiedPkg = slashify(pkg)
 
   private val slashifiedAnnotation = slashify(annotationClass.getName)
 
   private val classLoader = AnnotationScanner.this.getClass.getClassLoader
+
+  log.info(s"FS slashified package = $fsSlashifiedPkg")
+  log.info(s"slashified package = $slashifiedPkg, slashified annotation = $slashifiedAnnotation")
+  log.info(s"classloader = $classLoader")
 
   private val pkgURI = classLoader.getResource(slashifiedPkg).toURI
 
@@ -35,7 +41,9 @@ class AnnotationScanner(pkg: String, annotationClass: Class[_]) extends Loggable
 
   private val fileVisitor = new FileVisitor(startDir, Pattern.compile(".*\\.class$"))
 
-  private def slashify(string: String) = string.replaceAllLiterally(".", File.separator)
+  private def fsSlashify(string: String) = string.replaceAllLiterally(".", File.separator)
+
+  private def slashify(string: String) = string.replaceAllLiterally(".", "/")
 
   private def classesInPackage: Set[String] = {
     log.info(s"Finding package $pkg in classpath...")
@@ -48,13 +56,13 @@ class AnnotationScanner(pkg: String, annotationClass: Class[_]) extends Loggable
 
   private def hasAnnotation(annotationClass: Class[_], className: String): Boolean = {
     log.info(s"Does: Whether class $className have annotation $annotationClass?")
-    val slashifiedClassName = slashify(className)
+    val slashifiedClassName = fsSlashify(className)
     var foundAnnotation = false
     val cv = new ClassVisitor(Opcodes.ASM4) {
       // Invoked when a class level annotation is encountered
       override def visitAnnotation(desc: String, visible: Boolean): AnnotationVisitor = {
         log.debug(s"ClassVisitor.visitAnnotation($desc, $visible)")
-        val annotation = desc.substring(1, desc.length - 1).replaceAllLiterally("/", File.separator)
+        val annotation = desc.substring(1, desc.length - 1)
         if (annotation == slashifiedAnnotation)
           foundAnnotation = true
         super.visitAnnotation(desc, visible)

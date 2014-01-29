@@ -121,6 +121,14 @@ class ParserSpecs extends Specification {
     }
 
     "Not Parse Field" in {
+      "without a name" in new ExpressionParser {
+        //Given
+        val input = "$"
+
+        //When-Then
+        Result(parseAll(value, input)) must throwA[IllegalArgumentException]
+      }
+
       "that has trailing dot" in new ExpressionParser {
         //Given
         val input = """"$address.""""
@@ -132,14 +140,6 @@ class ParserSpecs extends Specification {
       "that has extra dot between levels" in new ExpressionParser {
         //Given
         val input = """"$address..line""""
-
-        //When-Then
-        Result(parseAll(value, input)) must throwA[IllegalArgumentException]
-      }
-
-      "fail to parse field without a name" in new ExpressionParser {
-        //Given
-        val input = "$"
 
         //When-Then
         Result(parseAll(value, input)) must throwA[IllegalArgumentException]
@@ -175,14 +175,6 @@ class ParserSpecs extends Specification {
 
         //Then
         funcName mustEqual functionName
-      }
-
-      "fail to parse function without a name" in new ExpressionParser {
-        //Given
-        val input = "$"
-
-        //When-Then
-        Result(parseAll(fnName, input)) must throwA[IllegalArgumentException]
       }
 
       "with empty args" in new ExpressionParser {
@@ -252,8 +244,17 @@ class ParserSpecs extends Specification {
       }
     }
 
-    "Not Parse Function with" in {
-      "function name containing reserved prefix $" in new ExpressionParser {
+    "Not Parse Function" in {
+
+      "without a name" in new ExpressionParser {
+        //Given
+        val input = "$"
+
+        //When-Then
+        Result(parseAll(fnName, input)) must throwA[IllegalArgumentException]
+      }
+
+      "with name containing reserved prefix $" in new ExpressionParser {
         //Given
         val funcName = "$function"
         val input = "$" + funcName
@@ -262,7 +263,7 @@ class ParserSpecs extends Specification {
         Result(parseAll(fnName, input)) must throwA[IllegalArgumentException]
       }
 
-      "incomplete args" in new ExpressionParser {
+      "with incomplete args" in new ExpressionParser {
         //Given
         val input = "[1"
 
@@ -270,7 +271,7 @@ class ParserSpecs extends Specification {
         Result(parseAll(fnArgs, input)) must throwA[IllegalArgumentException]
       }
 
-      "ill-formed args" in new ExpressionParser {
+      "with ill-formed args" in new ExpressionParser {
         //Given
         val input = "[1]]"
 
@@ -278,7 +279,7 @@ class ParserSpecs extends Specification {
         Result(parseAll(fnArgs, input)) must throwA[IllegalArgumentException]
       }
 
-      "more than 1 function is defined at top-level in obj" in new ExpressionParser {
+      "with more than 1 function defined at top-level in obj" in new ExpressionParser {
         //Given
         val input = """{ $add: [1, { $multiply: [2, "$age"]}], $multiply: [] }"""
 

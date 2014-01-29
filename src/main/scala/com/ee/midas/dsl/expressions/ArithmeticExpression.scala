@@ -53,7 +53,7 @@ final case class Divide(expressions: Expression*) extends ArithmeticFunction(exp
     }
 }
 
-@FunctionExpression(classOf[Mod])
+@FunctionExpression
 final case class Mod(expressions: Expression*) extends ArithmeticFunction(expressions: _*) {
   def evaluate(document: BSONObject) =
     expressions.length match {

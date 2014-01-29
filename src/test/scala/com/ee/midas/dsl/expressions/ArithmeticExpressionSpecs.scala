@@ -294,14 +294,14 @@ class ArithmeticExpressionSpecs extends Specification {
     }
   }
 
-  "Modulus" should {
+  "Mod" should {
     "return 0 when no arguments are supplied" in {
       //Given
-      val modulus = Modulus()
+      val mod = Mod()
       val document = new BasicBSONObject()
 
       //When
-      val result = modulus.evaluate(document)
+      val result = mod.evaluate(document)
 
       //Then
       result mustEqual Literal(0)
@@ -309,11 +309,11 @@ class ArithmeticExpressionSpecs extends Specification {
 
     "return 0 when 1 argument is supplied" in {
       //Given
-      val modulus = Modulus(Literal(3))
+      val mod = Mod(Literal(3))
       val document = new BasicBSONObject()
 
       //When
-      val result = modulus.evaluate(document)
+      val result = mod.evaluate(document)
 
       //Then
       result mustEqual Literal(0)
@@ -321,11 +321,11 @@ class ArithmeticExpressionSpecs extends Specification {
 
     "return remainder from division of homogeneous args type" in {
       //Given
-      val modulus = Modulus(Literal(-4), Literal(2d))
+      val mod = Mod(Literal(-4), Literal(2d))
       val document = new BasicBSONObject()
 
       //When
-      val result = modulus.evaluate(document)
+      val result = mod.evaluate(document)
 
       //Then
       result mustEqual Literal(0)
@@ -333,11 +333,11 @@ class ArithmeticExpressionSpecs extends Specification {
 
     "return remainder from division of field value and literal" in {
       //Given
-      val modulus = Modulus(Field("age"), Literal(2d))
+      val mod = Mod(Field("age"), Literal(2d))
       val document = new BasicBSONObject().append("age", 5)
 
       //When
-      val result = modulus.evaluate(document).value
+      val result = mod.evaluate(document).value
 
       //Then
       result mustEqual 1.0
@@ -345,11 +345,11 @@ class ArithmeticExpressionSpecs extends Specification {
 
     "return remainder as 0 when field does not exist" in {
       //Given
-      val modulus = Modulus(Field("age"), Literal(5))
+      val mod = Mod(Field("age"), Literal(5))
       val document = new BasicBSONObject()
 
       //When
-      val result = modulus.evaluate(document).value
+      val result = mod.evaluate(document).value
 
       //Then
       result mustEqual 0
@@ -357,11 +357,11 @@ class ArithmeticExpressionSpecs extends Specification {
 
     "return 0 when a value is divided by 0" in {
       //Given
-      val modulus = Modulus(Literal(5), Literal(0))
+      val mod = Mod(Literal(5), Literal(0))
       val document = new BasicBSONObject()
 
       //When
-      val result = modulus.evaluate(document).value
+      val result = mod.evaluate(document).value
 
       //Then
       result mustEqual 0

@@ -450,6 +450,52 @@ class ParserSpecs extends Specification {
           divide mustEqual Divide(Literal(1), Divide(Literal(2), Field("age")))
         }
       }
+
+      "Mod for" in {
+        "simple function" in new ExpressionParser {
+          //Given
+          val input = """$mod: [1, "$age"]"""
+
+          //When
+          val modulus = Result(parseAll(fn, input))
+
+          //Then
+          modulus mustEqual Mod(Literal(1), Field("age"))
+        }
+
+        "empty function" in new ExpressionParser {
+          //Given
+          val input = """$mod: []"""
+
+          //When
+          val modulus = Result(parseAll(fn, input))
+
+          //Then
+          modulus mustEqual Mod()
+        }
+
+        "function with 1 argument" in new ExpressionParser {
+          //Given
+          val input = """$mod: [1.0]"""
+
+          //When
+          val modulus = Result(parseAll(fn, input))
+
+          //Then
+          modulus mustEqual Mod(Literal(1d))
+        }
+
+        "recursive function" in new ExpressionParser {
+          //Given
+          val input = """$mod: [1, { $mod: [2, "$age"]}]"""
+
+          //When
+          val modulus = Result(parseAll(fn, input))
+
+          //Then
+          modulus mustEqual Mod(Literal(1), Mod(Literal(2), Field("age")))
+        }
+      }
     }
 
     "Parse String Function" in {
@@ -486,49 +532,5 @@ class ParserSpecs extends Specification {
         concat mustEqual Concat(Literal(1), Concat(Literal(2), Field("age")))
       }
     }
-    "return Modulus function" in new ExpressionParser {
-      //Given
-      val input = """$mod: [1, "$age"]"""
-
-      //When
-      val modulus = Result(parseAll(fn, input))
-
-      //Then
-      modulus mustEqual Modulus(Literal(1), Field("age"))
-    }
-
-    "return empty Modulus function" in new ExpressionParser {
-      //Given
-      val input = """$mod: []"""
-
-      //When
-      val modulus = Result(parseAll(fn, input))
-
-      //Then
-      modulus mustEqual Modulus()
-    }
-
-    "return Modulus function with 1 argument" in new ExpressionParser {
-      //Given
-      val input = """$mod: [1.0]"""
-
-      //When
-      val modulus = Result(parseAll(fn, input))
-
-      //Then
-      modulus mustEqual Modulus(Literal(1d))
-    }
-
-    "return recursive Modulus function" in new ExpressionParser {
-      //Given
-      val input = """$mod: [1, { $mod: [2, "$age"]}]"""
-
-      //When
-      val modulus = Result(parseAll(fn, input))
-
-      //Then
-      modulus mustEqual Modulus(Literal(1), Modulus(Literal(2), Field("age")))
-    }
-
   }
 }

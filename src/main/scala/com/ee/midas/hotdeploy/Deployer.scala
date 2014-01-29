@@ -7,9 +7,9 @@ trait Deployer extends Loggable {
   def deploy[T](parent: ClassLoader, loadFrom: Array[URL], clazzName: String): T = {
     try {
       val urlClassLoader = new ChildFirstClassLoader(loadFrom, parent)
-      log.debug(s"Trying to Load and Instantiate Class = ${clazzName}...")
+      logDebug(s"Trying to Load and Instantiate Class = ${clazzName}...")
       val newInstance = urlClassLoader.loadClass(clazzName).newInstance().asInstanceOf[T]
-      log.debug(s"Instantiated Class = ${clazzName}")
+      logDebug(s"Instantiated Class = ${clazzName}")
       newInstance
     } catch {
       case e: InstantiationException => throw new RuntimeException(e.getCause)

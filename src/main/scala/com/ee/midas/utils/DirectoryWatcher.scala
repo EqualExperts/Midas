@@ -14,7 +14,7 @@ class DirectoryWatcher(dirURL: String, events: Seq[WatchEvent.Kind[_]], waitBefo
   private val watcher = fileSystem.newWatchService()
   private val os = System.getProperty("os.name")
 
-  log.info(s"Dir to Watch = $dirURL, OS = ${os}")
+  logInfo(s"Dir to Watch = $dirURL, OS = ${os}")
   //Compensate for the bug that causes fileSystem.getPath to crash in Windows for dirURL
   private val path = if (os.contains("Win"))
                         fileSystem.getPath(dirURL.substring(1))
@@ -22,12 +22,12 @@ class DirectoryWatcher(dirURL: String, events: Seq[WatchEvent.Kind[_]], waitBefo
                         fileSystem.getPath(dirURL)
 
   path.register(watcher, events.toArray)
-  log.info(s"Will Watch dir ${dirURL} for ${events} of Files...")
+  logInfo(s"Will Watch dir ${dirURL} for ${events} of Files...")
   
   var isRunning = true
   
   def stopWatching = {
-    log.info(s"Stopping Watch on ${dirURL}")
+    logInfo(s"Stopping Watch on ${dirURL}")
     watcher.close()
     isRunning = false
   }
@@ -44,22 +44,22 @@ class DirectoryWatcher(dirURL: String, events: Seq[WatchEvent.Kind[_]], waitBefo
     var valid = true
     while(isRunning && valid) {
       try {
-        log.info(s"Watching ${dirURL}...")
+        logInfo(s"Watching ${dirURL}...")
         val watchKey = watcher.take()
         forMoreEvents(waitBeforeProcessing)
         val events = watchKey.pollEvents().asScala
         events.foreach { e =>
-          log.info(s"Detected ${e.kind()}, Context = ${e.context()}}")
+          logInfo(s"Detected ${e.kind()}, Context = ${e.context()}}")
         }
         onEvents(events)
         valid = watchKey.reset()
       } catch {
         case e: Exception =>
-          log.error(s"Closing it due to ${e.getMessage}")
+          logError(s"Closing it due to ${e.getMessage}")
           stopWatching
       }
     }
     stopWatching
-    log.info(s"Completed Watch on ${dirURL}")
+    logInfo(s"Completed Watch on ${dirURL}")
   }
 }

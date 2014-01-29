@@ -8,7 +8,7 @@ import static com.ee.midas.transform.TransformType.CONTRACTION
 import static com.ee.midas.transform.TransformType.EXPANSION
 
 @Slf4j
-public class ScalaGenerator implements Generator {
+public class ScalaGenerator implements Generator<String> {
 
     private static final String TAB = '\t'
 

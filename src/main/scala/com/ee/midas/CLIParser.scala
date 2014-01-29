@@ -36,7 +36,7 @@ object CLIParser extends Loggable {
         defaultMidasConfig.copy(mongoPort = userSuppliedMongoPort)
       } text("OPTIONAL, the mongo port midas will connect to, default is 27017")
       opt[TransformType]("mode") action { (userSuppliedMode, defaultMidasConfig) =>
-        log.info(s"User Supplied Mode = ${userSuppliedMode}")
+        logInfo(s"User Supplied Mode = ${userSuppliedMode}")
         defaultMidasConfig.copy(mode = userSuppliedMode)
       } text("OPTIONAL, the operation mode (EXPANSION/CONTRACTION) for midas, default is EXPANSION")
 
@@ -54,7 +54,7 @@ object CLIParser extends Loggable {
 
     val loader = this.getClass.getClassLoader
     val baseDeltasDir = loader.getResource("deltas").toURI
-    log.info(s"Default Base DeltasDir = $baseDeltasDir")
+    logInfo(s"Default Base DeltasDir = $baseDeltasDir")
     val defaultMidasConfig = MidasConfig(baseDeltasDir = baseDeltasDir)
     parser.parse(args, defaultMidasConfig)
   }

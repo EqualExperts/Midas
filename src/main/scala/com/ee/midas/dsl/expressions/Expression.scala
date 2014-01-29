@@ -26,9 +26,9 @@ object Function extends Loggable {
   lazy val functions = new AnnotationScanner("com.ee.midas", classOf[FunctionExpression])
                           .scan
                           .map { className =>
-                            log.debug(s"Loading Class $className...")
+                            logDebug(s"Loading Class $className...")
                             val clazz = Class.forName(className).asInstanceOf[Class[Function]]
-                            log.debug(s"Loaded Class $className!")
+                            logDebug(s"Loaded Class $className!")
                             clazz.getSimpleName.toLowerCase -> clazz
                           }
                           .toMap
@@ -37,7 +37,7 @@ object Function extends Loggable {
   def apply(fnName: String, args: Expression*): Function = {
     val fnClazz = functions(fnName.toLowerCase)
     val constructor = fnClazz.getConstructor(classOf[Seq[Expression]])
-    log.debug(s"Instantiating Class $fnClazz...")
+    logDebug(s"Instantiating Class $fnClazz...")
     constructor.newInstance(args)
   }
 }

@@ -14,7 +14,7 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
     document.get(fieldName).isInstanceOf[BSONObject]
 
   final def + [T] (field: String, value: T, overrideOldValue: Boolean = true): BSONObject = {
-    log.debug("Adding/Updating Field %s with Value %s on Document %s".format(field, value.toString, document))
+    logDebug("Adding/Updating Field %s with Value %s on Document %s".format(field, value.toString, document))
     apply(field) match {
       case Some(fieldValue) =>
         if(overrideOldValue) {
@@ -25,12 +25,12 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
       case None => update(field, value)
     }
 
-    log.debug("After Adding/Updating Field %s on Document %s\n".format(field, document))
+    logDebug("After Adding/Updating Field %s on Document %s\n".format(field, document))
     document
   }
 
   final def - (name: String): BSONObject = {
-    log.debug("Removing Field %s from Document %s".format(name, document))
+    logDebug("Removing Field %s from Document %s".format(name, document))
     name.split("\\.") toList match {
       case topLevelField :: Nil => if(document.containsField(topLevelField)) document.removeField(topLevelField)
 
@@ -39,36 +39,36 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
                             nestedDocument - rest.mkString(".")
       }
     }
-    log.debug("After Removing Field %s from Document %s\n".format(name, document))
+    logDebug("After Removing Field %s from Document %s\n".format(name, document))
     document
   }
 
   final def ++ (fields: BSONObject, overrideOldValues: Boolean = true) : BSONObject = {
-    log.debug("Adding Fields %s to Document %s".format(fields, document))
+    logDebug("Adding Fields %s to Document %s".format(fields, document))
     fields.keySet().asScala.foreach { field =>
       val defaultFieldValue = fields.get(field)
       DocumentOperations(document) + (field, defaultFieldValue, overrideOldValues)
     }
-    log.debug("After Adding Fields to Document %s\n".format(document))
+    logDebug("After Adding Fields to Document %s\n".format(document))
     document
   }
   
   final def -- (fields: BSONObject) : BSONObject = {
-    log.debug("Removing Fields %s from Document %s".format(fields, document))
+    logDebug("Removing Fields %s from Document %s".format(fields, document))
     fields.toMap.asScala.foreach { case(index, field) =>
       val fieldName = field.asInstanceOf[String]
       DocumentOperations(document) - fieldName
     }
-    log.debug("After Removing Fields from Document %s\n".format(document))
+    logDebug("After Removing Fields from Document %s\n".format(document))
     document
   }
 
   //split
   final def <~> (splitField: String, regex: Pattern, targetJsonDocument: String, overrideOldValue: Boolean = true) : BSONObject = {
-    log.debug("Splitting Field %s in Document %s using Pattern %s".format(splitField, document, regex))
+    logDebug("Splitting Field %s in Document %s using Pattern %s".format(splitField, document, regex))
     apply(splitField) match {
       case Some(fieldValue) =>
-        log.debug("and the value is: " + fieldValue)
+        logDebug("and the value is: " + fieldValue)
         val matcher: Matcher = regex.matcher(fieldValue.asInstanceOf[String])
         var filledTargetJson = targetJsonDocument
         if(matcher.find) {
@@ -77,31 +77,31 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
             val groupValue = matcher.group(token)
             val replace = "$" + token
             filledTargetJson = filledTargetJson.replaceAllLiterally(replace, groupValue)
-            log.debug(s"Replaced target document: $filledTargetJson" )
+            logDebug(s"Replaced target document: $filledTargetJson" )
           }
           val splitDocument = JSON.parse(filledTargetJson).asInstanceOf[BSONObject]
           DocumentOperations(document) ++ (splitDocument, overrideOldValue)
-          log.debug("After Splitting Fields in Document %s\n".format(document))
+          logDebug("After Splitting Fields in Document %s\n".format(document))
         } else {
-          log.debug("Pattern %s Not applicable to Split Field (%s) having Data %s".format(regex, splitField, fieldValue))
+          logDebug("Pattern %s Not applicable to Split Field (%s) having Data %s".format(regex, splitField, fieldValue))
         }
         document
       case None =>
-        log.debug("Did not Split Field %s as Document does not have one".format(splitField))
+        logDebug("Did not Split Field %s as Document does not have one".format(splitField))
         document
     }
   }
 
   //merge
   final def >~< (mergeField: String, usingSeparator: String, fields: List[String]) : BSONObject = {
-    log.debug("Merging Fields %s in Document %s".format(fields, document))
+    logDebug("Merging Fields %s in Document %s".format(fields, document))
     val fieldValues = (fields map apply) collect {
       case fieldValue: Option[Any] if(!fieldValue.isEmpty) => fieldValue.get
     }
 
     val mergedValue = fieldValues mkString usingSeparator
     DocumentOperations(document) + (mergeField, mergedValue)
-    log.debug("After Merging Fields in Document %s\n".format(document))
+    logDebug("After Merging Fields in Document %s\n".format(document))
     document
   }
 

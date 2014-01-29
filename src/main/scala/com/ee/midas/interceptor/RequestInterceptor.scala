@@ -31,7 +31,7 @@ class RequestInterceptor (tracker: MessageTracker) extends MidasInterceptable wi
 
   def readHeader(src: InputStream): BaseMongoHeader = {
     val header = BaseMongoHeader(src)
-    log.info(header.toString)
+    logInfo(header.toString)
     header
   }
 }

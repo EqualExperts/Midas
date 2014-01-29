@@ -11,7 +11,7 @@ class SimplexPipe(val name: String, val src: InputStream,
   private var isRunning = false
 
   def start: Unit = {
-    log.info("Starting " +  toString)
+    logInfo("Starting " +  toString)
   }
 
   override def run: Unit = {
@@ -29,15 +29,15 @@ class SimplexPipe(val name: String, val src: InputStream,
 
   def forceStop: Unit = {
     val threadName = Thread.currentThread().getName()
-    log.info("[" + threadName + "] " + toString + ": Closing Streams...")
+    logInfo("[" + threadName + "] " + toString + ": Closing Streams...")
     src.close()
     tgt.close()
-    log.info("[" + threadName + "] " + toString + ": Closing Streams Done")
+    logInfo("[" + threadName + "] " + toString + ": Closing Streams Done")
   }
 
   def inspect: Unit = {
-    log.info("Pipe Name = " + name)
-    log.info("isActive? = " + isActive)
+    logInfo("Pipe Name = " + name)
+    logInfo("isActive? = " + isActive)
   }
 
   override def toString  = getClass.getSimpleName + ":" + name

@@ -14,10 +14,10 @@ trait Interceptable extends Loggable {
     val name = getClass.getName
     val data = new Array[Byte](1024 * 16)
     val bytesRead = src.read(data)
-    log.info(name + " Bytes Read = " + bytesRead)
+    logInfo(name + " Bytes Read = " + bytesRead)
     if (bytesRead > 0) {
       tgt.write(data, 0, bytesRead)
-      log.info(name + " Bytes Written = " + bytesRead)
+      logInfo(name + " Bytes Written = " + bytesRead)
       tgt.flush
     }
     bytesRead

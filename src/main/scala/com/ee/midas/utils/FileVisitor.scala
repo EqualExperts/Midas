@@ -10,7 +10,7 @@ class FileVisitor (startDir: Path, collectFilesRegex: Pattern) extends Loggable 
 
   private val visitor = new SimpleFileVisitor[Path] {
     override def visitFile(path: Path, mainAtts: BasicFileAttributes) = {
-      log.debug(s"Path = $path")
+      logDebug(s"Path = $path")
       val file = path.toAbsolutePath.toString
       val matcher = collectFilesRegex.matcher(file)
       if(matcher.matches) {
@@ -20,8 +20,8 @@ class FileVisitor (startDir: Path, collectFilesRegex: Pattern) extends Loggable 
     }
 
     override def visitFileFailed(path: Path, exc: IOException) = {
-      log.info(s"Continuing Scanning though visiting File has Failed for $path, Message ${exc.getMessage}")
-      log.info(s"${exc.printStackTrace}")
+      logInfo(s"Continuing Scanning though visiting File has Failed for $path, Message ${exc.getMessage}")
+      logInfo(s"${exc.printStackTrace}")
       FileVisitResult.CONTINUE
     }
   }

@@ -10,26 +10,26 @@ trait PipesMonitorComponent extends Startable with Stoppable with Loggable {
   val pipesMonitor = new PipesMonitor
 
   abstract override def start: Unit = {
-    log.info("Starting Pipe..." + pipe.name)
+    logInfo("Starting Pipe..." + pipe.name)
     //Start Target First
     super.start
-    log.info("Starting PipesMonitor..." + pipesMonitor.toString)
+    logInfo("Starting PipesMonitor..." + pipesMonitor.toString)
     pipesMonitor.start
   }
 
   abstract override def stop: Unit = {
-    log.info("Stopping Pipe..." + pipe.name)
+    logInfo("Stopping Pipe..." + pipe.name)
     //Stop Target First
     super.stop
-    log.info("Stopping PipesMonitor..." + pipesMonitor.toString)
+    logInfo("Stopping PipesMonitor..." + pipesMonitor.toString)
     pipesMonitor.close
   }
 
   abstract override def forceStop: Unit = {
-    log.info("Forcing Stop on Pipe..." + pipe.name)
+    logInfo("Forcing Stop on Pipe..." + pipe.name)
     //ForceStop Target First
     super.forceStop
-    log.info("Stopping PipesMonitor..." + pipesMonitor.toString)
+    logInfo("Stopping PipesMonitor..." + pipesMonitor.toString)
     pipesMonitor.close
   }
 
@@ -44,14 +44,14 @@ trait PipesMonitorComponent extends Startable with Stoppable with Loggable {
           pipe.inspect
           if (!pipe.isActive) {
             val threadName = Thread.currentThread().getName()
-            log.error("[" + threadName + "] Detected Broken Pipe...Initiating Pipe Closure")
+            logError("[" + threadName + "] Detected Broken Pipe...Initiating Pipe Closure")
             pipe.forceStop
             keepRunning = false
-            log.error("[" + threadName + "] Shutting down Monitor")
+            logError("[" + threadName + "] Shutting down Monitor")
           }
           Thread.sleep(checkEveryMillis)
         } catch {
-          case e: InterruptedException => log.error("Status Thread Interrupted")
+          case e: InterruptedException => logError("Status Thread Interrupted")
             keepRunning = false
         }
       }

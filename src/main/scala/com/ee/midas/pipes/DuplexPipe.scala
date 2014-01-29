@@ -20,22 +20,22 @@ extends Pipe with Loggable {
   private def threadName(name: String) = duplexGroup.getName + "-" + name + "-Thread"
 
   override def start: Unit = {
-    log.info("Starting " +  toString)
+    logInfo("Starting " +  toString)
     requestThread.start
     responseThread.start
   }
 
   def inspect : Unit = {
 
-    log.info("Pipe Name = " + duplexGroup.getName())
-    log.info("Active Threads = " + duplexGroup.activeCount())
+    logInfo("Pipe Name = " + duplexGroup.getName())
+    logInfo("Active Threads = " + duplexGroup.activeCount())
     if(requestThread.isAlive) {
-      log.info("Request Thread Id = " + requestThread.getId)
-      log.info("Request Thread Name = " + requestThread.getName)
+      logInfo("Request Thread Id = " + requestThread.getId)
+      logInfo("Request Thread Name = " + requestThread.getName)
     }
     if(responseThread.isAlive) {
-      log.info("Response Thread Name = " + responseThread.getName)
-      log.info("Response Thread Id = " + responseThread.getId)
+      logInfo("Response Thread Name = " + responseThread.getName)
+      logInfo("Response Thread Id = " + responseThread.getId)
     }
   }
   def isActive = request.isActive && response.isActive
@@ -56,11 +56,11 @@ extends Pipe with Loggable {
       val threadName = Thread.currentThread().getName
       t match {
         case e: IOException =>
-          log.error(s"[ $threadName UncaughtExceptionHandler Received IOException in ${e.getMessage}", e)
+          logError(s"[ $threadName UncaughtExceptionHandler Received IOException in ${e.getMessage}", e)
         case _ =>
-          log.error(s"[ $threadName ] UncaughtExceptionHandler Received Exception:${t.getClass.getName} in ${t.getMessage}", t)
+          logError(s"[ $threadName ] UncaughtExceptionHandler Received Exception:${t.getClass.getName} in ${t.getMessage}", t)
       }
-      log.error(s"[ $threadName ] Closing pipe: ${pipe.name}")
+      logError(s"[ $threadName ] Closing pipe: ${pipe.name}")
       pipe.forceStop
     }
   }
@@ -73,7 +73,7 @@ object DuplexPipe {
 
   def apply(request: SimplexPipe, response: SimplexPipe) =
     new DuplexPipe(nextId, request, response) with PipesMonitorComponent {
-      override val log = logFor(classOf[DuplexPipe])
+      logFor(classOf[DuplexPipe])
       val checkEveryMillis: Long = 3000
     }
 }

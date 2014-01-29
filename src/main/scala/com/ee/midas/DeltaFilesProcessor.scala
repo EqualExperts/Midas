@@ -14,7 +14,7 @@ class DeltaFilesProcessor(val translator: Translator, val deployableHolder: Depl
 
   private def fillTemplate(scalaTemplateFilename: String, translations: String): String = {
     val scalaTemplateContents = scala.io.Source.fromFile(scalaTemplateFilename).mkString
-    log.info(s"Scala Template to fill = ${scalaTemplateContents}")
+    logInfo(s"Scala Template to fill = ${scalaTemplateContents}")
     val scalaFileContents = scalaTemplateContents.replaceAllLiterally("###EXPANSIONS-CONTRACTIONS###", translations)
     scalaFileContents
   }
@@ -26,16 +26,16 @@ class DeltaFilesProcessor(val translator: Translator, val deployableHolder: Depl
 
   private def translate(transformType: TransformType, deltasDir: URL, scalaTemplateFilename: String, writer: Writer): Unit = {
     val deltaFiles = new File(deltasDir.toURI).listFiles()
-    log.debug(s"Delta Files $deltaFiles")
+    logDebug(s"Delta Files $deltaFiles")
     val sortedDeltaFiles = deltaFiles.filter(f => f.getName.endsWith(".delta")).sortBy(f => f.getName).toList
-    log.info(s"Filtered and Sorted Delta Files $sortedDeltaFiles")
+    logInfo(s"Filtered and Sorted Delta Files $sortedDeltaFiles")
     val scalaSnippets = translator.translate(transformType, sortedDeltaFiles.asJava)
-    log.info(s"Delta Files as Scala Snippets $scalaSnippets")
+    logInfo(s"Delta Files as Scala Snippets $scalaSnippets")
     val scalaCode = fillTemplate(scalaTemplateFilename, scalaSnippets)
-    log.info(s"Filled Scala Template $scalaCode")
-    log.info(s"Writing Scala Code using $writer")
+    logInfo(s"Filled Scala Template $scalaCode")
+    logInfo(s"Writing Scala Code using $writer")
     writeTo(writer, scalaCode)
-    log.info(s"Written Scala Code.")
+    logInfo(s"Written Scala Code.")
   }
 
   //1. Translate (Delta -> Scala)
@@ -43,7 +43,7 @@ class DeltaFilesProcessor(val translator: Translator, val deployableHolder: Depl
   //3. Deploy    (ByteCode -> JVM)
   def process(transformType: TransformType, deltasDir: URL, srcScalaTemplate: URL, srcScalaWriter: Writer, srcScalaFile: File,
               binDir: URL, clazzName: String, classpathDir: URL): Unit = {
-    log.debug(
+    logDebug(
     s"""
      transformType = $transformType
      deltasDir = $deltasDir
@@ -51,19 +51,19 @@ class DeltaFilesProcessor(val translator: Translator, val deployableHolder: Depl
      binDir = $binDir
      Template Scala File = $srcScalaTemplate
     """.stripMargin)
-    log.debug(s"Translating Delta Files...in ${deltasDir}")
+    logDebug(s"Translating Delta Files...in ${deltasDir}")
     translate(transformType, deltasDir, srcScalaTemplate.getPath, srcScalaWriter)
 
-    log.debug(s"Compiling Delta Files...")
+    logDebug(s"Compiling Delta Files...")
     compile(classpathDir.getPath, binDir.getPath, srcScalaFile.getPath)
 
-    log.info(s"Deploying Delta Files...in JVM")
+    logInfo(s"Deploying Delta Files...in JVM")
     val loader = getClass.getClassLoader
     val deployedInstance = deploy[Transforms](loader, Array(binDir), clazzName)
 
     //TODO: replace with actor model
-    log.info(s"STATE BEFORE = $deployableHolder")
+    logInfo(s"STATE BEFORE = $deployableHolder")
     deployableHolder.set(deployedInstance)
-    log.info(s"STATE AFTER = $deployableHolder")
+    logInfo(s"STATE AFTER = $deployableHolder")
   }
 }

@@ -19,7 +19,7 @@ class Index extends Specification { def is = "Midas Index".title ^ s2"""
         Apply changes to the documents safely that do not break backwards compatibility with
         existing version of the application.
         e.g Adding, copying, merging, splitting fields in a document.
-        Expansion operations are: add, split, merge and copy.
+        Expansion operations are: add, split, merge, transform and copy.
 
     2. "Contraction" mode:
         Clean up any database schema that is not needed after the upgrade.

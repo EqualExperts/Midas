@@ -3,7 +3,7 @@ package com.ee.midas.dsl.expressions
 import org.bson.BSONObject
 
 
-@FunctionExpression(classOf[Add])
+@FunctionExpression
 final case class Add(expressions: Expression*) extends ArithmeticFunction(expressions: _*) {
   def evaluate(document: BSONObject) = {
     val result = expressions.foldLeft(0d) { (sum, expression) =>
@@ -13,7 +13,7 @@ final case class Add(expressions: Expression*) extends ArithmeticFunction(expres
   }
 }
 
-@FunctionExpression(classOf[Multiply])
+@FunctionExpression
 final case class Multiply(expressions: Expression*) extends ArithmeticFunction(expressions: _*) {
   def evaluate(document: BSONObject) =
     if(expressions.length == 0) {
@@ -26,7 +26,7 @@ final case class Multiply(expressions: Expression*) extends ArithmeticFunction(e
     }
 }
 
-@FunctionExpression(classOf[Subtract])
+@FunctionExpression
 final case class Subtract(expressions: Expression*) extends ArithmeticFunction(expressions: _*) {
   def evaluate(document: BSONObject) =
     expressions.length match {
@@ -38,7 +38,7 @@ final case class Subtract(expressions: Expression*) extends ArithmeticFunction(e
     }
 }
 
-@FunctionExpression(classOf[Divide])
+@FunctionExpression
 final case class Divide(expressions: Expression*) extends ArithmeticFunction(expressions: _*) {
   def evaluate(document: BSONObject) =
     expressions.length match {

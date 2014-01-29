@@ -1,7 +1,6 @@
 package com.ee.midas.dsl.expressions
 
 import org.bson.BSONObject
-import com.ee.midas.dsl.interpreter.representation.InvalidGrammar
 import com.ee.midas.utils.{Loggable, AnnotationScanner}
 
 sealed trait Expression {
@@ -31,7 +30,9 @@ object Function extends Loggable {
                             val clazz = Class.forName(className).asInstanceOf[Class[Function]]
                             log.debug(s"Loaded Class $className!")
                             clazz.getSimpleName.toLowerCase -> clazz
-                          }.toMap.withDefaultValue(classOf[EmptyFunction])
+                          }
+                          .toMap
+                          .withDefaultValue(classOf[EmptyFunction])
 
   def apply(fnName: String, args: Expression*): Function = {
     val fnClazz = functions(fnName.toLowerCase)

@@ -4,8 +4,10 @@ import groovy.util.logging.Slf4j
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.CodeVisitorSupport
 import org.codehaus.groovy.ast.ModuleNode
+import org.codehaus.groovy.ast.expr.ArgumentListExpression
 import org.codehaus.groovy.ast.expr.ClosureExpression
 import org.codehaus.groovy.ast.expr.ConstantExpression
+import org.codehaus.groovy.ast.expr.GStringExpression
 import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.codehaus.groovy.ast.stmt.ExpressionStatement
 import org.codehaus.groovy.control.SourceUnit
@@ -29,8 +31,10 @@ public class StatementTransformation implements ASTTransformation {
     @Override
     void visit(ASTNode[] nodes, SourceUnit source) {
         log.info("Source name = ${source.name}")
+        log.info("All AST NODES = ${nodes.collect { it.toString() }}")
         ModuleNode ast = source.ast
         def blockStatement = ast.statementBlock
+        log.info("All Statements = ${blockStatement.statements}")
 
         blockStatement.visit(new CodeVisitorSupport() {
             void visitConstantExpression(ConstantExpression expression) {
@@ -42,6 +46,21 @@ public class StatementTransformation implements ASTTransformation {
                 } else {
                     log.debug("AST: Skipping Name => $name")
                 }
+            }
+
+            public void visitArgumentlistExpression(ArgumentListExpression ale) {
+                log.debug("AST: Inspecting Arg List for GStrings $ale.expressions")
+                def expressions = ale.expressions
+                for(int i = 0; i < expressions.size(); i++) {
+                    def expression = expressions[i]
+                    if(expression.getClass() == GStringExpression) {
+                        def gString = (GStringExpression) expression
+                        log.debug("AST: Transforming GString => String ($gString.text)")
+                        expressions[i] = new ConstantExpression(gString.text)
+                    }
+                }
+                log.debug("AST: Transformed Arg List $ale.expressions")
+                super.visitArgumentlistExpression(ale)
             }
         })
     }

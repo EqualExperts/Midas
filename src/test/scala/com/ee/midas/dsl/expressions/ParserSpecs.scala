@@ -73,19 +73,31 @@ class ParserSpecs extends Specification {
         expression mustEqual Literal(2.4)
       }
 
-      "string" in new ExpressionParser {
+      "double quoted string" in new ExpressionParser {
         //Given
         val input = """"age""""
 
         //When
-        val expression = Result(parseAll(value, input))
+        val expression = Result(parseAll(quotedStringLiteral, input))
 
         //Then
         expression mustEqual Literal("age")
       }
+
+      "single quoted string" in new ExpressionParser {
+        //Given
+        val input = """'age'"""
+
+        //When
+        val expression = Result(parseAll(singleQuotedStringLiteral, input))
+
+        //Then
+        expression mustEqual Literal("age")
+      }
+
     }
 
-    "Parse Field from" in {
+    "Parse Double Quoted Field from" in {
       "fieldName" in new ExpressionParser {
         //Given
         val input = """"$age""""
@@ -120,13 +132,48 @@ class ParserSpecs extends Specification {
       }
     }
 
-    "Not Parse Field" in {
+    "Parse Single Quoted Field" in {
+      "fieldName" in new ExpressionParser {
+        //Given
+        val input = """'$age'"""
+
+        //When
+        val expression = Result(parseAll(singleQuotedField, input))
+
+        //Then
+        expression mustEqual Field("age")
+      }
+
+      "level-1 nested fieldName" in new ExpressionParser {
+        //Given
+        val input = """'$address.zip'"""
+
+        //When
+        val expression = Result(parseAll(singleQuotedField, input))
+
+        //Then
+        expression mustEqual Field("address.zip")
+      }
+
+      "level-2 nested fieldName" in new ExpressionParser {
+        //Given
+        val input = """'$address.line.1'"""
+
+        //When
+        val expression = Result(parseAll(singleQuotedField, input))
+
+        //Then
+        expression mustEqual Field("address.line.1")
+      }
+    }
+
+    "Not Parse Double Quoted Field" in {
       "without a name" in new ExpressionParser {
         //Given
         val input = "$"
 
         //When-Then
-        Result(parseAll(value, input)) must throwA[IllegalArgumentException]
+        Result(parseAll(quotedField, input)) must throwA[IllegalArgumentException]
       }
 
       "that has trailing dot" in new ExpressionParser {
@@ -134,7 +181,7 @@ class ParserSpecs extends Specification {
         val input = """"$address.""""
 
         //When-Then
-        Result(parseAll(value, input)) must throwA[IllegalArgumentException]
+        Result(parseAll(quotedField, input)) must throwA[IllegalArgumentException]
       }
 
       "that has extra dot between levels" in new ExpressionParser {
@@ -142,7 +189,7 @@ class ParserSpecs extends Specification {
         val input = """"$address..line""""
 
         //When-Then
-        Result(parseAll(value, input)) must throwA[IllegalArgumentException]
+        Result(parseAll(quotedField, input)) must throwA[IllegalArgumentException]
       }
 
       "that begins with a dot" in new ExpressionParser {
@@ -150,7 +197,7 @@ class ParserSpecs extends Specification {
         val input = """"$.address""""
 
         //When-Then
-        Result(parseAll(value, input)) must throwA[IllegalArgumentException]
+        Result(parseAll(quotedField, input)) must throwA[IllegalArgumentException]
       }
 
       "that is prefixed with multiple $" in new ExpressionParser {
@@ -158,7 +205,49 @@ class ParserSpecs extends Specification {
         val input = """"$$address""""
 
         //When-Then
-        Result(parseAll(value, input)) must throwA[IllegalArgumentException]
+        Result(parseAll(quotedField, input)) must throwA[IllegalArgumentException]
+      }
+    }
+
+    "Not Parse Single Quoted Field" in {
+      "without a name" in new ExpressionParser {
+        //Given
+        val input = "$"
+
+        //When-Then
+        Result(parseAll(singleQuotedField, input)) must throwA[IllegalArgumentException]
+      }
+
+      "that has trailing dot" in new ExpressionParser {
+        //Given
+        val input = """'$address.'"""
+
+        //When-Then
+        Result(parseAll(singleQuotedField, input)) must throwA[IllegalArgumentException]
+      }
+
+      "that has extra dot between levels" in new ExpressionParser {
+        //Given
+        val input = """'$address..line'"""
+
+        //When-Then
+        Result(parseAll(singleQuotedField, input)) must throwA[IllegalArgumentException]
+      }
+
+      "that begins with a dot" in new ExpressionParser {
+        //Given
+        val input = """'$.address'"""
+
+        //When-Then
+        Result(parseAll(singleQuotedField, input)) must throwA[IllegalArgumentException]
+      }
+
+      "that is prefixed with multiple $" in new ExpressionParser {
+        //Given
+        val input = """'$$address'"""
+
+        //When-Then
+        Result(parseAll(singleQuotedField, input)) must throwA[IllegalArgumentException]
       }
     }
 

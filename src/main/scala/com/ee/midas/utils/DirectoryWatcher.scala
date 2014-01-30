@@ -14,7 +14,9 @@ class DirectoryWatcher(dirURL: String, events: Seq[WatchEvent.Kind[_]], waitBefo
   private val watcher = fileSystem.newWatchService()
   private val os = System.getProperty("os.name")
 
-  logInfo(s"Dir to Watch = $dirURL, OS = ${os}")
+  val dirWatchMsg = s"Dir to Watch = $dirURL, OS = ${os}"
+  println(dirWatchMsg)
+  logInfo(dirWatchMsg)
   //Compensate for the bug that causes fileSystem.getPath to crash in Windows for dirURL
   private val path = if (os.contains("Win"))
                         fileSystem.getPath(dirURL.substring(1))
@@ -27,7 +29,9 @@ class DirectoryWatcher(dirURL: String, events: Seq[WatchEvent.Kind[_]], waitBefo
   var isRunning = true
   
   def stopWatching = {
-    logInfo(s"Stopping Watch on ${dirURL}")
+    val stopWatchMsg = s"Stopping Watch on ${dirURL}"
+    println(stopWatchMsg)
+    logInfo(stopWatchMsg)
     watcher.close()
     isRunning = false
   }

@@ -23,6 +23,10 @@ object Main extends App with Loggable {
         val loader = Main.getClass.getClassLoader
         val transformType = config.mode
 
+        val transformModeMsg = s"Starting Midas in ${transformType} mode...on ${config.midasHost}, port ${config.midasPort}"
+        logInfo(transformModeMsg)
+        println(transformModeMsg)
+
         //Todo: tweak scala style rule so that we don't have to give types when declaring variables.
         val deltasDirURL: URL = config.deltasDirURL
         val srcScalaTemplateURI = "templates/Transformations.scala.template"
@@ -34,19 +38,22 @@ object Main extends App with Loggable {
         val classpathURI = "."
         val classpathDir = loader.getResource(classpathURI)
         val binDir = loader.getResource(binDirURI)
-        logInfo(s"Picking up Deltas from Dir = ${deltasDirURL}")
         val srcScalaTemplate = loader.getResource(srcScalaTemplateURI)
         val srcScalaDir = loader.getResource(srcScalaDirURI)
         logInfo(s"Source Scala Dir = $srcScalaDir")
 
         val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
-        logInfo(s"Processing Delta Files...")
+        val processingDeltaFilesMsg = s"Processing Delta Files...from Dir ${deltasDirURL}"
+        println(processingDeltaFilesMsg)
+        logInfo(processingDeltaFilesMsg)
         val deployableHolder = createDeployableHolder
         implicit val deltasProcessor =
           new DeltaFilesProcessor(new Translator(new Reader(), new ScalaGenerator()), deployableHolder)
         processDeltaFiles(transformType, deltasDirURL, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
 
-        logInfo(s"Setting up Directory Watcher...")
+        val dirWatchMsg = s"Setting up Directory Watcher for ${deltasDirURL}..."
+        println(dirWatchMsg)
+        logInfo(dirWatchMsg)
         val watcher = new DirectoryWatcher(deltasDirURL.getPath, List(ENTRY_CREATE, ENTRY_DELETE),
           waitBeforeProcessing)(watchEvents => {
           watchEvents.foreach {watchEvent =>
@@ -56,21 +63,27 @@ object Main extends App with Loggable {
         })
         watcher.start
 
-        logInfo(s"Starting Midas Server in ${transformType} mode...")
         val midasSocket = new ServerSocket(config.midasPort, maxClientConnections, InetAddress.getByName(config.midasHost))
         val accumulate = Accumulator[DuplexPipe](Nil)
 
         sys.ShutdownHookThread {
           watcher.stopWatching
           val pipes = accumulate(null)
-          logInfo("User Forced Stop on Midas...Closing Open Connections")
+          val forceStopMsg = "User Forced Stop on Midas...Closing Open Connections"
+          logInfo(forceStopMsg)
+          println(forceStopMsg)
           pipes filter(_.isActive) map(_.forceStop)
+          val shutdownMsg = "Midas Shutdown Complete!"
+          logInfo(shutdownMsg)
+          println(shutdownMsg)
         }
         //TODO#2: Later from an admin client that changes the Midas mode at runtime without shutting it down
         import SocketConnector._
         while (true) {
           val application = waitForNewConnectionOn(midasSocket)
-          logInfo("New connection received...")
+          val newConMsg = s"New connection received from Remote IP: ${application.getInetAddress} Remote Port: ${application.getPort}, Local Port: ${application.getLocalPort}"
+          logInfo(newConMsg)
+          println(newConMsg)
           try{
             val mongoSocket = new Socket(config.mongoHost, config.mongoPort)
             val tracker = new MessageTracker()
@@ -79,13 +92,16 @@ object Main extends App with Loggable {
 
             val duplexPipe = application  <|==|> (mongoSocket, requestInterceptable, responseInterceptable)
             duplexPipe.start
-            logInfo("Setup DataPipe = " + duplexPipe.toString)
+            val pipeReadyMsg = s"Setup All Connections, ready to receive traffic on $duplexPipe"
+            logInfo(pipeReadyMsg)
+            println(pipeReadyMsg)
             accumulate(duplexPipe)
           }
           catch {
             case e: ConnectException  =>
-              println(s"Error : MongoDB on ${config.mongoHost}:${config.mongoPort} is not available")
-              logError(s"MongoDB on ${config.mongoHost}:${config.mongoPort} is not available")
+              val errMsg = s"MongoDB on ${config.mongoHost}:${config.mongoPort} is not available!"
+              println(errMsg)
+              logError(errMsg)
               application.close()
           }
         }
@@ -95,7 +111,9 @@ object Main extends App with Loggable {
   }
 
   private def waitForNewConnectionOn(serverSocket: ServerSocket) = {
-    logInfo("Listening on port " + serverSocket.getLocalPort() + " for new connections...")
+    val listeningMsg = s"Midas Ready! Listening on port ${serverSocket.getLocalPort()} for new connections..."
+    logInfo(listeningMsg)
+    println(listeningMsg)
     serverSocket.accept()
   }
 
@@ -103,9 +121,15 @@ object Main extends App with Loggable {
                                 clazzName: String, classpathDir: URL)(implicit deltasProcessor: DeltaFilesProcessor): Unit = {
     val writer = new PrintWriter(srcScalaFile, "utf-8")
     try {
+      val processDeltaFilesMsg = s"Compiling and Deploying Delta Files in Midas..."
+      logInfo(processDeltaFilesMsg)
+      println(processDeltaFilesMsg)
       deltasProcessor.process(transformType, deltasDir, srcScalaTemplate, writer, srcScalaFile, binDir, clazzName, classpathDir)
     } catch {
-      case e: Exception => logInfo(s"Error Processing Delta File: ${e.getMessage}, Please fix the compilation issue in delta file and rethrow it in the appropriate directory!")
+      case e: Exception =>
+        val errMsg = s"Error Processing Delta File: ${e.getMessage}, Please fix the compilation issue in delta file and rethrow it in the appropriate directory!"
+        logInfo(errMsg)
+        println(errMsg)
     } finally {
       writer.close()
     }

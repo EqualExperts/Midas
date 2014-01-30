@@ -35,4 +35,4 @@ then
 fi
   CLASSPATH=$MIDAS_HOME:%%JAVA_CLASS_PATH%%
 
-java -cp $CLASSPATH com.ee.midas.Main $@
+java -cp $CLASSPATH -DlogLevel=OFF com.ee.midas.Main $@

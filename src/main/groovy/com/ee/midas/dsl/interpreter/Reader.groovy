@@ -3,6 +3,7 @@ package com.ee.midas.dsl.interpreter
 import com.ee.midas.dsl.interpreter.ast.StatementTransformation
 import com.ee.midas.dsl.interpreter.representation.InvalidGrammar
 import com.ee.midas.dsl.interpreter.representation.Tree
+import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer

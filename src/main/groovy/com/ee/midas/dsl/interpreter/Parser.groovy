@@ -8,12 +8,11 @@ import groovy.util.logging.Slf4j
 class Parser {
     private Tree tree = new Tree()
     private def dbContext
-    private List<String> reserved = ['db', 'add']
 
     @CompileStatic
     def getProperty(String name) {
         log.debug("property name is: $name")
-        if(reserved.contains(name)) {
+        if(name == 'db') {
             return dbContext
         }
         tree.using(name)

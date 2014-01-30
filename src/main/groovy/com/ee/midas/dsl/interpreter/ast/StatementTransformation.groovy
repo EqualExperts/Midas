@@ -51,12 +51,10 @@ public class StatementTransformation implements ASTTransformation {
             public void visitArgumentlistExpression(ArgumentListExpression ale) {
                 log.debug("AST: Inspecting Arg List for GStrings $ale.expressions")
                 def expressions = ale.expressions
-                for(int i = 0; i < expressions.size(); i++) {
-                    def expression = expressions[i]
+                expressions.eachWithIndex { expression, index ->
                     if(expression.getClass() == GStringExpression) {
-                        def gString = (GStringExpression) expression
-                        log.debug("AST: Transforming GString => String ($gString.text)")
-                        expressions[i] = new ConstantExpression(gString.text)
+                        log.debug("AST: Transforming GString => String ($expression.text)")
+                        expressions[index] = new ConstantExpression(expression.text)
                     }
                 }
                 log.debug("AST: Transformed Arg List $ale.expressions")

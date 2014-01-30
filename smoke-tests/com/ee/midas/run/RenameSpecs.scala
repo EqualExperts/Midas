@@ -14,24 +14,29 @@ class RenameSpecs extends Specification with Forms {
   def is = s2"""
      ${"Rename Operation".title}
     Narration: IncyWincyShoppingApp stores its persistent data on MongoDB. Bob, the Business analyst
-               wants certain changes in the names of the terminology used. He approaches Dave,
-               the Developer.
+               wants to rename certain things. He approaches Dave, the Developer.
 
-    Bob: " Hey Dave, Let's rename Order List as Your Cart because it is more closer to the domain.
-           Also, Lets rename zipcode in address to pincode"
-    Dave: " Ya true Bob, I also feel the same. Here is what we can do for zero downtime
-            deployment. First, we will run Expansion scripts and copy the current field to new field
-            this will keep our application backwards compatible with the existing version."
-    Dave adding further: "This upgradation will be done for one node of a cluster at a time. "
-    Bob: "Oh.. So Expansion will add the new field and keep the old field as well."
-    Dave: "Yes exactly. Once the system is upgraded and stable, we will run the contraction scripts
-            and remove the old field"
-    Bob: "Okay, but what if after adding new field system is not stable . Do we need to rollback DB ?"
-    Dave: "No Bob. DB Rollback can lead to loss in data and can leave database in inconsistent state.
+    Bob:  "Hey Dave, Lets rename zip to pin in address because it is closer to the domain.
+           Also, Let's rename Order List as Your Cart"
+    Dave: "Ya true Bob, I agree with you."
+    Bob:  "How do you plan to do that Dave ? Do we need to have some downtime ?"
+    Dave: "No Bob, We will use Midas which will migrate our schema on the fly. Here is what we can do
+           for zero downtime deployment. First, we will run Expansion scripts and copy the current
+           field to new field. This will keep our application backwards compatible with the existing
+           version."
+    Bob:  "Oh.. So Expansion will add the new field and keep the old field as well."
+    Dave: "Yes exactly."
+    Bob:  "Okay, but we have 2 nodes in our cluster. So, Do we apply this to all nodes
+           simultaneously."
+    Dave: "No, This upgradation will be done for one node of a cluster at a time. Once the system is
+           completely upgraded and deemed stable, we will run the contraction scripts and remove the
+           old field"
+    Bob:  "Okay, but what if after adding new field system is not stable . Do we need to rollback DB?"
+    Dave: "No Bob. DB Rollback can lead to loss in data and leave database in inconsistent state.
            In that case it will be better to rollback application instead."
-    Bob: " Oh ... right . That makes sense"
+    Bob:  "Oh ... right . That makes sense"
     Dave: "So after the Expansion - Contraction cycle the system will be migrated completely."
-    Bob: "Thanks, that sounds good."
+    Bob:  "Thanks, that sounds good."
 
     1. Let's assume we have following documents in the database. We simulate this by inserting
        documents in the database .

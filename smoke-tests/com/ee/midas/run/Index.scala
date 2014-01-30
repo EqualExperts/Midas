@@ -30,14 +30,14 @@ class Index extends Specification { def is = "Midas Index".title ^ s2"""
     Scenario 1: Migration involving addition of new fields
 
     Mechanics:
-    a.) map schema changes into delta files.
+    a.) Express schema changes into delta files.
 
     b.) use midas in expansion mode.
 
     2.) Migration involving removal of existing fields.
 
     Mechanics:
-    a.) map schema changes into delta files
+    a.) Express schema changes into delta files
 
     b.) use midas in contraction mode
 
@@ -45,7 +45,7 @@ class Index extends Specification { def is = "Midas Index".title ^ s2"""
     3.) Migration involving both addition of new fields and removal of existing fields.
 
     Mechanics:
-    a.) map schema changes into delta files
+    a.) Express schema changes into delta files
 
     b.) use midas in expansion mode first until all the documents are migrated, and then.
 

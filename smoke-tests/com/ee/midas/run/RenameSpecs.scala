@@ -12,7 +12,7 @@ class RenameSpecs extends Specification with Forms {
   var contractionDelta: Delta = null
 
   def is = s2"""
-     ${"Rename Operation".title}
+    ${"Rename Operation".title}
     Narration: IncyWincyShoppingApp stores its persistent data on MongoDB. Bob, the Business analyst
                wants to rename certain things. He approaches Dave, the Developer.
 

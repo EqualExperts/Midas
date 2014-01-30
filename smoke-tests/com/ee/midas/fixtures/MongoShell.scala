@@ -64,6 +64,19 @@ case class MongoShell(formName: String, host: String, port: Int) {
     this
   }
 
+  def verifyIfAdded(collection: String, fields: Array[String]) = {
+    val documents = db.getCollection(collection).find()
+    while(documents.hasNext) {
+      val document = documents.next()
+      println(document)
+      shell = shell.tr(field(s"document", document))
+//      for(field <- fields)
+//        shell = shell.tr(prop(s"document.containsField($field)", document.containsField(field), true))
+//      shell = shell.tr(prop(s"document.get('_contractionVersion')", document.get("_contractionVersion"), fields.length+1))
+    }
+    this
+  }
+
   private def readNestedValue(fieldName: String, document: Object): Object = {
     val nestedFields = fieldName.split("\\.")
     var fieldValue = document

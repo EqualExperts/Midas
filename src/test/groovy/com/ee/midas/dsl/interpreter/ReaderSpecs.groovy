@@ -42,7 +42,7 @@ class ReaderSpecs extends Specification{
         given: "Multiple delta files"
             def mergeDeltaStr = """
                                   use users
-                                  db.customers.mergeInto("name", " ", "['fName', 'lName']")
+                                  db.customers.merge("['fName', 'lName']", " ", "name")
                                 """
 
             def copyDeltaStr = """

@@ -2,7 +2,7 @@ package com.ee.midas.dsl.interpreter.representation
 
 import com.ee.midas.dsl.grammar.Contraction
 import com.ee.midas.dsl.grammar.Expansion
-import com.ee.midas.dsl.grammar.Grammar
+import com.ee.midas.dsl.grammar.Verb
 import com.ee.midas.transform.TransformType
 import groovy.transform.CompileStatic
 import groovy.transform.ToString
@@ -28,7 +28,7 @@ class Collection {
     def invokeMethod(String name, args) {
         log.info("${this.name} invokeMethod: Operation $name with $args")
 
-        Grammar grammar = asGrammar(name)
+        Verb grammar = asGrammar(name)
         def parameters = args? args as List<String> : []
         grammar.validate(parameters)
         if (isExpansion(grammar)) {
@@ -45,19 +45,19 @@ class Collection {
     }
 
     @CompileStatic
-    private boolean isExpansion(Grammar grammar) {
-        Grammar.class.getDeclaredField(grammar.name()).getAnnotation(Expansion.class) != null
+    private boolean isExpansion(Verb grammar) {
+        Verb.class.getDeclaredField(grammar.name()).getAnnotation(Expansion.class) != null
     }
 
     @CompileStatic
-    private boolean isContraction(Grammar grammar) {
-        Grammar.class.getDeclaredField(grammar.name()).getAnnotation(Contraction.class) != null
+    private boolean isContraction(Verb grammar) {
+        Verb.class.getDeclaredField(grammar.name()).getAnnotation(Contraction.class) != null
     }
 
     @CompileStatic
-    private Grammar asGrammar(String token) {
+    private Verb asGrammar(String token) {
         try {
-            Grammar.valueOf(token)
+            Verb.valueOf(token)
         } catch (IllegalArgumentException iae) {
             throw new InvalidGrammar("Sorry!! Midas Compiler doesn't understand $token")
         }
@@ -76,7 +76,7 @@ class Collection {
 
         versionedTransforms.collectEntries { Map.Entry entry ->
             Tuple grammarWithArgs = (Tuple) entry.value
-            Grammar grammar = Grammar.valueOf(grammarWithArgs[0] as String)
+            Verb grammar = Verb.valueOf(grammarWithArgs[0] as String)
             def args = grammarWithArgs[1]
             def operation = ['name': grammar.name(), 'args': args]
             ["$entry.key" : operation]

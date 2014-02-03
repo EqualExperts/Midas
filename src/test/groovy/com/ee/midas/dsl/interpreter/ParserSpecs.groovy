@@ -1,7 +1,6 @@
 package com.ee.midas.dsl.interpreter
 
-import com.ee.midas.dsl.grammar.Grammar
-import com.ee.midas.dsl.interpreter.Parser
+import com.ee.midas.dsl.grammar.Verb
 import com.ee.midas.dsl.interpreter.representation.Database
 import com.ee.midas.dsl.interpreter.representation.Tree
 import spock.lang.Specification
@@ -47,7 +46,7 @@ class ParserSpecs extends Specification  {
                 println it
                 it.@versionedExpansions.values().each {
                     def (operation, _) = it
-                    assert operation == Grammar.add
+                    assert operation == Verb.add
                 }
             }
         }

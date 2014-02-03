@@ -1,15 +1,15 @@
 package com.ee.midas.dsl.grammar.validator
 
-import com.ee.midas.dsl.grammar.Grammar
+import com.ee.midas.dsl.grammar.Verb
 import com.ee.midas.dsl.interpreter.representation.InvalidGrammar
 import spock.lang.Specification
 
-public class GrammarSpecs extends Specification {
+public class VerbSpecs extends Specification {
 
     //Add
     def "'add' validates correct argument types"() {
         given: 'Add verb from Grammar'
-            Grammar add = Grammar.add
+            Verb add = Verb.add
 
         when: 'the verb validates the arguments supplied'
             add.validate(args)
@@ -27,7 +27,7 @@ public class GrammarSpecs extends Specification {
 
     def "'add' does not validate incorrect argument types"() {
         given: 'Add verb from Grammar'
-            Grammar add = Grammar.add
+            Verb add = Verb.add
 
         when: 'the verb validates the arguments supplied'
             add.validate(args)
@@ -48,7 +48,7 @@ public class GrammarSpecs extends Specification {
     //Remove
     def "'remove' validates correct argument types"() {
         given: 'Remove verb from Grammar'
-            Grammar remove = Grammar.remove
+            Verb remove = Verb.remove
 
         when: 'the verb validates the arguments supplied'
             remove.validate(args)
@@ -66,7 +66,7 @@ public class GrammarSpecs extends Specification {
 
     def "'remove' does not validate incorrect argument types"() {
         given: 'Remove verb from Grammar'
-            Grammar remove = Grammar.remove
+            Verb remove = Verb.remove
 
         when: 'the verb validates the arguments supplied'
             remove.validate(args)
@@ -88,7 +88,7 @@ public class GrammarSpecs extends Specification {
 
     def "'copy' validates correct argument types"() {
         given: 'Copy verb from Grammar'
-            Grammar copy = Grammar.copy
+            Verb copy = Verb.copy
 
         when: 'the verb validates the arguments supplied'
             copy.validate(args)
@@ -105,7 +105,7 @@ public class GrammarSpecs extends Specification {
 
     def "'copy' does not validate incorrect argument types"() {
         given: 'Copy verb from Grammar'
-            Grammar copy = Grammar.copy
+            Verb copy = Verb.copy
 
         when: 'the verb validates the arguments supplied'
             copy.validate(args)
@@ -127,7 +127,7 @@ public class GrammarSpecs extends Specification {
 
     def "'split' validates correct argument types"() {
         given: 'Split verb from Grammar'
-            Grammar split = Grammar.split
+            Verb split = Verb.split
 
         when: 'the verb validates the arguments supplied'
             split.validate(args)
@@ -144,7 +144,7 @@ public class GrammarSpecs extends Specification {
 
     def "'split' does not validate incorrect argument types"() {
         given: 'Split verb from Grammar'
-            Grammar split = Grammar.split
+            Verb split = Verb.split
 
         when: 'the verb validates the arguments supplied'
             split.validate(args)
@@ -168,9 +168,9 @@ public class GrammarSpecs extends Specification {
 
     //merge
 
-    def "'mergeInto' validates correct argument types"() {
-        given: 'mergeInto verb from Grammar'
-            Grammar merge = Grammar.mergeInto
+    def "'merge' validates correct argument types"() {
+        given: 'merge verb from Grammar'
+            Verb merge = Verb.merge
 
         when: 'the verb validates the arguments supplied'
             merge.validate(args)
@@ -180,14 +180,14 @@ public class GrammarSpecs extends Specification {
 
         where:
             args << [
-                ["targetField", " ", "{\"field1\": \"\$1\", \"field2\": \"\$2\"}"],
-                ["target field", " ", "{\"field1\": \"\$1\", \"field2\": \"\$2\"}"]
+                ["{\"field1\": \"\$1\", \"field2\": \"\$2\"}", " ", "targetField"],
+                ["{\"field1\": \"\$1\", \"field2\": \"\$2\"}", " ", "target field"]
             ]
     }
 
-    def "'mergeInto' does not validate incorrect argument types"() {
-        given: 'mergeInto verb from Grammar'
-            Grammar merge = Grammar.mergeInto
+    def "'merge' does not validate incorrect argument types"() {
+        given: 'merge verb from Grammar'
+            Verb merge = Verb.merge
 
         when: 'the verb validates the arguments supplied'
             merge.validate(args)

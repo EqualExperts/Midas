@@ -1,6 +1,6 @@
 package com.ee.midas.dsl.interpreter.representation
 
-import com.ee.midas.dsl.grammar.Grammar
+import com.ee.midas.dsl.grammar.Verb
 import com.ee.midas.transform.TransformType
 import spock.lang.Specification
 
@@ -13,7 +13,7 @@ class CollectionSpecs extends Specification {
         when: "a few valid expansion operations are invoked on it"
             collection.add("{\"newField\":\"defaultValue\"}")
             collection.copy("sourceField","targetField")
-            collection.mergeInto("targetField", "separator", "[\"field1\", \"field2\"]")
+            collection.merge("[\"field1\", \"field2\"]", "separator", "targetField")
             collection.split("sourceField", "regex", "{\"field1\":\"\$1\",\"field2\":\"\$2\"}")
 
         then: "the operations were successful"
@@ -58,7 +58,7 @@ class CollectionSpecs extends Specification {
         when: "An operation with no arguments is invoked on it"
             collection.remove()
 
-        then: "Invalid Grammar exception is thrown"
+        then: "Invalid Verb exception is thrown"
             thrown(InvalidGrammar)
 
     }
@@ -72,7 +72,7 @@ class CollectionSpecs extends Specification {
             LinkedHashMap versionedMap = collection.asVersionedMap(TransformType.EXPANSION)
 
         then: "the map should contain operation of expansion type"
-            LinkedHashMap expectedMap  = ["${1}":[name: Grammar.add.name(), args:['{"age":0}']]]
+            LinkedHashMap expectedMap  = ["${1}":[name: Verb.add.name(), args:['{"age":0}']]]
             versionedMap.equals(expectedMap)
     }
 
@@ -85,7 +85,7 @@ class CollectionSpecs extends Specification {
             LinkedHashMap versionedMap = collection.asVersionedMap(TransformType.CONTRACTION)
 
         then: "the map should contain operation of contraction type"
-            LinkedHashMap expectedMap  = ["${1}":['name':Grammar.remove.name(), 'args':['{"age":0}']]]
+            LinkedHashMap expectedMap  = ["${1}":['name':Verb.remove.name(), 'args':['{"age":0}']]]
             versionedMap.equals(expectedMap)
     }
 
@@ -99,9 +99,9 @@ class CollectionSpecs extends Specification {
             LinkedHashMap versionedMap = collection.asVersionedMap(TransformType.EXPANSION)
 
         then: "the map should contain operations of expansion type"
-            LinkedHashMap expectedMap  = ["${1}":['name':Grammar.add.name(),
+            LinkedHashMap expectedMap  = ["${1}":['name':Verb.add.name(),
                                                   'args':['{"age":0}']],
-                                          "${2}":['name':Grammar.add.name(),
+                                          "${2}":['name':Verb.add.name(),
                                                   'args':['{"city":"pune"}']]]
             versionedMap.equals(expectedMap)
     }
@@ -116,9 +116,9 @@ class CollectionSpecs extends Specification {
             LinkedHashMap versionedMap = collection.asVersionedMap(TransformType.CONTRACTION)
 
         then: "the map should contain operations of contraction type"
-            LinkedHashMap expectedMap  = ["${1}":['name':Grammar.remove.name(),
+            LinkedHashMap expectedMap  = ["${1}":['name':Verb.remove.name(),
                                                   'args':['{"age":0}']],
-                                          "${2}":['name':Grammar.remove.name(),
+                                          "${2}":['name':Verb.remove.name(),
                                                   'args':['{"city":"pune"}']]]
             versionedMap.equals(expectedMap)
     }
@@ -136,9 +136,9 @@ class CollectionSpecs extends Specification {
 
         then: "the map should contain operations of expansion type only"
             LinkedHashMap expectedExpansionMap = [
-                    "${1}" : ['name': Grammar.add.name(),
+                    "${1}" : ['name': Verb.add.name(),
                          'args': ['{"age":0}']],
-                    "${2}" : ['name': Grammar.add.name(),
+                    "${2}" : ['name': Verb.add.name(),
                          'args':['{"city":"pune"}']]
                     ]
 
@@ -159,9 +159,9 @@ class CollectionSpecs extends Specification {
 
         then: "the map should contain operations of contraction type only"
             LinkedHashMap expectedContractionMap  = [
-                    "${1}" : ['name': Grammar.remove.name(),
+                    "${1}" : ['name': Verb.remove.name(),
                             'args': ['["dob"]']],
-                    "${2}" : ['name': Grammar.remove.name(),
+                    "${2}" : ['name': Verb.remove.name(),
                             'args': ['["city"]']]
             ]
             versionedContractionMap.equals(expectedContractionMap)

@@ -105,7 +105,7 @@ public class ScalaGenerator implements Generator<String> {
         """.stripMargin()
     }
 
-    private String mergeInto(String mergeField, String separator, String fieldsArray) {
+    private String merge(String fieldsArray, String separator, String mergeField) {
         def fields = fieldsArray.substring(1, fieldsArray.length() - 1)
         """
             ((document: BSONObject) => {

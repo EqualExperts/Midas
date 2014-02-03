@@ -221,7 +221,7 @@ class TreeSpecs extends Specification {
         when: "a collection property's invalid method is invoked"
             database.testCollection.someOperation('{"age":0}')
 
-        then: "Invalid Grammar exception is thrown"
+        then: "Invalid Verb exception is thrown"
             thrown(InvalidGrammar)
     }
 
@@ -233,7 +233,7 @@ class TreeSpecs extends Specification {
         when: "a collection property's add method is invoked with one non-json string argument"
             database.testCollection.add("some field name")
 
-        then: "Invalid Grammar exception is thrown"
+        then: "Invalid Verb exception is thrown"
             thrown(InvalidGrammar)
     }
 
@@ -245,7 +245,7 @@ class TreeSpecs extends Specification {
         when: "a collection property's method is invoked with no arguments"
             database.testCollection.add()
 
-        then: "Invalid Grammar exception is thrown"
+        then: "Invalid Verb exception is thrown"
             thrown(InvalidGrammar)
     }
 

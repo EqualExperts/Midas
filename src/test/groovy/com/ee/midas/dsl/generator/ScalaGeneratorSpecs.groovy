@@ -147,15 +147,15 @@ class ScalaGeneratorSpecs extends Specification {
 
     def "Generate Snippets for MergeInto operation"() {
 
-        given: "a delta for mergeInto operation with separator"
-            def mergeIntoDelta = {
+        given: "a delta for merge operation with separator"
+            def mergeDelta = {
                 using someDatabase
-                db.collectionName.mergeInto("targetField", "separator", "[\"field1\",\"field2\"]")
+                db.collectionName.merge("[\"field1\",\"field2\"]", "separator", "targetField")
             }
 
-        and: "A Parser builds a Tree for a mergeInto operation"
+        and: "A Parser builds a Tree for a merge operation"
             Parser parser = new Parser()
-            parser.parse(mergeIntoDelta)
+            parser.parse(mergeDelta)
             Tree tree = parser.ast()
 
         and: "A Scala generator"
@@ -164,7 +164,7 @@ class ScalaGeneratorSpecs extends Specification {
         when: "generator generates scala code"
             def result = generator.generate(EXPANSION, tree)
 
-        then: "it generates Scala snippets for mergeInto operation"
+        then: "it generates Scala snippets for merge operation"
             def expectedMergeIntoSnippets =
                 """
                     override var expansions: Map[String, VersionedSnippets] =

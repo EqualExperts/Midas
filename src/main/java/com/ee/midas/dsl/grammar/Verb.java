@@ -4,7 +4,7 @@ import com.ee.midas.dsl.interpreter.representation.InvalidGrammar;
 
 import java.util.List;
 
-public enum Grammar {
+public enum Verb {
     @Expansion @ArgsSpecs(ArgType.JSON)
     add,
 
@@ -14,8 +14,8 @@ public enum Grammar {
     @Expansion @ArgsSpecs({ ArgType.Identifier, ArgType.String, ArgType.JSON })
     split,
 
-    @Expansion @ArgsSpecs({ ArgType.Identifier, ArgType.String, ArgType.JSON })
-    mergeInto,
+    @Expansion @ArgsSpecs({ ArgType.JSON, ArgType.String, ArgType.Identifier })
+    merge,
 
     @Expansion @ArgsSpecs({ ArgType.Identifier, ArgType.JSON })
     transform,
@@ -25,7 +25,7 @@ public enum Grammar {
 
     public void validate(final List<String> args) {
         try {
-            ArgsSpecs argsSpecsAnnotation = Grammar.class
+            ArgsSpecs argsSpecsAnnotation = Verb.class
                                             .getField(name())
                                             .getAnnotation(ArgsSpecs.class);
 

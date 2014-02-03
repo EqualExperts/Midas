@@ -1,6 +1,6 @@
 package com.ee.midas.interceptor
 
-import java.io.InputStream
+import java.io.{ByteArrayInputStream, InputStream}
 import com.ee.midas.utils.Loggable
 import scala.util.control.Breaks.break
 import org.bson.BasicBSONDecoder
@@ -29,19 +29,22 @@ class RequestInterceptor (tracker: MessageTracker) extends MidasInterceptable wi
       case OP_UPDATE => {
         val fullCollectionName = toFullCollectionName(remaining)
         println("In update query......... full collection name == "+fullCollectionName)
-        println(" collection length == "+fullCollectionName.length+" remaining== "+remaining.length)
+
         val decoder: DBDecoder = new DefaultDBDecoder()
         var i = fullCollectionName.length
         var j = 0
+        //Removing FullCollectionName and 4 bytes flag
         val payload:Array[Byte] = new Array[Byte](remaining.length - (fullCollectionName.length+5))
         for(i <- (fullCollectionName.length+5) until remaining.length )
         {
           payload(j) = remaining(i)
           j= j+1
         }
-
-        val dbObject = decoder.decode(payload,null)
-        println("Decoded object == "+dbObject)
+        val in = new ByteArrayInputStream(payload)
+        val selector = decoder.decode(in, null)
+        val updator = decoder.decode(in, null)
+        println("Selector Document = "+selector)
+        println("Updator Document = "+updator)
       }
       case _ => ""
     }

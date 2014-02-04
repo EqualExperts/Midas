@@ -1,7 +1,5 @@
 package com.ee.midas.dsl.interpreter.representation
 
-import com.ee.midas.dsl.grammar.Contraction
-import com.ee.midas.dsl.grammar.Expansion
 import com.ee.midas.dsl.grammar.Verb
 import com.ee.midas.transform.TransformType
 import groovy.transform.CompileStatic
@@ -28,34 +26,24 @@ class Collection {
     def invokeMethod(String name, args) {
         log.info("${this.name} invokeMethod: Operation $name with $args")
 
-        Verb grammar = asGrammar(name)
+        Verb verb = asVerb(name)
         def parameters = args? args as List<String> : []
-        grammar.validate(parameters)
-        if (isExpansion(grammar)) {
-            log.info("${this.name} Adding Expansion $grammar with $args")
-            versionedExpansions[curExpansionVersion++] = [grammar, args]
+        verb.validate(parameters)
+        if (verb.isExpansion()) {
+            log.info("${this.name} Adding Expansion $verb with $args")
+            versionedExpansions[curExpansionVersion++] = [verb, args]
             return
         }
-        if (isContraction(grammar)) {
-            log.info("${this.name} Adding Contraction $grammar with $args")
-            versionedContractions[curContractionVersion++] = [grammar, args]
+        if (verb.isContraction()) {
+            log.info("${this.name} Adding Contraction $verb with $args")
+            versionedContractions[curContractionVersion++] = [verb, args]
             return
         }
 
     }
 
     @CompileStatic
-    private boolean isExpansion(Verb grammar) {
-        Verb.class.getDeclaredField(grammar.name()).getAnnotation(Expansion.class) != null
-    }
-
-    @CompileStatic
-    private boolean isContraction(Verb grammar) {
-        Verb.class.getDeclaredField(grammar.name()).getAnnotation(Contraction.class) != null
-    }
-
-    @CompileStatic
-    private Verb asGrammar(String token) {
+    private Verb asVerb(String token) {
         try {
             Verb.valueOf(token)
         } catch (IllegalArgumentException iae) {

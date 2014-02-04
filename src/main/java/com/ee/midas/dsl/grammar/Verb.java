@@ -23,6 +23,26 @@ public enum Verb {
     @Contraction @ArgsSpecs(ArgType.JSON)
     remove;
 
+    public boolean isExpansion() {
+        try {
+            return Verb.class
+                    .getField(name())
+                    .getAnnotation(Expansion.class) != null;
+        } catch (NoSuchFieldException e) {
+            return false;
+        }
+    }
+
+    public boolean isContraction() {
+        try {
+            return Verb.class
+                    .getField(name())
+                    .getAnnotation(Contraction.class) != null;
+        } catch (NoSuchFieldException e) {
+            return false;
+        }
+    }
+
     public void validate(final List<String> args) {
         try {
             ArgsSpecs argsSpecsAnnotation = Verb.class

@@ -39,9 +39,7 @@ public class VerbSpecs extends Specification {
             args << [
                 [],
                 ["{\"age\" : 0 }", "{\"address.zip\" : 400001}"],
-                ["""age : 0"""],
-                [1,2.0],
-                [true, false]
+                ["""age : 0"""]
             ]
     }
 
@@ -78,9 +76,7 @@ public class VerbSpecs extends Specification {
             args << [
                 [],
                 ["age","address.zip"],
-                ["[age : 0]"],
-                [1,2.0],
-                [true, false]
+                ["[age : 0]"]
             ]
     }
 
@@ -117,9 +113,7 @@ public class VerbSpecs extends Specification {
             args << [
                 [],
                 ["singleField"],
-                ["field1", "field2", "field3"],
-                [1, 2.0],
-                [true, false]
+                ["field1", "field2", "field3"]
             ]
     }
 
@@ -158,8 +152,6 @@ public class VerbSpecs extends Specification {
                 ["sourceField"],
                 ["sourceField", "targetField"],
                 ["sourceField", "targetField", "targetField2"],
-                [1, 2, 3],
-                [true, true, false],
                 ["{\"arg1\" : \"value1\"}", "{\"arg2\" : \"value2\"}", "{\"arg3\":\"value3\"}"],
                 ["source field", " ", "{\"field1\": \"\$1\", \"field2\": \"\$2\"}", "extraArg"]
             ]
@@ -201,8 +193,6 @@ public class VerbSpecs extends Specification {
                 ["singleField"],
                 ["targetField", "sourceField"],
                 ["targetField", "sourceField1", "sourceField2"],
-                [1, 2, 3],
-                [true, true, false],
                 ["{\"arg1\" : \"value1\"}", "{\"arg2\" : \"value2\"}", "{\"arg3\":\"value3\"}"],
                 ["target field", " ", "{\"field1\": \"\$1\", \"field2\": \"\$2\"}", "extraArg"]
             ]

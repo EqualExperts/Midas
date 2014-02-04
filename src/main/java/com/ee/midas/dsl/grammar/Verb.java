@@ -43,20 +43,14 @@ public enum Verb {
     }
 
     public void validate(final List<String> args) {
-        try {
-            ArgsSpecs annotation = (ArgsSpecs) getAnnotation(ArgsSpecs.class);
-            if (annotation == null) {
-                throw new InvalidGrammar(
-                    "You seem to have forgotten @ArgsSpecs on verb " + name());
-            }
-
-            ArgType[] types = annotation.value();
-            validateArgsLength(args, types);
-            validateArgsValues(args, types);
-        } catch (ClassCastException e) {
+        ArgsSpecs annotation = (ArgsSpecs) getAnnotation(ArgsSpecs.class);
+        if (annotation == null) {
             throw new InvalidGrammar(
-                    "Please check the type of arguments - " + e.getMessage());
+                "You seem to have forgotten @ArgsSpecs on verb " + name());
         }
+        ArgType[] types = annotation.value();
+        validateArgsLength(args, types);
+        validateArgsValues(args, types);
     }
 
     private void validateArgsValues(final List<String> args,

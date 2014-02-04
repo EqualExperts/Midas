@@ -2,6 +2,7 @@ package com.ee.midas.dsl.grammar;
 
 import com.ee.midas.dsl.interpreter.representation.InvalidGrammar;
 
+import java.lang.annotation.Annotation;
 import java.util.List;
 
 public enum Verb {
@@ -23,38 +24,35 @@ public enum Verb {
     @Contraction @ArgsSpecs(ArgType.JSON)
     remove;
 
-    public boolean isExpansion() {
+    private Annotation getAnnotation(final Class annotationClass) {
         try {
             return Verb.class
-                    .getField(name())
-                    .getAnnotation(Expansion.class) != null;
+                .getField(name())
+                .getAnnotation(annotationClass);
         } catch (NoSuchFieldException e) {
-            return false;
+            return null;
         }
     }
 
+    public boolean isExpansion() {
+        return getAnnotation(Expansion.class) != null;
+    }
+
     public boolean isContraction() {
-        try {
-            return Verb.class
-                    .getField(name())
-                    .getAnnotation(Contraction.class) != null;
-        } catch (NoSuchFieldException e) {
-            return false;
-        }
+        return getAnnotation(Contraction.class) != null;
     }
 
     public void validate(final List<String> args) {
         try {
-            ArgsSpecs argsSpecsAnnotation = Verb.class
-                                            .getField(name())
-                                            .getAnnotation(ArgsSpecs.class);
+            ArgsSpecs annotation = (ArgsSpecs) getAnnotation(ArgsSpecs.class);
+            if (annotation == null) {
+                throw new InvalidGrammar(
+                    "You seem to have forgotten @ArgsSpecs on verb " + name());
+            }
 
-            ArgType[] types = argsSpecsAnnotation.value();
+            ArgType[] types = annotation.value();
             validateArgsLength(args, types);
             validateArgsValues(args, types);
-        } catch (NoSuchFieldException e) {
-            throw new InvalidGrammar(
-                    "Sorry!! Midas Compiler bombed - " + e.getMessage());
         } catch (ClassCastException e) {
             throw new InvalidGrammar(
                     "Please check the type of arguments - " + e.getMessage());

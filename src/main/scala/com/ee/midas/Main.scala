@@ -111,7 +111,7 @@ object Main extends App with Loggable {
   }
 
   private def waitForNewConnectionOn(serverSocket: ServerSocket) = {
-    val listeningMsg = s"Midas Ready! Listening on port ${serverSocket.getLocalPort()} for new connections..."
+    val listeningMsg = s"Midas Ready! Listening on ${serverSocket.getInetAddress}, port ${serverSocket.getLocalPort()} for new connections..."
     logInfo(listeningMsg)
     println(listeningMsg)
     serverSocket.accept()

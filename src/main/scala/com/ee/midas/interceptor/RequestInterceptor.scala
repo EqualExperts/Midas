@@ -31,11 +31,11 @@ class RequestInterceptor (tracker: MessageTracker) extends MidasInterceptable wi
         println("In update query......... full collection name == "+fullCollectionName)
 
         val decoder: DBDecoder = new DefaultDBDecoder()
-        var i = fullCollectionName.length
+        var i = fullCollectionName.length + 1
         var j = 0
         //Removing FullCollectionName and 4 bytes flag
-        val payload:Array[Byte] = new Array[Byte](remaining.length - (fullCollectionName.length+5))
-        for(i <- (fullCollectionName.length+5) until remaining.length )
+        val payload:Array[Byte] = new Array[Byte](remaining.length - (fullCollectionName.length + 4))
+        for(i <- (i + 4) until remaining.length )
         {
           payload(j) = remaining(i)
           j= j+1

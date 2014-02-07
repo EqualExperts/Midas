@@ -30,6 +30,23 @@ class ConfigurationSpecs extends Specification {
         given: 'a configuration converted to a file resource'
             def config = """
                              apps {
+                             }
+                         """.stripMargin()
+
+            def configURL = createConfiguration(config)
+
+        when: 'configuration is created'
+            new Configuration(configURL)
+
+        then: 'configuration is read in successfully'
+            notThrown(Throwable)
+
+    }
+
+    def "reads mode from configuration"() {
+        given: 'mode in configuration'
+            def config = """
+                             apps {
                                 mode = 'contraction'
                              }
                          """.stripMargin()
@@ -39,7 +56,7 @@ class ConfigurationSpecs extends Specification {
         when: 'configuration is read in'
             def configuration = new Configuration(configURL)
 
-        then: 'it should return the mode set in configuration file'
+        then: 'it should return the set mode'
            configuration.mode() == TransformType.CONTRACTION
     }
 

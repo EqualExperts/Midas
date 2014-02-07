@@ -21,17 +21,14 @@ object Main extends App with Loggable {
       case Some(config) =>
         val waitBeforeProcessing = 100
         val loader = Main.getClass.getClassLoader
-        val configURL = new URL(config.baseDeltasDir + File.separator + "midas.config")
-        logInfo(s"Midas Config = $configURL")
-        val midasConfig = new Configuration(configURL)
-        val transformType = midasConfig.mode
-
-        val transformModeMsg = s"Starting Midas in ${transformType} mode...on ${config.midasHost}, port ${config.midasPort}"
-        logInfo(transformModeMsg)
-        println(transformModeMsg)
+        val midasConfigURL = configURL(config)
+        val mode = processMidasConfig(midasConfigURL)
+        val modeMsg = s"Starting Midas in ${mode} mode...on ${config.midasHost}, port ${config.midasPort}"
+        logInfo(modeMsg)
+        println(modeMsg)
 
         //Todo: tweak scala style rule so that we don't have to give types when declaring variables.
-        val deltasDirURL: URL = new File(config.baseDeltasDir.getPath + "/" + transformType.toString.toLowerCase).toURI.toURL
+        val deltasDirURL: URL = new File(config.baseDeltasDir.getPath + "/" + mode.toString.toLowerCase).toURI.toURL
         val srcScalaTemplateURI = "templates/Transformations.scala.template"
         val srcScalaDirURI = "generated/scala/"
         val srcScalaFilename = "Transformations.scala"
@@ -52,16 +49,18 @@ object Main extends App with Loggable {
         val deployableHolder = createDeployableHolder
         implicit val deltasProcessor =
           new DeltaFilesProcessor(new Translator(new Reader(), new ScalaGenerator()), deployableHolder)
-        processDeltaFiles(transformType, deltasDirURL, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
+        processDeltaFiles(mode, deltasDirURL, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
 
-        val dirWatchMsg = s"Setting up Directory Watcher for ${deltasDirURL}..."
+        val dirWatchMsg = s"Setting up Directory Watcher for ${config.baseDeltasDir}..."
         println(dirWatchMsg)
         logInfo(dirWatchMsg)
-        val watcher = new DirectoryWatcher(deltasDirURL.getPath, List(ENTRY_CREATE, ENTRY_DELETE),
+//        val watcher = new DirectoryWatcher(deltasDirURL.getPath, List(ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY),
+        val watcher = new DirectoryWatcher(config.baseDeltasDir.getPath, List(ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY),
           waitBeforeProcessing)(watchEvents => {
           watchEvents.foreach {watchEvent =>
             logInfo(s"Received ${watchEvent.kind()}, Context = ${watchEvent.context()}")
           }
+          val transformType = processMidasConfig(midasConfigURL)
           processDeltaFiles(transformType, deltasDirURL, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
         })
         watcher.start
@@ -87,11 +86,11 @@ object Main extends App with Loggable {
           val newConMsg = s"New connection received from Remote IP: ${application.getInetAddress} Remote Port: ${application.getPort}, Local Port: ${application.getLocalPort}"
           logInfo(newConMsg)
           println(newConMsg)
-          try{
+          try {
             val mongoSocket = new Socket(config.mongoHost, config.mongoPort)
             val tracker = new MessageTracker()
             val requestInterceptable = new RequestInterceptor(tracker)
-            val responseInterceptable = new ResponseInterceptor(tracker, new Transformer(transformType, deployableHolder))
+            val responseInterceptable = new ResponseInterceptor(tracker, new Transformer(deployableHolder))
 
             val duplexPipe = application  <|==|> (mongoSocket, requestInterceptable, responseInterceptable)
             duplexPipe.start
@@ -136,6 +135,16 @@ object Main extends App with Loggable {
     } finally {
       writer.close()
     }
+  }
+  
+  private def configURL(config: MidasCmdConfig): URL = {
+    new URL(config.baseDeltasDir + File.separator + "midas.config")
+  }
+  
+  private def processMidasConfig(url: URL): TransformType = {
+    logInfo(s"Midas Config URL = $url")
+    val midasConfig = new Configuration(url)
+    midasConfig.mode
   }
 
   private def createDeployableHolder =

@@ -11,6 +11,7 @@ abstract class Transforms extends Versioner with Deployable[Transforms] {
   type VersionedSnippets = TreeMap[Double, Snippet]
   var expansions : Map[String, VersionedSnippets]
   var contractions : Map[String, VersionedSnippets]
+  implicit val transformType: TransformType = TransformType.EXPANSION
 
   def injectState(fromTransforms: Transforms) = {
     this.expansions = fromTransforms.expansions
@@ -20,7 +21,7 @@ abstract class Transforms extends Versioner with Deployable[Transforms] {
   def canBeApplied(fullCollectionName: String): Boolean =
     expansions.keySet.contains(fullCollectionName) || contractions.keySet.contains(fullCollectionName)
 
-  def map(document: BSONObject)(implicit fullCollectionName: String, transformType: TransformType) : BSONObject =  {
+  def map(document: BSONObject)(implicit fullCollectionName: String) : BSONObject =  {
     versionedSnippets match {
       case map if map.isEmpty => document
       case vs =>
@@ -33,7 +34,7 @@ abstract class Transforms extends Versioner with Deployable[Transforms] {
     }
   }
 
-  def versionedSnippets(implicit fullCollectionName: String, transformType: TransformType): VersionedSnippets =
+  def versionedSnippets(implicit fullCollectionName: String): VersionedSnippets =
     if(transformType == EXPANSION)
       expansions(fullCollectionName)
     else if(transformType == CONTRACTION)
@@ -43,7 +44,7 @@ abstract class Transforms extends Versioner with Deployable[Transforms] {
   def snippetsFrom(version: Double, versionedSnippets: VersionedSnippets) =
     versionedSnippets.filterKeys(v => v >= version).unzip._2
 
-  def applySnippets(snippets: Snippets, document: BSONObject)(implicit transformType: TransformType): BSONObject =
+  def applySnippets(snippets: Snippets, document: BSONObject): BSONObject =
     snippets.foldLeft(document) {
       case (document, snippet) => (snippet andThen version)(document)
     }

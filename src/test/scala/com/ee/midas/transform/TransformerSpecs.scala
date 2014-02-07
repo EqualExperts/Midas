@@ -19,7 +19,7 @@ class TransformerSpecs extends Specification with Mockito {
           transforms.canBeApplied(fullCollectionName) returns true
 
           //When
-          val transformer = new Transformer(TransformType.EXPANSION , deployableHolder)
+          val transformer = new Transformer(deployableHolder)
 
           //Then
           transformer.canTransformDocuments(fullCollectionName)  mustEqual true
@@ -35,7 +35,7 @@ class TransformerSpecs extends Specification with Mockito {
           transforms.canBeApplied(fullCollectionName) returns true
 
           //When
-          val transformer = new Transformer(TransformType.CONTRACTION , deployableHolder)
+          val transformer = new Transformer(deployableHolder)
 
           //Then
           transformer.canTransformDocuments(fullCollectionName) mustEqual true
@@ -47,18 +47,17 @@ class TransformerSpecs extends Specification with Mockito {
           val deployableHolder =  mock[DeployableHolder[Transforms]]
           val transforms = mock[Transforms]
           val fullCollectionName : String = "name"
-          val transformType = TransformType.EXPANSION
           deployableHolder.get returns transforms
           val document = new BasicBSONObject("name","testCollection")
           val expectedDocument = document.append("new","value")
-          transforms.map(document)(fullCollectionName, transformType) returns expectedDocument
+          transforms.map(document)(fullCollectionName) returns expectedDocument
 
           //When
-          val transformer = new Transformer(TransformType.EXPANSION, deployableHolder)
+          val transformer = new Transformer(deployableHolder)
 
           //Then
           transformer.transform(document)(fullCollectionName)  mustEqual  expectedDocument
-          there was one(transforms).map(document)(fullCollectionName, transformType)
+          there was one(transforms).map(document)(fullCollectionName)
         }
 
         "transforms document in CONTRACTION mode" in {
@@ -66,18 +65,17 @@ class TransformerSpecs extends Specification with Mockito {
           val deployableHolder =  mock[DeployableHolder[Transforms]]
           val transforms = mock[Transforms]
           val fullCollectionName : String = "name"
-          val transformType = TransformType.CONTRACTION
           deployableHolder.get returns transforms
           val document = new BasicBSONObject("name","testCollection")
           val expectedDocument = document.append("new","value")
-          transforms.map(document)(fullCollectionName, transformType) returns expectedDocument
+          transforms.map(document)(fullCollectionName) returns expectedDocument
 
           //When
-          val transformer = new Transformer(TransformType.CONTRACTION, deployableHolder)
+          val transformer = new Transformer(deployableHolder)
 
           //Then
           transformer.transform(document)(fullCollectionName)  mustEqual  expectedDocument
-          there was one(transforms).map(document)(fullCollectionName, transformType)
+          there was one(transforms).map(document)(fullCollectionName)
         }
       }
 }

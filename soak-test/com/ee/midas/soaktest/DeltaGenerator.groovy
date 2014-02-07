@@ -3,9 +3,9 @@ package com.ee.midas.soaktest
 def configURL = new File("Config.groovy").toURI().toURL()
 def config = new ConfigSlurper().parse(configURL)
 
-def deltasDir = config.soakdata.deltas.baseDir
-def expansions = config.soakdata.deltas.expansions
-def contractions = config.soakdata.deltas.contractions
+def deltasDir = config.data.deltas.baseDir
+def expansions = config.data.deltas.expansions
+def contractions = config.data.deltas.contractions
 def pathSeparator = File.separator
 
 expansions.each {
@@ -21,11 +21,14 @@ contractions.each {
 def createDeltaFile(absoluteFileName, content) {
     def deltaFile = new File(absoluteFileName)
     println("creating delta: ${absoluteFileName}")
-    !deltaFile.exists()?: deltaFile.delete()
-    deltaFile.createNewFile()
-    deltaFile.withWriter { out ->
-        content.eachLine {
-            out.println(it.stripIndent())
+    if(deltaFile.exists()){
+        println("The delta $absoluteFileName already exists!")
+    } else {
+        deltaFile.createNewFile()
+        deltaFile.withWriter { out ->
+            content.eachLine {
+                out.println(it.stripIndent())
+            }
         }
     }
 }

@@ -11,11 +11,12 @@ abstract class Transforms extends Versioner with Deployable[Transforms] {
   type VersionedSnippets = TreeMap[Double, Snippet]
   var expansions : Map[String, VersionedSnippets]
   var contractions : Map[String, VersionedSnippets]
-  implicit val transformType: TransformType = TransformType.EXPANSION
+  implicit var transformType: TransformType
 
   def injectState(fromTransforms: Transforms) = {
     this.expansions = fromTransforms.expansions
     this.contractions = fromTransforms.contractions
+    this.transformType = fromTransforms.transformType
   }
 
   def canBeApplied(fullCollectionName: String): Boolean =

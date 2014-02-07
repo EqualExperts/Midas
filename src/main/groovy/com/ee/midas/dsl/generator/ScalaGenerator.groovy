@@ -27,7 +27,7 @@ public class ScalaGenerator implements Generator<String> {
 
         if (transformType == EXPANSION) {
             """
-            override implicit val transformType = TransformType.EXPANSION
+            override implicit var transformType = TransformType.EXPANSION
 
             override var expansions: Map[String, VersionedSnippets] =
             Map(${transformationEntries})
@@ -37,7 +37,7 @@ public class ScalaGenerator implements Generator<String> {
             """
         } else if (transformType == CONTRACTION) {
             """
-            override implicit val transformType = TransformType.CONTRACTION
+            override implicit var transformType = TransformType.CONTRACTION
 
             override var expansions: Map[String, VersionedSnippets] =
             Map()
@@ -47,7 +47,7 @@ public class ScalaGenerator implements Generator<String> {
             """
         } else {
             """
-            override implicit val transformType = TransformType.EXPANSION
+            override implicit var transformType = TransformType.EXPANSION
 
             override var expansions: Map[String, VersionedSnippets] = Map()
 

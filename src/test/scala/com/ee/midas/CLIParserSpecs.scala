@@ -49,9 +49,7 @@ class CLIParserSpecs extends Specification {
              config.midasPort mustEqual 27020
              config.mongoHost mustEqual "localhost"
              config.mongoPort mustEqual 27017
-             config.mode mustEqual TransformType.EXPANSION
              config.baseDeltasDir mustEqual baseDeltasDirURI
-             config.deltasDirURL mustEqual expansionDeltasDirURL
              success
 
            case None =>
@@ -66,9 +64,7 @@ class CLIParserSpecs extends Specification {
             config.midasPort mustEqual 27020
             config.mongoHost mustEqual "localhost"
             config.mongoPort mustEqual 27017
-            config.mode mustEqual TransformType.EXPANSION
             config.baseDeltasDir mustEqual baseDeltasDirURI
-            config.deltasDirURL mustEqual expansionDeltasDirURL
             success
 
           case None =>
@@ -84,9 +80,7 @@ class CLIParserSpecs extends Specification {
             config.midasPort mustEqual 27040
             config.mongoHost mustEqual "localhost"
             config.mongoPort mustEqual 27017
-            config.mode mustEqual TransformType.EXPANSION
             config.baseDeltasDir mustEqual baseDeltasDirURI
-            config.deltasDirURL mustEqual expansionDeltasDirURL
             success
 
           case None =>
@@ -102,9 +96,7 @@ class CLIParserSpecs extends Specification {
             config.midasPort mustEqual 27020
             config.mongoHost mustEqual "192.168.1.44"
             config.mongoPort mustEqual 27017
-            config.mode mustEqual TransformType.EXPANSION
             config.baseDeltasDir mustEqual baseDeltasDirURI
-            config.deltasDirURL mustEqual expansionDeltasDirURL
             success
 
           case None =>
@@ -120,9 +112,7 @@ class CLIParserSpecs extends Specification {
             config.midasPort mustEqual 27020
             config.mongoHost mustEqual "localhost"
             config.mongoPort mustEqual 27019
-            config.mode mustEqual TransformType.EXPANSION
             config.baseDeltasDir mustEqual baseDeltasDirURI
-            config.deltasDirURL mustEqual expansionDeltasDirURL
             success
 
           case None =>
@@ -138,9 +128,7 @@ class CLIParserSpecs extends Specification {
             config.midasPort mustEqual 27040
             config.mongoHost mustEqual "192.168.1.44"
             config.mongoPort mustEqual 27017
-            config.mode mustEqual TransformType.EXPANSION
             config.baseDeltasDir mustEqual baseDeltasDirURI
-            config.deltasDirURL mustEqual expansionDeltasDirURL
             success
 
           case None =>
@@ -156,9 +144,7 @@ class CLIParserSpecs extends Specification {
             config.midasPort mustEqual 27040
             config.mongoHost mustEqual "localhost"
             config.mongoPort mustEqual 27019
-            config.mode mustEqual TransformType.EXPANSION
             config.baseDeltasDir mustEqual baseDeltasDirURI
-            config.deltasDirURL mustEqual expansionDeltasDirURL
             success
 
           case None =>
@@ -174,9 +160,7 @@ class CLIParserSpecs extends Specification {
             config.midasPort mustEqual 27020
             config.mongoHost mustEqual "192.168.1.44"
             config.mongoPort mustEqual 27019
-            config.mode mustEqual TransformType.EXPANSION
             config.baseDeltasDir mustEqual baseDeltasDirURI
-            config.deltasDirURL mustEqual expansionDeltasDirURL
             success
 
           case None =>
@@ -185,35 +169,15 @@ class CLIParserSpecs extends Specification {
         }
       }
 
-      " run in CONTRACTION mode" in new SetupTeardown {
-        CLIParser.parse(Array("--host","www.midasservice.in","--port","27040","--source","192.168.1.44","--mongoPort","27019","--mode","CONTRACTION")) match {
-          case Some(config) =>
-            config.midasHost mustEqual "www.midasservice.in"
-            config.midasPort mustEqual 27040
-            config.mongoHost mustEqual "192.168.1.44"
-            config.mongoPort mustEqual 27019
-            config.mode mustEqual TransformType.CONTRACTION
-            config.baseDeltasDir mustEqual baseDeltasDirURI
-            config.deltasDirURL mustEqual contractionDeltasDirURL
-            success
-
-          case None =>
-            failure("Should have run in CONTRACTION mode")
-
-        }
-      }
-
       " use the specified directory for picking up delta files " in new SetupTeardown {
         CLIParser.parse(Array("--port", "27040", "--source", "192.168.1.44",
-          "--mongoPort", "27019", "--mode", "CONTRACTION", "--deltasDir", newBaseDeltasDir)) match {
+          "--mongoPort", "27019", "--deltasDir", newBaseDeltasDir)) match {
           case Some(config) =>
             config.midasHost mustEqual "localhost"
             config.midasPort mustEqual 27040
             config.mongoHost mustEqual "192.168.1.44"
             config.mongoPort mustEqual 27019
-            config.mode mustEqual TransformType.CONTRACTION
             config.baseDeltasDir mustEqual newBaseDeltasdirFile.toURI
-            config.deltasDirURL mustEqual newContractionDeltasdirFile.toURI.toURL
             success
 
           case None =>

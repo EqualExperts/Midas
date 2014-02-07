@@ -21,14 +21,17 @@ object Main extends App with Loggable {
       case Some(config) =>
         val waitBeforeProcessing = 100
         val loader = Main.getClass.getClassLoader
-        val transformType = config.mode
+        val configURL = new URL(config.baseDeltasDir + File.separator + "midas.config")
+        logInfo(s"Midas Config = $configURL")
+        val midasConfig = new Configuration(configURL)
+        val transformType = midasConfig.mode
 
         val transformModeMsg = s"Starting Midas in ${transformType} mode...on ${config.midasHost}, port ${config.midasPort}"
         logInfo(transformModeMsg)
         println(transformModeMsg)
 
         //Todo: tweak scala style rule so that we don't have to give types when declaring variables.
-        val deltasDirURL: URL = config.deltasDirURL
+        val deltasDirURL: URL = new File(config.baseDeltasDir.getPath + "/" + transformType.toString.toLowerCase).toURI.toURL
         val srcScalaTemplateURI = "templates/Transformations.scala.template"
         val srcScalaDirURI = "generated/scala/"
         val srcScalaFilename = "Transformations.scala"

@@ -1,7 +1,7 @@
 package com.ee.midas
 
 import java.io.{File}
-import java.net.{URI}
+import java.net.{URL, URI}
 import com.ee.midas.utils.Loggable
 
 case class MidasCmdConfig (val midasHost:String = "localhost",
@@ -9,6 +9,8 @@ case class MidasCmdConfig (val midasHost:String = "localhost",
                         val mongoHost: String = "localhost",
                         val mongoPort: Int = 27017,
                         val baseDeltasDir: URI)  {
+
+  val midasConfig = new URL(baseDeltasDir + "/midas.config")
 }
 
 object CLIParser extends Loggable {

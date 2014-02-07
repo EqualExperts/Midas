@@ -16,6 +16,7 @@ class CLIParserSpecs extends Specification {
     val expansionFolder =  TransformType.EXPANSION.toString.toLowerCase
     val contractionFolder =  TransformType.CONTRACTION.toString.toLowerCase
     val baseDeltasDirURI : URI =  loader.getResource("deltas").toURI
+    val midasConfigURL : URL = new URL(baseDeltasDirURI.toString + "/midas.config")
     val expansionDeltasDirURL: URL = new File(baseDeltasDirURI.getPath + "/" + expansionFolder).toURI.toURL
     val contractionDeltasDirURL: URL = new File(baseDeltasDirURI.getPath + "/" + contractionFolder).toURI.toURL
     val newBaseDeltasDir = "src/test/scala/com/ee/midas/newDeltas"
@@ -50,6 +51,7 @@ class CLIParserSpecs extends Specification {
              config.mongoHost mustEqual "localhost"
              config.mongoPort mustEqual 27017
              config.baseDeltasDir mustEqual baseDeltasDirURI
+             config.midasConfig mustEqual midasConfigURL
              success
 
            case None =>

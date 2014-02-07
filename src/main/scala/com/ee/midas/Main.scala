@@ -21,14 +21,13 @@ object Main extends App with Loggable {
       case Some(config) =>
         val waitBeforeProcessing = 100
         val loader = Main.getClass.getClassLoader
-        val midasConfigURL = configURL(config)
+        val midasConfigURL = config.midasConfig
         val mode = processMidasConfig(midasConfigURL)
         val modeMsg = s"Starting Midas in ${mode} mode...on ${config.midasHost}, port ${config.midasPort}"
         logInfo(modeMsg)
         println(modeMsg)
 
         //Todo: tweak scala style rule so that we don't have to give types when declaring variables.
-        val deltasDirURL: URL = new File(config.baseDeltasDir.getPath + "/" + mode.toString.toLowerCase).toURI.toURL
         val srcScalaTemplateURI = "templates/Transformations.scala.template"
         val srcScalaDirURI = "generated/scala/"
         val srcScalaFilename = "Transformations.scala"
@@ -43,6 +42,7 @@ object Main extends App with Loggable {
         logInfo(s"Source Scala Dir = $srcScalaDir")
 
         val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
+        val deltasDirURL: URL = deltasDir(config, mode)
         val processingDeltaFilesMsg = s"Processing Delta Files...from Dir ${deltasDirURL}"
         println(processingDeltaFilesMsg)
         logInfo(processingDeltaFilesMsg)
@@ -54,13 +54,13 @@ object Main extends App with Loggable {
         val dirWatchMsg = s"Setting up Directory Watcher for ${config.baseDeltasDir}..."
         println(dirWatchMsg)
         logInfo(dirWatchMsg)
-//        val watcher = new DirectoryWatcher(deltasDirURL.getPath, List(ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY),
         val watcher = new DirectoryWatcher(config.baseDeltasDir.getPath, List(ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY),
           waitBeforeProcessing)(watchEvents => {
           watchEvents.foreach {watchEvent =>
             logInfo(s"Received ${watchEvent.kind()}, Context = ${watchEvent.context()}")
           }
           val transformType = processMidasConfig(midasConfigURL)
+          val deltasDirURL = deltasDir(config, transformType)
           processDeltaFiles(transformType, deltasDirURL, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
         })
         watcher.start
@@ -137,8 +137,8 @@ object Main extends App with Loggable {
     }
   }
   
-  private def configURL(config: MidasCmdConfig): URL = {
-    new URL(config.baseDeltasDir + File.separator + "midas.config")
+  private def deltasDir(config: MidasCmdConfig, transformType: TransformType): URL = {
+    new File(config.baseDeltasDir.getPath + "/" + transformType.toString.toLowerCase).toURI.toURL
   }
   
   private def processMidasConfig(url: URL): TransformType = {

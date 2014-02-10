@@ -87,7 +87,7 @@ object Main extends App with Loggable {
           try{
             val mongoSocket = new Socket(config.mongoHost, config.mongoPort)
             val tracker = new MessageTracker()
-            val requestInterceptable = new RequestInterceptor(tracker)
+            val requestInterceptable = new RequestInterceptor(tracker, transformType)
             val responseInterceptable = new ResponseInterceptor(tracker, new Transformer(transformType, deployableHolder))
 
             val duplexPipe = application  <|==|> (mongoSocket, requestInterceptable, responseInterceptable)

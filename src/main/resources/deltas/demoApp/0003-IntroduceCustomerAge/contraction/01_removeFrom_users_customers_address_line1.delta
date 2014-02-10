@@ -1,0 +1,2 @@
+use users
+db.customers.remove('[ "address.line1"]')

@@ -1,0 +1,14 @@
+/**
+ * set context to users db and add to customers collection the following
+ * fields:
+ *  - city
+ *  - pin
+ **/
+use users
+db.customers.add("{'city' : 'Please Set City', 'pin':  'Please Pin code' }")
+
+// Set context to transactions db
+use transactions
+
+// add to orders collection a nested document
+db.orders.add('{"dispatch" : { "status" : "Default Status", "address": { "line1" : "Some Road", "city": "Some City" }}}')

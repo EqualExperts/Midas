@@ -32,4 +32,4 @@ if not defined MIDAS_HOME (SET MIDAS_HOME=.)
 
 SET CLASSPATH=%MIDAS_HOME%;%%JAVA_CLASS_PATH%%
 
-java -cp %CLASSPATH% -DlogLevel=OFF com.ee.midas.Main %*
+java -cp %CLASSPATH% -DlogLevel=INFO com.ee.midas.Main %*

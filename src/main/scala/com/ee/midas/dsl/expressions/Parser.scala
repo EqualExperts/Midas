@@ -16,7 +16,7 @@ trait Parser extends JavaTokenParsers {
    * value ::= obj | floatingPointNumber | "null" | "true" | "false" | quotedField | singleQuotedField | quotedStringLiteral | singleQuotedStringLiteral.
    * obj ::= "{" function "}".
    * fn ::= fnName ":" fnArgs.
-   * fnArgs ::= "[" [values] "]".
+   * fnArgs ::= "[" values "]".
    * values ::= value { "," value }.
    */
   def value: Parser[Expression] =

@@ -48,7 +48,8 @@ public class Reader {
     public Tree read(final List<File> deltaFiles) {
         def parser = new Parser()
         deltaFiles.each { deltaFile ->
-            def deltaFileName = deltaFile.name
+            def deltaFileName = deltaFile.absolutePath
+            log.info("Reading $deltaFileName")
             def dsl = deltaFile.text
             def code = """{-> $dsl}"""
             //shell evaluates once, hence create new each time

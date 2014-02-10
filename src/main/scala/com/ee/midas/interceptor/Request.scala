@@ -3,42 +3,33 @@ package com.ee.midas.interceptor
 import org.bson.io.Bits
 import com.mongodb.{DefaultDBDecoder, DBDecoder, DBCollection}
 import com.ee.midas.transform.TransformType
-import org.bson.{BasicBSONEncoder, BSONObject}
+import org.bson.BSONObject
 import java.io.ByteArrayInputStream
 import com.ee.midas.transform.DocumentOperations._
+import com.ee.midas.transform.TransformType._
 
-abstract class Request(data: Array[Byte]) {
+sealed trait Request {
   val CSTRING_TERMINATION_DELIM = 0
   val delimiterLength = 1
-  val fullCollectionName: String = getFullCollectionName()
 
-  val decoder: DBDecoder = new DefaultDBDecoder
-  val encoder: BasicBSONEncoder = new BasicBSONEncoder
+  def addVersion(document: BSONObject, transformType: TransformType): BSONObject = transformType match {
+    case EXPANSION => document + ("_expansionVersion", 0)
+    case CONTRACTION => document + ("_contractionVersion", 0)
+  }
 
-  def appendVersion(document: BSONObject, transformType: TransformType) = {
-    if (transformType.compareTo(TransformType.EXPANSION) == 0)
-        document + ("_expansionVersion", 0)
-    else if(transformType.compareTo(TransformType.CONTRACTION) == 0)
-            document + ("_contractionVersion", 0)
-    }
-
-  private def getFullCollectionName(): String = {
+  def extractFullCollectionName(data: Array[Byte]): String = {
     val result : Array[Byte] = data.takeWhile( _ != CSTRING_TERMINATION_DELIM)
     (result map (_.toChar) mkString)
   }
 
-  def getVersionedData(transformType: TransformType): Array[Byte]
+  def versioned(transformType: TransformType): Array[Byte]
 }
 
-case class Update(data: Array[Byte]) extends Request(data) {
-
+case class Update(data: Array[Byte]) extends Request {
   private val updateFlagLength = 4
-  private val payloadStartsAt = fullCollectionName.length + updateFlagLength + delimiterLength
+  private val payloadStartsAt = extractFullCollectionName(data).length + updateFlagLength + delimiterLength
 
-  val updateFlag: Int = getUpdateFlag()
-  val (selector: BSONObject, updator: BSONObject) = getSelectorUpdator()
-
-  private def getUpdateFlag(): Int = {
+  def getUpdateFlag(): Int = {
     val result = data.dropWhile(_ != CSTRING_TERMINATION_DELIM)
     val startPosIgnoringDelimiter = 1
     val flag = Bits.readInt(result, startPosIgnoringDelimiter)
@@ -46,47 +37,42 @@ case class Update(data: Array[Byte]) extends Request(data) {
   }
 
   private def getSelectorUpdator(): (BSONObject, BSONObject) = {
-    val payload: Array[Byte] = new Array[Byte](data.length - payloadStartsAt)
-    Array.copy(data, payloadStartsAt, payload, 0, payload.length)
+    val decoder: DBDecoder = new DefaultDBDecoder
+    val payload: Array[Byte] = data.drop(payloadStartsAt)
 
     val stream = new ByteArrayInputStream(payload)
-    val collection: DBCollection = null
-    val selector = decoder.decode(stream, collection)
-    val updator = decoder.decode(stream, collection)
+    val ignoringCollection: DBCollection = null
+    val selector = decoder.decode(stream, ignoringCollection)
+    val updator = decoder.decode(stream, ignoringCollection)
+
     (selector, updator)
   }
 
-  def getVersionedData(transformType: TransformType): Array[Byte] = {
-    appendVersion(updator, transformType)
-    val versionedPayload = encoder.encode(selector) ++ encoder.encode(updator)
-    val initialBytes: Array[Byte] = new Array[Byte](payloadStartsAt)
-    Array.copy(data, 0, initialBytes, 0, initialBytes.length)
+  def versioned(transformType: TransformType): Array[Byte] = {
+    val (selector,updator) = getSelectorUpdator
+    val versionedUpdator = addVersion(updator, transformType)
+    val versionedPayload = selector.toBytes ++ versionedUpdator.toBytes
+    val initialBytes: Array[Byte] = data.take(payloadStartsAt)
     initialBytes ++ versionedPayload
   }
-
 }
 
-case class Insert(data: Array[Byte]) extends Request(data) {
+case class Insert(data: Array[Byte]) extends Request {
 
-  private val payloadStartsAt = fullCollectionName.length + delimiterLength
-
-  val document: BSONObject = getDocument()
-
+  private val payloadStartsAt = extractFullCollectionName(data).length + delimiterLength
 
   private def getDocument(): BSONObject = {
-    val payload: Array[Byte] = new Array[Byte](data.length - payloadStartsAt)
-    Array.copy(data, payloadStartsAt, payload, 0, payload.length)
+    val decoder: DBDecoder = new DefaultDBDecoder
+    val payload: Array[Byte] = data.drop(payloadStartsAt)
 
-    val collection: DBCollection = null
-    val document = decoder.decode(payload, collection)
-    document
+    val ignoringCollection: DBCollection = null
+    decoder.decode(payload, ignoringCollection)
   }
 
-  def getVersionedData(transformType: TransformType): Array[Byte] = {
-    appendVersion(document , transformType)
-    val versionedPayload = encoder.encode(document)
-    val initialBytes: Array[Byte] = new Array[Byte](payloadStartsAt)
-    Array.copy(data, 0, initialBytes, 0, initialBytes.length)
-    initialBytes ++ versionedPayload
+  def versioned(transformType: TransformType): Array[Byte] = {
+    val document = getDocument()
+    val versionedDocument = addVersion(document, transformType)
+    val initialBytes: Array[Byte] = data.take(payloadStartsAt)
+    initialBytes ++ versionedDocument.toBytes
   }
 }

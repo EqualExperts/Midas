@@ -11,7 +11,7 @@ class RequestInterceptor (tracker: MessageTracker, transformType: TransformType)
 
   private val CSTRING_TERMINATION_DELIM = 0
 
-  private def getFullCollectionName(bytes: Array[Byte]): String = {
+  private def extractFullCollectionName(bytes: Array[Byte]): String = {
     val result : Array[Byte] = bytes.takeWhile( _ != CSTRING_TERMINATION_DELIM)
     (result map (_.toChar) mkString)
  }
@@ -23,7 +23,7 @@ class RequestInterceptor (tracker: MessageTracker, transformType: TransformType)
     import BaseMongoHeader.OpCode._
     header.opCode match {
       case OP_QUERY | OP_GET_MORE => {
-        val fullCollectionName = getFullCollectionName(remaining)
+        val fullCollectionName = extractFullCollectionName(remaining)
         tracker.track(header.requestID, fullCollectionName)
       }
 
@@ -33,7 +33,7 @@ class RequestInterceptor (tracker: MessageTracker, transformType: TransformType)
            payload = Update(remaining)
         else
           payload = Insert(remaining)
-        val versionedPayload = payload.getVersionedData(transformType)
+        val versionedPayload = payload.versioned(transformType)
         val newLength = versionedPayload.length
         header.updateLength(newLength)
         return header.bytes ++ versionedPayload

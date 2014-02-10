@@ -6,8 +6,6 @@ import java.io.{ByteArrayInputStream, OutputStream, InputStream}
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 import org.specs2.specification.Scope
-import org.bson.{BasicBSONEncoder, BSONEncoder}
-import com.mongodb.{DefaultDBDecoder, DBDecoder}
 import com.ee.midas.transform.TransformType
 
 @RunWith(classOf[JUnitRunner])
@@ -43,7 +41,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
        there was one(mockSrc).read(any[Array[Byte]])
       }
 
-     "ignores opCodes other than OP_QUERY and OP_GET_MORE" in new setup {
+     "Do not track for OpCodes other than OP_QUERY and OP_GET_MORE" in new setup {
 
        //given
        val collectionBytes = collectionName.getBytes

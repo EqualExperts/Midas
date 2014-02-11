@@ -21,14 +21,14 @@ object Main extends App with Loggable {
       case Some(config) =>
         val waitBeforeProcessing = 100
         val loader = Main.getClass.getClassLoader
-        val transformType = config.mode
 
-        val transformModeMsg = s"Starting Midas in ${transformType} mode...on ${config.midasHost}, port ${config.midasPort}"
-        logInfo(transformModeMsg)
-        println(transformModeMsg)
+        val midasConfigURL = config.midasConfig
+        val mode = processMidasConfig(midasConfigURL)
+        val modeMsg = s"Starting Midas in ${mode} mode...on ${config.midasHost}, port ${config.midasPort}"
+        logInfo(modeMsg)
+        println(modeMsg)
 
         //Todo: tweak scala style rule so that we don't have to give types when declaring variables.
-        val deltasDirURL: URL = config.deltasDirURL
         val srcScalaTemplateURI = "templates/Transformations.scala.template"
         val srcScalaDirURI = "generated/scala/"
         val srcScalaFilename = "Transformations.scala"
@@ -50,12 +50,12 @@ object Main extends App with Loggable {
         val deployableHolder = createDeployableHolder
         implicit val deltasProcessor =
           new DeltaFilesProcessor(new Translator(new Reader(), new ScalaGenerator()), deployableHolder)
-        processDeltaFiles(transformType, deltasDirURL, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
+        processDeltaFiles(mode, deltasDirURL, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
 
-        val dirWatchMsg = s"Setting up Directory Watcher for ${deltasDirURL}..."
+        val dirWatchMsg = s"Setting up Directory Watcher for ${config.baseDeltasDir}..."
         println(dirWatchMsg)
         logInfo(dirWatchMsg)
-        val watcher = new DirectoryWatcher(deltasDirURL.getPath, List(ENTRY_CREATE, ENTRY_DELETE),
+        val watcher = new DirectoryWatcher(config.baseDeltasDir.getPath, List(ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY),
           waitBeforeProcessing)(watchEvents => {
           watchEvents.foreach {watchEvent =>
             logInfo(s"Received ${watchEvent.kind()}, Context = ${watchEvent.context()}")
@@ -90,7 +90,7 @@ object Main extends App with Loggable {
           try{
             val mongoSocket = new Socket(config.mongoHost, config.mongoPort)
             val tracker = new MessageTracker()
-            val requestInterceptable = new RequestInterceptor(tracker, transformType)
+            val requestInterceptable = new RequestInterceptor(tracker, mode)
             val responseInterceptable = new ResponseInterceptor(tracker, new Transformer(deployableHolder))
 
             val duplexPipe = application  <|==|> (mongoSocket, requestInterceptable, responseInterceptable)

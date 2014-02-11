@@ -4,8 +4,9 @@ import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import java.net.{InetAddress}
+import java.net.{URL, InetAddress}
 import com.ee.midas.transform.TransformType
+import java.io.{PrintWriter, File}
 
 @RunWith(classOf[JUnitRunner])
 class ParserSpecs extends Specification {
@@ -254,9 +255,9 @@ class ParserSpecs extends Specification {
       }
     }
 
-    "Parse applications" in {
+    "Parse configuration" in {
 
-      "in empty configuration" in new ConfigParser {
+      "as empty" in new ConfigParser {
         //Given
         val input =
           s"""
@@ -265,10 +266,10 @@ class ParserSpecs extends Specification {
           """.stripMargin
 
         //When
-        val appsNode = Result(parseAll(apps, input))
+        val config = Result(parseAll(configuration, input))
 
         //Then
-        appsNode mustEqual Nil
+        config mustEqual Configuration(Nil)
       }
 
       "in configuration with single application" in new ConfigParser {
@@ -297,16 +298,17 @@ class ParserSpecs extends Specification {
           """.stripMargin
 
         //When
-        val appNode = Result(parseAll(apps, input))
+        val config = Result(parseAll(configuration, input))
 
         //Then
-        appNode mustEqual List(
-            Application(appName,
-            TransformType.EXPANSION,
-            List(
-              Node(node1, InetAddress.getByName(ip1), ChangeSet(cs)),
-              Node(node2, InetAddress.getByName(ip2), ChangeSet(cs))
-            )))
+        val apps = List(
+                      Application(appName, TransformType.EXPANSION,
+                        List(
+                          Node(node1, InetAddress.getByName(ip1), ChangeSet(cs)),
+                          Node(node2, InetAddress.getByName(ip2), ChangeSet(cs))
+                  )))
+
+        config mustEqual Configuration(apps)
       }
 
       "in configuration with multiple applications" in new ConfigParser {
@@ -347,22 +349,105 @@ class ParserSpecs extends Specification {
           """.stripMargin
 
         //When
-        val appNode = Result(parseAll(apps, input))
+        val config = Result(parseAll(configuration, input))
 
         //Then
-        appNode mustEqual List(
-          Application(app1,
-            TransformType.EXPANSION,
-            List(
-              Node(app1Node1, InetAddress.getByName(ip1), ChangeSet(cs)),
-              Node(app2Node2, InetAddress.getByName(ip2), ChangeSet(cs))
-            )),
-          Application(app2,
-            TransformType.CONTRACTION,
-            List(
-              Node(app2Node, InetAddress.getByName(ip3), ChangeSet(cs2))
-            ))
-        )
+        val application1 = Application(app1, TransformType.EXPANSION,
+                            List(
+                              Node(app1Node1, InetAddress.getByName(ip1), ChangeSet(cs)),
+                              Node(app2Node2, InetAddress.getByName(ip2), ChangeSet(cs))
+                            ))
+        val application2 = Application(app2, TransformType.CONTRACTION,
+                            List(
+                              Node(app2Node, InetAddress.getByName(ip3), ChangeSet(cs2))
+                            ))
+
+        config mustEqual Configuration(application1 :: application2 :: Nil)
+      }
+    }
+
+    "Eats Java-Style Comments" in {
+      "configuration containing single line comments" in new ConfigParser {
+        //Given
+        val input =
+          s"""
+            |// Single-Line comment
+            |apps {
+            |
+            |} // End of application
+          """.stripMargin
+
+        //When
+        val config = Result(parseAll(configuration, input))
+
+        //Then
+        config mustEqual Configuration(Nil)
+      }
+
+      "configuration containing multi line comments" in new ConfigParser {
+        //Given
+        val input =
+          s"""
+            |/**
+            | * Multi-Line comment
+            | */
+            |apps {
+            |
+            |}
+          """.stripMargin
+
+        //When
+        val config = Result(parseAll(configuration, input))
+
+        //Then
+        config mustEqual Configuration(Nil)
+      }
+
+    }
+
+    "Fails to Eat Java-Style Comments" in {
+      "configuration containing nested comments" in new ConfigParser {
+        //Given
+        val input =
+          s"""
+            |/**
+            | * Multi-Line comment
+            | * /*
+            | *  * Nested comment
+            | *  */
+            | */
+            |apps {
+            |
+            |}
+          """.stripMargin
+
+        //When-Then
+        Result(parseAll(configuration, input)) must throwA[IllegalArgumentException]
+      }
+    }
+
+    "Parses configuration" in {
+      "URL" in new ConfigParser {
+        //Given
+        val configText =
+          """
+            |mode = expansion
+          """.stripMargin
+
+        val path: String = "/" + System.getProperty("user.dir")
+        val file = new File(path + "/midas.config")
+        file.createNewFile()
+        file.deleteOnExit()
+        val writer = new PrintWriter(file, "utf-8")
+        writer.write(configText)
+        writer.flush()
+        writer.close()
+
+        //When
+        val config = parse(file.toURI.toURL)
+
+        //Then
+        config mustEqual TransformType.EXPANSION
       }
     }
   }

@@ -12,8 +12,9 @@ import java.io.{PrintWriter, File}
 import com.ee.midas.transform.{Transformer, Transformations, Transforms, TransformType}
 import com.ee.midas.hotdeploy.DeployableHolder
 import java.nio.file.StandardWatchEventKinds._
+import com.ee.midas.config.{Parser}
 
-object Main extends App with Loggable {
+object Main extends App with Loggable with Parser {
   val maxClientConnections = 50
 
   override def main(args:Array[String]): Unit = {
@@ -23,7 +24,7 @@ object Main extends App with Loggable {
         val loader = Main.getClass.getClassLoader
 
         val midasConfigURL = config.midasConfig
-        val mode = processMidasConfig(midasConfigURL)
+        val mode = parse(midasConfigURL)
         val modeMsg = s"Starting Midas in ${mode} mode...on ${config.midasHost}, port ${config.midasPort}"
         logInfo(modeMsg)
         println(modeMsg)
@@ -60,7 +61,7 @@ object Main extends App with Loggable {
           watchEvents.foreach {watchEvent =>
             logInfo(s"Received ${watchEvent.kind()}, Context = ${watchEvent.context()}")
           }
-          val transformType = processMidasConfig(midasConfigURL)
+          val transformType = parse(midasConfigURL)
           val deltasDirURL = deltasDir(config, transformType)
           processDeltaFiles(transformType, deltasDirURL, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
         })
@@ -142,12 +143,6 @@ object Main extends App with Loggable {
     new File(config.baseDeltasDir.getPath + "/" + transformType.toString.toLowerCase).toURI.toURL
   }
   
-  private def processMidasConfig(url: URL): TransformType = {
-    logInfo(s"Midas Config URL = $url")
-    val midasConfig = new Configuration(url)
-    midasConfig.mode
-  }
-
   private def createDeployableHolder =
     new DeployableHolder[Transforms] {
       def createDeployable: Transforms = new Transformations

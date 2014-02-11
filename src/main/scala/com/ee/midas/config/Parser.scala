@@ -1,8 +1,9 @@
 package com.ee.midas.config
 
 import scala.util.parsing.combinator.JavaTokenParsers
-import java.net.InetAddress
+import java.net.{URL, InetAddress}
 import com.ee.midas.transform.TransformType
+import com.ee.midas.utils.Loggable
 
 /**
  * BNF
@@ -18,9 +19,12 @@ import com.ee.midas.transform.TransformType
  * name ::=  unquotedStringLiteral
  */
 
-trait Parser extends JavaTokenParsers {
+trait Parser extends JavaTokenParsers with Loggable {
 
-  def apps: Parser[List[Application]] = "apps" ~ "{" ~> rep(app) <~ "}"
+  //Eat Java-Style comments like whitespace
+  protected override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
+
+  def configuration: Parser[Configuration] = "apps" ~ "{" ~> rep(app) <~ "}"  ^^ (new Configuration(_))
 
   def app: Parser[Application] = ident ~ "{" ~ mode ~ "," ~ rep(node) ~ "}" ^^ { case name~"{"~mode~","~nodes~"}" => Application(name, mode, nodes) }
 
@@ -35,6 +39,19 @@ trait Parser extends JavaTokenParsers {
   def changeSet: Parser[ChangeSet] = "changeSet" ~ "=" ~> wholeNumber ^^ (s => ChangeSet(s.toLong))
 
   def mode: Parser[TransformType] = "mode" ~ "=" ~> ("expansion" | "contraction") ^^ (s => TransformType.valueOf(s.toUpperCase))
+
+  def parse(input: String): TransformType = parseAll(mode, input) match {
+    case Success(value, _) => value
+    case NoSuccess(message, _) =>
+      throw new IllegalArgumentException(s"Parsing Failed: $message")
+  }
+
+  def parse(url: URL): TransformType = {
+    logInfo(s"Reading Configuration File from $url")
+    val config: String = scala.io.Source.fromURL(url).mkString
+    logInfo(s"Read Configuration $config")
+    parse(config)
+  }
 }
 
 final case class ChangeSet(number: Long) {
@@ -42,4 +59,7 @@ final case class ChangeSet(number: Long) {
 }
 
 final case class Node(name: String, ip: InetAddress, changeSet: ChangeSet)
+
 final case class Application(name: String, mode: TransformType, nodes: List[Node])
+
+final case class Configuration (applications: List[Application])

@@ -13,8 +13,8 @@ sealed trait Request {
   val delimiterLength = 1
 
   def addVersion(document: BSONObject, transformType: TransformType): BSONObject = transformType match {
-    case EXPANSION => document + ("_expansionVersion", 0)
-    case CONTRACTION => document + ("_contractionVersion", 0)
+    case EXPANSION => document + ("_expansionVersion", 0d)
+    case CONTRACTION => document + ("_contractionVersion", 0d)
   }
 
   def extractFullCollectionName(data: Array[Byte]): String = {

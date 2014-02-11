@@ -6,8 +6,7 @@ import java.io.{ByteArrayInputStream, OutputStream, InputStream}
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 import org.specs2.specification.Scope
-import org.bson.{BasicBSONEncoder, BSONEncoder}
-import com.mongodb.{DefaultDBDecoder, DBDecoder}
+import com.ee.midas.transform.TransformType
 
 @RunWith(classOf[JUnitRunner])
 class RequestInterceptorSpecs extends Specification with Mockito {
@@ -33,7 +32,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
 
      "read request from source" in new setup {
        //given
-       val reqInterceptor = new RequestInterceptor(tracker)
+       val reqInterceptor = new RequestInterceptor(tracker, TransformType.EXPANSION)
 
        //when
        reqInterceptor.read(mockSrc, header)
@@ -42,14 +41,14 @@ class RequestInterceptorSpecs extends Specification with Mockito {
        there was one(mockSrc).read(any[Array[Byte]])
       }
 
-     "ignores opCodes other than OP_QUERY and OP_GET_MORE" in new setup {
+     "Do not track for OpCodes other than OP_QUERY and OP_GET_MORE" in new setup {
 
        //given
        val collectionBytes = collectionName.getBytes
        header.opCode returns BaseMongoHeader.OpCode.OP_DELETE
        val src = new ByteArrayInputStream(collectionBytes)
        header.payloadSize returns collectionBytes.size
-       val reqInterceptor = new RequestInterceptor(tracker)
+       val reqInterceptor = new RequestInterceptor(tracker, TransformType.EXPANSION)
 
        //when
        reqInterceptor.read(src, header)
@@ -65,7 +64,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
        val src = new ByteArrayInputStream(collectionBytes)
        header.payloadSize returns collectionBytes.size
        header.opCode returns BaseMongoHeader.OpCode.OP_GET_MORE
-       val reqInterceptor = new RequestInterceptor(tracker)
+       val reqInterceptor = new RequestInterceptor(tracker, TransformType.EXPANSION)
 
        //when
        reqInterceptor.read(src, header)
@@ -80,7 +79,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
        val src = new ByteArrayInputStream(collectionBytes)
        header.payloadSize returns collectionBytes.size
        header.opCode returns BaseMongoHeader.OpCode.OP_QUERY
-       val reqInterceptor = new RequestInterceptor(tracker)
+       val reqInterceptor = new RequestInterceptor(tracker, TransformType.EXPANSION)
 
        //when
        reqInterceptor.read(src, header)
@@ -94,7 +93,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
        val tgt = mock[OutputStream]
        val data = "request data".getBytes()
 
-       val reqInterceptor = new RequestInterceptor(tracker)
+       val reqInterceptor = new RequestInterceptor(tracker, TransformType.EXPANSION)
 
        //when
        reqInterceptor.write(data, tgt)
@@ -110,7 +109,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
          0x00.toByte, 0x08.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte)
        val inputStream: InputStream = new ByteArrayInputStream(headerBytes)
        val tracker = mock[MessageTracker]
-       val reqInterceptor = new RequestInterceptor(tracker)
+       val reqInterceptor = new RequestInterceptor(tracker, TransformType.EXPANSION)
 
        //when
        val header = reqInterceptor.readHeader(inputStream)

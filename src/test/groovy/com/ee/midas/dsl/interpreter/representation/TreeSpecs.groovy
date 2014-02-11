@@ -249,4 +249,21 @@ class TreeSpecs extends Specification {
             thrown(InvalidGrammar)
     }
 
+    def "is changeset aware"() {
+        when: 'a tree is created'
+            def tree = new Tree()
+
+        then: 'it is change set aware'
+            tree instanceof ChangeSetAware
+    }
+
+    def "is database aware"() {
+        when: 'a tree is created'
+            def tree = new Tree()
+
+        then: 'it is change set aware'
+            tree instanceof DatabaseAware
+    }
+
+
 }

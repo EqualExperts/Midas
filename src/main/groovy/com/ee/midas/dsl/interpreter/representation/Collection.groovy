@@ -18,9 +18,11 @@ class Collection {
     private final Map<Long, Tuple> versionedContractions = [:]
     private Long curExpansionVersion = 1
     private Long curContractionVersion = 1
+    private final Context ctx
 
-    Collection(String name) {
+    Collection(String name, Context ctx) {
         this.name = name
+        this.ctx = ctx
     }
 
     def invokeMethod(String name, args) {
@@ -31,12 +33,12 @@ class Collection {
         verb.validate(parameters)
         if (verb.isExpansion()) {
             log.info("${this.name} Adding Expansion $verb with $args")
-            versionedExpansions[curExpansionVersion++] = [verb, args]
+            versionedExpansions[curExpansionVersion++] = [verb, args, ctx.currentCS()]
             return
         }
         if (verb.isContraction()) {
             log.info("${this.name} Adding Contraction $verb with $args")
-            versionedContractions[curContractionVersion++] = [verb, args]
+            versionedContractions[curContractionVersion++] = [verb, args, ctx.currentCS()]
             return
         }
 

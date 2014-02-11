@@ -6,6 +6,8 @@ import groovy.util.logging.Slf4j
 
 @Slf4j
 public class Tree {
+    @Delegate
+    private final Context ctx = new Context()
     private final Map<String, Database> databases = [:]
 
     public Tree() {
@@ -13,13 +15,15 @@ public class Tree {
 
     @CompileStatic
     def using(String name) {
+        Database database = null
         if(databases.containsKey(name)){
             log.info("Using database $name")
-            databases[name]
+            database = databases[name]
         }  else {
             log.info("Creating Database $name")
-            databases[name] = new Database(name)
+            database = databases[name] = new Database(name, ctx)
         }
+        updateDB(database)
     }
 
     @CompileStatic

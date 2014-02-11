@@ -7,23 +7,24 @@ import groovy.util.logging.Slf4j
 @Slf4j
 class Parser {
     private Tree tree = new Tree()
-    private def dbContext
 
     @CompileStatic
     def getProperty(String name) {
         log.debug("property name is: $name")
         if(name == 'db') {
-            return dbContext
+            return tree.currentDB()
         }
         tree.using(name)
     }
 
     def using(db) {
         log.info "Setting db context to ${db.toString()}"
-        dbContext = db
+        tree.updateDB(db)
     }
 
     public Tree parse(Closure closure) {
+//    public Tree parse(Long changeSet, Closure closure) {
+        tree.updateCS(0)
         def cloned = closure.clone()
         cloned.delegate = this
         cloned.resolveStrategy = Closure.DELEGATE_FIRST

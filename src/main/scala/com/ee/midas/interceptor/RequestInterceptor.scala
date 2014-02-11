@@ -28,11 +28,7 @@ class RequestInterceptor (tracker: MessageTracker, transformType: TransformType)
       }
 
       case OP_UPDATE | OP_INSERT => {
-        var payload: Request = null
-        if(header.opCode == OP_UPDATE)
-           payload = Update(remaining)
-        else
-          payload = Insert(remaining)
+        val payload: Request = if(header.opCode == OP_UPDATE) Update(remaining) else Insert(remaining)
         val versionedPayload = payload.versioned(transformType)
         val newLength = versionedPayload.length
         header.updateLength(newLength)

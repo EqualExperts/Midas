@@ -6,8 +6,9 @@ import spock.lang.Specification
 class DatabaseSpecs extends Specification {
 
    def "adds a single collection to a database tree"() {
-        given: "A Database"
-            Database database = new Database("testDB")
+        given: "A Database with context"
+            def ctx = new Context()
+            Database database = new Database("testDB", ctx)
 
         when: "a collection is added to it"
             def collection = database.testCollection
@@ -17,8 +18,9 @@ class DatabaseSpecs extends Specification {
    }
 
     def "adds multiple collections to a database tree"() {
-        given: "A Database"
-            Database database = new Database("testDB")
+        given: "A Database with context"
+            def ctx = new Context()
+            Database database = new Database("testDB", ctx)
 
         when: "a multiple collections are added to it"
             def collection1 = database.testCollection1
@@ -30,8 +32,9 @@ class DatabaseSpecs extends Specification {
     }
 
     def "does not version a database with no collections"() {
-        given: "A a database with no collection"
-            def database = new Database("testDB")
+        given: "A database with no collection and context"
+            def ctx = new Context()
+            Database database = new Database("testDB", ctx)
             def versionedDatabase = false
 
         when: "the database is versioned"
@@ -44,8 +47,9 @@ class DatabaseSpecs extends Specification {
     }
 
     def "versioning a database rejects a closure with 1 parameter"() {
-        given: "A database with a collection"
-            def db = new Database("testDB")
+        given: "A database with a collection in context"
+            def ctx = new Context()
+            def db = new Database("testDB", ctx)
             db.testCollection
             def versioningSuccessful = false
 
@@ -60,8 +64,9 @@ class DatabaseSpecs extends Specification {
     }
 
     def "versioning a database rejects a closure with 2 parameters"() {
-        given: "A database with a collection"
-            def db = new Database("testDB")
+        given: "A database with a collection in context"
+            def ctx = new Context()
+            def db = new Database("testDB", ctx)
             db.testCollection
             def versioningSuccessful = false
 
@@ -76,8 +81,9 @@ class DatabaseSpecs extends Specification {
     }
 
     def "versioning a database accepts a closure with 3 parameters"() {
-        given: "A database with a collection"
-            def db = new Database("testDB")
+        given: "A database with a collection in context"
+            def ctx = new Context()
+            def db = new Database("testDB", ctx)
             db.testCollection
             def versioningSuccessful = false
 
@@ -92,8 +98,9 @@ class DatabaseSpecs extends Specification {
     }
 
     def "version multiple collections in EXPANSION mode"() {
-        given: "A Database with 2 collections"
-            Database db = new Database("testDB")
+        given: "A database with couple of collections in context"
+            def ctx = new Context()
+            def db = new Database("testDB", ctx)
             def collection1 = db.collection1
             collection1.add("{\"field\" : \"value\"}")
             def collection2 = db.collection2
@@ -116,8 +123,9 @@ class DatabaseSpecs extends Specification {
     }
 
     def "version multiple collections in CONTRACTION mode"() {
-        given: "A Database with 2 collections"
-            Database db = new Database("testDB")
+        given: "A database with couple of collections in context"
+            def ctx = new Context()
+            def db = new Database("testDB", ctx)
             def collection1 = db.collection1
             collection1.add("{\"field\" : \"value\"}")
             def collection2 = db.collection2
@@ -140,8 +148,9 @@ class DatabaseSpecs extends Specification {
     }
 
     def "it throws an exception for invalid operations"() {
-        given: "A Database"
-            def database = new Database("testDB")
+        given: "A Database with context"
+            def ctx = new Context()
+            Database database = new Database("testDB", ctx)
 
         when: "a collection property's invalid method is invoked"
             database.testCollection.someOperation('{"age":0}')
@@ -151,8 +160,9 @@ class DatabaseSpecs extends Specification {
     }
 
     def "it throws an exception for invalid arguments"() {
-        given: "A Database"
-            def database = new Database("testDB")
+        given: "A Database with context"
+            def ctx = new Context()
+            Database database = new Database("testDB", ctx)
 
         when: "a collection property's add method is invoked with one non-json string argument"
             database.testCollection.add("some field name")
@@ -162,8 +172,9 @@ class DatabaseSpecs extends Specification {
     }
 
     def "it throws an exception for operations with no arguments"() {
-        given: "A Database"
-            def database = new Database("testDB")
+        given: "A Database with context"
+            def ctx = new Context()
+            Database database = new Database("testDB", ctx)
 
         when: "a collection property's method is invoked with no argument"
             database.testCollection.add()

@@ -7,8 +7,9 @@ import spock.lang.Specification
 class CollectionSpecs extends Specification {
 
     def "it accepts valid expansion operations"() {
-        given: "A Collection"
-            Collection collection = new Collection("testCollection")
+        given: "A Collection with context"
+            def ctx = new Context()
+            Collection collection = new Collection("testCollection", ctx)
 
         when: "a few valid expansion operations are invoked on it"
             collection.add("{\"newField\":\"defaultValue\"}")
@@ -21,8 +22,9 @@ class CollectionSpecs extends Specification {
     }
 
     def "it accepts valid contraction operation"() {
-        given: "A Collection"
-            Collection collection = new Collection("testCollection")
+        given: "A Collection with context"
+            def ctx = new Context()
+            Collection collection = new Collection("testCollection", ctx)
 
         when: "a contraction operation 'remove' is invoked with correct args"
             collection.remove("[\"field1\", \"field2\"]")
@@ -33,8 +35,9 @@ class CollectionSpecs extends Specification {
     }
 
     def "it throws an exception for unknown operations"() {
-        given: "A Collection"
-            Collection collection = new Collection("testCollection")
+        given: "A Collection with context"
+            def ctx = new Context()
+            Collection collection = new Collection("testCollection", ctx)
 
         when: "An unknown method is invoked on it"
             collection.unknownMethod(args)
@@ -51,9 +54,10 @@ class CollectionSpecs extends Specification {
 
     }
 
-    def "it throws an exception for operations with no args"() {
-        given: "A Collection"
-           Collection collection = new Collection("testCollection")
+    def "it throws an exception for valid operations with no args"() {
+        given: "A Collection with context"
+            def ctx = new Context()
+            Collection collection = new Collection("testCollection", ctx)
 
         when: "An operation with no arguments is invoked on it"
             collection.remove()
@@ -64,8 +68,9 @@ class CollectionSpecs extends Specification {
     }
 
     def "it creates a versioned map for single EXPANSION"() {
-        given: "A Collection with expansion operation"
-            Collection collection = new Collection("testCollection")
+        given: "A Collection with expansion operation in context"
+            def ctx = new Context()
+            Collection collection = new Collection("testCollection", ctx)
             collection.add('{"age":0}')
 
         when: "it creates a versioned Map for EXPANSION type"
@@ -77,8 +82,9 @@ class CollectionSpecs extends Specification {
     }
 
     def "it creates a versioned map for single CONTRACTION"() {
-        given: "A Collection with contraction operation"
-            Collection collection = new Collection("testCollection")
+        given: "A Collection with contraction operation in context"
+            def ctx = new Context()
+            Collection collection = new Collection("testCollection", ctx)
             collection.remove('{"age":0}')
 
         when: "it creates a versioned Map for CONTRACTION type"
@@ -90,8 +96,9 @@ class CollectionSpecs extends Specification {
     }
 
     def "it creates a versioned map for multiple EXPANSIONs"() {
-        given: "A Collection with multiple expansion operations"
-            Collection collection = new Collection("testCollection")
+        given: "A Collection with multiple expansion operations in context"
+            def ctx = new Context()
+            Collection collection = new Collection("testCollection", ctx)
             collection.add('{"age":0}')
             collection.add('{"city":"pune"}')
 
@@ -107,8 +114,9 @@ class CollectionSpecs extends Specification {
     }
 
     def "it creates a versioned map for multiple CONTRACTIONs"() {
-        given: "A Collection with multiple contraction operations"
-            Collection collection = new Collection("testCollection")
+        given: "A Collection with multiple contraction operations in context"
+            def ctx = new Context()
+            Collection collection = new Collection("testCollection", ctx)
             collection.remove('{"age":0}')
             collection.remove('{"city":"pune"}')
 
@@ -124,8 +132,9 @@ class CollectionSpecs extends Specification {
     }
 
     def "it ignores contraction operations when versioning EXPANSIONs"() {
-        given: "A Collection with few expansion and contraction operations"
-            Collection collection = new Collection("testCollection")
+        given: "A Collection with few expansion and contraction operations in context"
+            def ctx = new Context()
+            Collection collection = new Collection("testCollection", ctx)
             collection.add('{"age":0}')
             collection.add('{"city":"pune"}')
             collection.remove('["dob"]')
@@ -146,8 +155,9 @@ class CollectionSpecs extends Specification {
     }
 
     def "it ignores expansion operations when versioning CONTRACTIONs"() {
-        given: "A Collection with few expansion and contraction operations"
-            Collection collection = new Collection("testCollection")
+        given: "A Collection with few expansion and contraction operations in context"
+            def ctx = new Context()
+            Collection collection = new Collection("testCollection", ctx)
             collection.add('{"age":0}')
             collection.add('{"city":"pune"}')
             collection.remove('["dob"]')

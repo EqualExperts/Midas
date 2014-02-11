@@ -22,12 +22,15 @@ sealed trait Request {
     (result map (_.toChar) mkString)
   }
 
+  protected val payloadStartIndex: Int
+  def extractPayload(data: Array[Byte]) = (data.take(payloadStartIndex), data.drop(payloadStartIndex))
   def versioned(transformType: TransformType): Array[Byte]
 }
 
 case class Update(data: Array[Byte]) extends Request {
   private val updateFlagLength = 4
-  private val payloadStartsAt = extractFullCollectionName(data).length + updateFlagLength + delimiterLength
+  override protected val payloadStartIndex = extractFullCollectionName(data).length + updateFlagLength + delimiterLength
+  val (initialBytes, payload) = extractPayload(data)
 
   def getUpdateFlag(): Int = {
     val result = data.dropWhile(_ != CSTRING_TERMINATION_DELIM)
@@ -38,8 +41,6 @@ case class Update(data: Array[Byte]) extends Request {
 
   private def getSelectorUpdator(): (BSONObject, BSONObject) = {
     val decoder: DBDecoder = new DefaultDBDecoder
-    val payload: Array[Byte] = data.drop(payloadStartsAt)
-
     val stream = new ByteArrayInputStream(payload)
     val ignoringCollection: DBCollection = null
     val selector = decoder.decode(stream, ignoringCollection)
@@ -52,19 +53,17 @@ case class Update(data: Array[Byte]) extends Request {
     val (selector,updator) = getSelectorUpdator
     val versionedUpdator = addVersion(updator, transformType)
     val versionedPayload = selector.toBytes ++ versionedUpdator.toBytes
-    val initialBytes: Array[Byte] = data.take(payloadStartsAt)
     initialBytes ++ versionedPayload
   }
 }
 
 case class Insert(data: Array[Byte]) extends Request {
 
-  private val payloadStartsAt = extractFullCollectionName(data).length + delimiterLength
+  override protected val payloadStartIndex = extractFullCollectionName(data).length + delimiterLength
+  val (initialBytes, payload) = extractPayload(data)
 
   private def getDocument(): BSONObject = {
     val decoder: DBDecoder = new DefaultDBDecoder
-    val payload: Array[Byte] = data.drop(payloadStartsAt)
-
     val ignoringCollection: DBCollection = null
     decoder.decode(payload, ignoringCollection)
   }
@@ -72,7 +71,6 @@ case class Insert(data: Array[Byte]) extends Request {
   def versioned(transformType: TransformType): Array[Byte] = {
     val document = getDocument()
     val versionedDocument = addVersion(document, transformType)
-    val initialBytes: Array[Byte] = data.take(payloadStartsAt)
     initialBytes ++ versionedDocument.toBytes
   }
 }

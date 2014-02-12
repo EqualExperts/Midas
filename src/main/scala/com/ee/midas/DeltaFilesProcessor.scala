@@ -4,10 +4,12 @@ import java.io._
 import com.ee.midas.dsl.Translator
 import scala.collection.JavaConverters._
 import java.net.{URL}
-import com.ee.midas.utils.{ScalaCompiler, Loggable}
+import com.ee.midas.utils.{FileVisitor, ScalaCompiler, Loggable}
 import com.ee.midas.transform.{TransformType, Transforms}
 import scala.Array
 import com.ee.midas.hotdeploy.{DeployableHolder, Deployer}
+import java.nio.file.{Paths}
+import java.util.regex.Pattern
 
 class DeltaFilesProcessor(val translator: Translator, val deployableHolder: DeployableHolder[Transforms])
   extends Loggable with ScalaCompiler with Deployer {
@@ -25,9 +27,10 @@ class DeltaFilesProcessor(val translator: Translator, val deployableHolder: Depl
   }
 
   private def translate(transformType: TransformType, deltasDir: URL, scalaTemplateFilename: String, writer: Writer): Unit = {
-    val deltaFiles = new File(deltasDir.toURI).listFiles()
+    val startDir = Paths.get(deltasDir.toURI)
+    val deltaFiles = new FileVisitor (startDir, Pattern.compile(".*\\.delta$")).visit.map(new File(_))
     logDebug(s"Delta Files $deltaFiles")
-    val sortedDeltaFiles = deltaFiles.filter(f => f.getName.endsWith(".delta")).sortBy(f => f.getName).toList
+    val sortedDeltaFiles = deltaFiles.sortBy(f => f.getAbsolutePath)
     logInfo(s"Filtered and Sorted Delta Files $sortedDeltaFiles")
     val scalaSnippets = translator.translate(transformType, sortedDeltaFiles.asJava)
     logInfo(s"Delta Files as Scala Snippets $scalaSnippets")

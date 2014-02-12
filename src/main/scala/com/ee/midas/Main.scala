@@ -44,7 +44,8 @@ object Main extends App with Loggable with Parser {
         logInfo(s"Source Scala Dir = $srcScalaDir")
 
         val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
-        val deltasDirURL: URL = deltasDir(config, mode)
+        val appDir: String = "demoApp"
+        val deltasDirURL: URL = deltasDir(config, appDir)
         val processingDeltaFilesMsg = s"Processing Delta Files...from Dir ${deltasDirURL}"
         println(processingDeltaFilesMsg)
         logInfo(processingDeltaFilesMsg)
@@ -62,7 +63,7 @@ object Main extends App with Loggable with Parser {
             logInfo(s"Received ${watchEvent.kind()}, Context = ${watchEvent.context()}")
           }
           val transformType = parse(midasConfigURL)
-          val deltasDirURL = deltasDir(config, transformType)
+          val deltasDirURL = deltasDir(config, appDir)
           processDeltaFiles(transformType, deltasDirURL, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
         })
         watcher.start
@@ -139,8 +140,8 @@ object Main extends App with Loggable with Parser {
     }
   }
   
-  private def deltasDir(config: MidasCmdConfig, transformType: TransformType): URL = {
-    new File(config.baseDeltasDir.getPath + "/" + transformType.toString.toLowerCase).toURI.toURL
+  private def deltasDir(config: MidasCmdConfig, appDir: String): URL = {
+    new File(config.baseDeltasDir.getPath + "/" + appDir).toURI.toURL
   }
   
   private def createDeployableHolder =

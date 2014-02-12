@@ -1,2 +1,0 @@
-use users
-db.customers.add('{"address.line3" : "xyz"}')

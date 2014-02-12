@@ -43,7 +43,7 @@ class AnnotationScanner(pkg: String, annotationClass: Class[_]) extends Loggable
 
   private def dotify(string: String) = string.replaceAllLiterally("/", ".").replaceAllLiterally("\\", ".")
 
-  private def classesInPackage: Set[String] = {
+  private def classesInPackage: List[String] = {
     logInfo(s"Finding package $pkg in classpath...")
     fileVisitor.visit map { file =>
       val index = if(pkgURIString.startsWith("jar"))
@@ -87,6 +87,6 @@ class AnnotationScanner(pkg: String, annotationClass: Class[_]) extends Loggable
   def scan = {
     val classes = classesInPackage
     logInfo(s"Classpath Classes $classes")
-    classesInPackage.filter(className => hasAnnotation(annotationClass, className)).map(dotify)
+    classesInPackage.toSet.filter(className => hasAnnotation(annotationClass, className)).map(dotify)
   }
 }

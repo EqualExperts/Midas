@@ -56,8 +56,9 @@ public class Reader {
             def shell = createNewShell()
             def delta = shell.evaluate(code, deltaFileAbsoluteName)
             try {
-                Long changeSet = extractChangeSet(deltaFile)
-                parser.parse(changeSet, delta)
+                use (FileExtension) {
+                    parser.parse(deltaFile.changeSet(), delta)
+                }
             } catch (Throwable t) {
                 throw new InvalidGrammar("$deltaFileAbsoluteName --> ${t.message}")
             }
@@ -67,7 +68,4 @@ public class Reader {
         parser.ast()
     }
 
-    private Long extractChangeSet(File delta) {
-        0
-    }
 }

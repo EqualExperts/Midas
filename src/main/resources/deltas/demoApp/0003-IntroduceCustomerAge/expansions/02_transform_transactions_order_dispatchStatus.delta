@@ -1,0 +1,4 @@
+use transactions
+
+// add to orders collection a nested document
+db.orders.transform('dispatch.status', '{ $concat: ["$dispatch.status", "-"] }')

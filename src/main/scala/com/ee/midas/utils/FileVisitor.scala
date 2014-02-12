@@ -6,7 +6,7 @@ import java.io.IOException
 import java.util.regex.Pattern
 
 class FileVisitor (startDir: Path, collectFilesRegex: Pattern) extends Loggable {
-  private val files = scala.collection.mutable.Set[String]()
+  private val files = scala.collection.mutable.MutableList[String]()
 
   private val visitor = new SimpleFileVisitor[Path] {
     override def visitFile(path: Path, mainAtts: BasicFileAttributes) = {
@@ -29,6 +29,6 @@ class FileVisitor (startDir: Path, collectFilesRegex: Pattern) extends Loggable 
   def visit = {
     files.clear
     Files.walkFileTree(startDir, visitor)
-    files.toSet
+    files.toList
   }
 }

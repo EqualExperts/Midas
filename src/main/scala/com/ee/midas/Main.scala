@@ -24,7 +24,8 @@ object Main extends App with Loggable with Parser {
         val loader = Main.getClass.getClassLoader
 
         val midasConfigURL = config.midasConfig
-        val mode = parse(midasConfigURL)
+        val app = parse(midasConfigURL)
+        val mode = app.mode
         val modeMsg = s"Starting Midas in ${mode} mode...on ${config.midasHost}, port ${config.midasPort}"
         logInfo(modeMsg)
         println(modeMsg)
@@ -62,7 +63,8 @@ object Main extends App with Loggable with Parser {
           watchEvents.foreach {watchEvent =>
             logInfo(s"Received ${watchEvent.kind()}, Context = ${watchEvent.context()}")
           }
-          val transformType = parse(midasConfigURL)
+          val app = parse(midasConfigURL)
+          val transformType = app.mode
           val deltasDirURL = deltasDir(config, appDir)
           processDeltaFiles(transformType, deltasDirURL, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
         })

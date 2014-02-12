@@ -164,7 +164,7 @@ class ParserSpecs extends Specification {
         val input =
           s"""
             |$nodeName {
-            |  ip = $localhost,
+            |  ip = $localhost
             |  changeSet = $cs
             |}
           """.stripMargin
@@ -178,6 +178,20 @@ class ParserSpecs extends Specification {
     }
 
     "Parse application" in {
+      "configuration without node" in new ConfigParser {
+        //Given
+        val appName = "testApp"
+        val input =
+          s"""
+            |$appName {
+            |  mode = contraction
+            |}
+          """.stripMargin
+
+        //When-Then
+        val application = Result(parseAll(app, input))
+        application mustEqual Application(appName, TransformType.CONTRACTION, Nil)
+      }
 
       "valid application configuration with single node" in new ConfigParser {
         //Given
@@ -188,9 +202,9 @@ class ParserSpecs extends Specification {
         val input =
           s"""
             |$appName {
-            |  mode = contraction,
+            |  mode = contraction
             |  $nodeName {
-            |    ip = $localhost,
+            |    ip = $localhost
             |    changeSet = $cs
             |  }
             |}
@@ -214,13 +228,13 @@ class ParserSpecs extends Specification {
        val input =
          s"""
             |$appName {
-            |  mode = expansion,
+            |  mode = expansion
             |  $node1 {
-            |    ip = $ip1,
+            |    ip = $ip1
             |    changeSet = $cs
             |  }
             |  $node2 {
-            |    ip = $ip2,
+            |    ip = $ip2
             |    changeSet = $cs
             |  }
             |}
@@ -238,22 +252,6 @@ class ParserSpecs extends Specification {
          ))
      }
    }
-
-    "Not Parse application" in {
-      "configuration without node" in new ConfigParser {
-        //Given
-        val appName = "testApp"
-        val input =
-          s"""
-            |$appName {
-            |  mode = contraction
-            |}
-          """.stripMargin
-
-        //When-Then
-        Result(parseAll(app, input)) must throwA[IllegalArgumentException]
-      }
-    }
 
     "Parse configuration" in {
 
@@ -284,13 +282,13 @@ class ParserSpecs extends Specification {
           s"""
             |apps {
             |  $appName {
-            |    mode = expansion,
+            |    mode = expansion
             |    $node1 {
-            |      ip = $ip1,
+            |      ip = $ip1
             |      changeSet = $cs
             |    }
             |    $node2 {
-            |      ip = $ip2,
+            |      ip = $ip2
             |      changeSet = $cs
             |    }
             |  }
@@ -327,21 +325,21 @@ class ParserSpecs extends Specification {
           s"""
             |apps {
             |  $app1 {
-            |    mode = expansion,
+            |    mode = expansion
             |    $app1Node1 {
-            |      ip = $ip1,
+            |      ip = $ip1
             |      changeSet = $cs
             |    }
             |    $app2Node2 {
-            |      ip = $ip2,
+            |      ip = $ip2
             |      changeSet = $cs
             |    }
             |  }
             |
             |  $app2 {
-            |    mode = contraction,
+            |    mode = contraction
             |    $app2Node {
-            |      ip = $ip3,
+            |      ip = $ip3
             |      changeSet = $cs2
             |    }
             |  }
@@ -431,7 +429,13 @@ class ParserSpecs extends Specification {
         //Given
         val configText =
           """
-            |mode = expansion
+            |appName {
+            |  mode = expansion
+            |  nodeA {
+            |    ip = 127.0.0.1
+            |    changeSet = 2
+            |  }
+            |}
           """.stripMargin
 
         val path: String = "/" + System.getProperty("user.dir")
@@ -447,7 +451,8 @@ class ParserSpecs extends Specification {
         val config = parse(file.toURI.toURL)
 
         //Then
-        config mustEqual TransformType.EXPANSION
+        val nodeA = Node("nodeA", InetAddress.getByName("127.0.0.1"), ChangeSet(2))
+        config mustEqual Application("appName", TransformType.EXPANSION, List(nodeA))
       }
     }
   }

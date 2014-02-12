@@ -29,7 +29,7 @@ class ScalaGeneratorSpecs extends Specification {
                 """
                     override implicit var transformType = TransformType.EXPANSION
 
-                    override var expansions: Map[String, VersionedSnippets] =
+                    override var responseExpansions: Map[String, VersionedSnippets] =
                     Map(\"someDatabase.collectionName\" ->
                         TreeMap(1d ->
                             ((document: BSONObject) => {
@@ -39,7 +39,7 @@ class ScalaGeneratorSpecs extends Specification {
                             })
                     ))
 
-                    override var contractions: Map[String, VersionedSnippets] =
+                    override var responseContractions: Map[String, VersionedSnippets] =
                     Map()
 
                     override var requestExpansions: Map[ChangeSetCollectionKey, Double] =
@@ -72,10 +72,10 @@ class ScalaGeneratorSpecs extends Specification {
                 """
                     override implicit var transformType = TransformType.CONTRACTION
 
-                    override var expansions: Map[String, VersionedSnippets] =
+                    override var responseExpansions: Map[String, VersionedSnippets] =
                     Map()
 
-                    override var contractions: Map[String, VersionedSnippets] =
+                    override var responseContractions: Map[String, VersionedSnippets] =
                     Map(\"someDatabase.collectionName\" ->
                         TreeMap(1d ->
                             ((document: BSONObject) => {
@@ -115,7 +115,7 @@ class ScalaGeneratorSpecs extends Specification {
                 """
                     override implicit var transformType = TransformType.EXPANSION
 
-                    override var expansions: Map[String, VersionedSnippets] =
+                    override var responseExpansions: Map[String, VersionedSnippets] =
                     Map(\"someDatabase.collectionName\" ->
                         TreeMap(1d ->
                             ((document: BSONObject) => {
@@ -126,7 +126,7 @@ class ScalaGeneratorSpecs extends Specification {
                             })
                     ))
 
-                    override var contractions: Map[String, VersionedSnippets] =
+                    override var responseContractions: Map[String, VersionedSnippets] =
                     Map()
 
                     override var requestExpansions: Map[ChangeSetCollectionKey, Double] =
@@ -163,13 +163,13 @@ class ScalaGeneratorSpecs extends Specification {
                 """
                     override implicit var transformType = TransformType.EXPANSION
 
-                    override var expansions: Map[String, VersionedSnippets] =
+                    override var responseExpansions: Map[String, VersionedSnippets] =
                     Map(\"someDatabase.collectionName\" ->
                         TreeMap(1d ->
                             ((document: BSONObject) => document <~> ("sourceField", Pattern.compile("someregex"), \"""{"token1": "\$1", "token2": "\$2" }""\"))
                     ))
 
-                    override var contractions: Map[String, VersionedSnippets] =
+                    override var responseContractions: Map[String, VersionedSnippets] =
                     Map()
 
                     override var requestExpansions: Map[ChangeSetCollectionKey, Double] =
@@ -206,7 +206,7 @@ class ScalaGeneratorSpecs extends Specification {
                 """
                     override implicit var transformType = TransformType.EXPANSION
 
-                    override var expansions: Map[String, VersionedSnippets] =
+                    override var responseExpansions: Map[String, VersionedSnippets] =
                     Map(\"someDatabase.collectionName\" ->
                         TreeMap(1d ->
                             ((document: BSONObject) => {
@@ -215,7 +215,7 @@ class ScalaGeneratorSpecs extends Specification {
                             })
                     ))
 
-                    override var contractions: Map[String, VersionedSnippets] =
+                    override var responseContractions: Map[String, VersionedSnippets] =
                     Map()
 
                     override var requestExpansions: Map[ChangeSetCollectionKey, Double] =
@@ -251,10 +251,10 @@ class ScalaGeneratorSpecs extends Specification {
             """
                 override implicit var transformType = TransformType.CONTRACTION
 
-                override var expansions: Map[String, VersionedSnippets] =
+                override var responseExpansions: Map[String, VersionedSnippets] =
                 Map()
 
-                override var contractions: Map[String, VersionedSnippets] =
+                override var responseContractions: Map[String, VersionedSnippets] =
                 Map()
 
                 override var requestExpansions: Map[ChangeSetCollectionKey, Double] =
@@ -290,10 +290,10 @@ class ScalaGeneratorSpecs extends Specification {
                 """
                     override implicit var transformType = TransformType.EXPANSION
 
-                    override var expansions: Map[String, VersionedSnippets] =
+                    override var responseExpansions: Map[String, VersionedSnippets] =
                     Map()
 
-                    override var contractions: Map[String, VersionedSnippets] =
+                    override var responseContractions: Map[String, VersionedSnippets] =
                     Map()
 
                     override var requestExpansions: Map[ChangeSetCollectionKey, Double] =

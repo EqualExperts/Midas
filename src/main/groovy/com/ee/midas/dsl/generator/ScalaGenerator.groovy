@@ -32,10 +32,10 @@ public class ScalaGenerator implements Generator<String> {
             return  """
                     override implicit var transformType = TransformType.EXPANSION
 
-                    override var expansions: Map[String, VersionedSnippets] =
+                    override var responseExpansions: Map[String, VersionedSnippets] =
                     Map(${responseTransformationEntries})
 
-                    override var contractions: Map[String, VersionedSnippets] =
+                    override var responseContractions: Map[String, VersionedSnippets] =
                     Map()
 
                     override var requestExpansions: Map[ChangeSetCollectionKey, Double] =
@@ -50,10 +50,10 @@ public class ScalaGenerator implements Generator<String> {
             return  """
                     override implicit var transformType = TransformType.CONTRACTION
 
-                    override var expansions: Map[String, VersionedSnippets] =
+                    override var responseExpansions: Map[String, VersionedSnippets] =
                     Map()
 
-                    override var contractions: Map[String, VersionedSnippets] =
+                    override var responseContractions: Map[String, VersionedSnippets] =
                     Map(${responseTransformationEntries})
 
                     override var requestExpansions: Map[ChangeSetCollectionKey, Double] =

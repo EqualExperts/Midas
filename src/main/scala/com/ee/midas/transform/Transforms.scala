@@ -9,8 +9,8 @@ abstract class Transforms extends Versioner with Deployable[Transforms] {
   type Snippet = BSONObject => BSONObject
   type Snippets = Iterable[Snippet]
   type VersionedSnippets = TreeMap[Double, Snippet]
-  var expansions : Map[String, VersionedSnippets]
-  var contractions : Map[String, VersionedSnippets]
+  var responseExpansions : Map[String, VersionedSnippets]
+  var responseContractions : Map[String, VersionedSnippets]
   
   type ChangeSetCollectionKey = (Long, String)
   var requestExpansions: Map[ChangeSetCollectionKey, Double]
@@ -19,13 +19,15 @@ abstract class Transforms extends Versioner with Deployable[Transforms] {
   implicit var transformType: TransformType
 
   def injectState(fromTransforms: Transforms) = {
-    this.expansions = fromTransforms.expansions
-    this.contractions = fromTransforms.contractions
+    this.responseExpansions = fromTransforms.responseExpansions
+    this.responseContractions = fromTransforms.responseContractions
+    this.requestExpansions = fromTransforms.requestExpansions
+    this.requestContractions = fromTransforms.requestContractions
     this.transformType = fromTransforms.transformType
   }
 
   def canBeApplied(fullCollectionName: String): Boolean =
-    expansions.keySet.contains(fullCollectionName) || contractions.keySet.contains(fullCollectionName)
+    responseExpansions.keySet.contains(fullCollectionName) || responseContractions.keySet.contains(fullCollectionName)
 
   def map(document: BSONObject)(implicit fullCollectionName: String) : BSONObject =  {
     versionedSnippets match {
@@ -42,9 +44,9 @@ abstract class Transforms extends Versioner with Deployable[Transforms] {
 
   def versionedSnippets(implicit fullCollectionName: String): VersionedSnippets =
     if(transformType == EXPANSION)
-      expansions(fullCollectionName)
+      responseExpansions(fullCollectionName)
     else if(transformType == CONTRACTION)
-      contractions(fullCollectionName)
+      responseContractions(fullCollectionName)
     else TreeMap.empty
 
   def snippetsFrom(version: Double, versionedSnippets: VersionedSnippets) =
@@ -58,9 +60,17 @@ abstract class Transforms extends Versioner with Deployable[Transforms] {
   override def toString =
     s"""
       |======================================================================
-      |Expansions = ${expansions.size} [${expansions mkString "\n"}]
-      |
-      |Contractions = ${contractions.size} [${contractions mkString "\n"}]
+      |Request
+      | |
+      | +--> Expansions = ${requestExpansions.size} [${requestExpansions mkString "\n"}]
+      | |
+      | +--> Contractions = ${requestContractions.size} [${requestContractions mkString "\n"}]
+      |----------------------------------------------------------------------
+      |Response
+      | |
+      | +--> Expansions = ${responseExpansions.size} [${responseExpansions mkString "\n"}]
+      | |
+      | +--> Contractions = ${responseContractions.size} [${responseContractions mkString "\n"}]
       |======================================================================
      """.stripMargin
 }

@@ -34,8 +34,8 @@ class TransformsSpecs extends Specification with Mockito {
     val dummyVersionExpansion: VersionedSnippets = TreeMap(1d -> dummyExpansionFunc1, 2d -> dummyExpansionFunc2)
     val dummyVersionContraction: VersionedSnippets = TreeMap(1d -> dummyContractionFunc1, 2d -> dummyContractionFunc2)
 
-    override var expansions : Map[String, VersionedSnippets] = Map("validCollectionForExpansion" -> dummyVersionExpansion)
-    override var contractions : Map[String, VersionedSnippets] = Map("validCollectionForContraction" -> dummyVersionContraction)
+    override var responseExpansions : Map[String, VersionedSnippets] = Map("validCollectionForExpansion" -> dummyVersionExpansion)
+    override var responseContractions : Map[String, VersionedSnippets] = Map("validCollectionForContraction" -> dummyVersionContraction)
 
     override var requestExpansions: Map[ChangeSetCollectionKey, Double] = Map()
     override var requestContractions: Map[ChangeSetCollectionKey, Double] = Map()
@@ -127,15 +127,15 @@ class TransformsSpecs extends Specification with Mockito {
       val newTransformsMock = mock[Transforms]
       val mockExpansions = mock[Map[String, newTransformsMock.VersionedSnippets]]
       val mockContractions = mock[Map[String, newTransformsMock.VersionedSnippets]]
-      newTransformsMock.expansions returns mockExpansions
-      newTransformsMock.contractions returns mockContractions
+      newTransformsMock.responseExpansions returns mockExpansions
+      newTransformsMock.responseContractions returns mockContractions
 
       //when
       injectState(newTransformsMock)
 
       //then
-      expansions mustEqual mockExpansions
-      contractions mustEqual mockContractions
+      responseExpansions mustEqual mockExpansions
+      responseContractions mustEqual mockContractions
     }
 
     "return false if transformations cannot be applied for a collection name" in new Transformations {

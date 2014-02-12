@@ -78,8 +78,8 @@ class DeltaFilesProcessorSpecs extends Specification with Mockito {
 
            //Then
            val deployable = deployableHolder.get
-           deployable.contractions must beEmpty
-           val expansions = deployable.expansions
+           deployable.responseContractions must beEmpty
+           val expansions = deployable.responseExpansions
            expansions must haveLength(1)
            expansions must haveKey("someDatabase.collection")
          }
@@ -96,8 +96,8 @@ class DeltaFilesProcessorSpecs extends Specification with Mockito {
 
            //Then
            val deployable = deployableHolder.get
-           deployable.expansions must beEmpty
-           val contractions = deployable.contractions
+           deployable.responseExpansions must beEmpty
+           val contractions = deployable.responseContractions
            contractions must haveLength(1)
            contractions must haveKey("someDatabase.collection")
          }

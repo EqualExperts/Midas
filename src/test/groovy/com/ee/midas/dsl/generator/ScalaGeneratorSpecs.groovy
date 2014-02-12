@@ -8,7 +8,7 @@ import spock.lang.Specification
 
 class ScalaGeneratorSpecs extends Specification {
 
-    def "Generate Snippets for Add operation"() {
+    def "Generates Scala code for Add operation"() {
         given: 'A Parser builds a Tree for a delta in a change set'
             Parser parser = new Parser()
             def changeSet = 1
@@ -24,7 +24,7 @@ class ScalaGeneratorSpecs extends Specification {
         when: "generator generates scala code"
             def result = generator.generate(EXPANSION, tree)
 
-        then: "generates Scala snippets"
+        then: 'generates request and response maps for add operation'
             def expansionSnippets =
                 """
                     override implicit var transformType = TransformType.EXPANSION
@@ -41,11 +41,17 @@ class ScalaGeneratorSpecs extends Specification {
 
                     override var contractions: Map[String, VersionedSnippets] =
                     Map()
+
+                    override var requestExpansions: Map[ChangeSetCollectionKey, Double] =
+                    Map((1L, \"someDatabase.collectionName\") -> 1d)
+
+                    override var requestContractions: Map[ChangeSetCollectionKey, Double] =
+                    Map()
                 """
             result.replaceAll(' ', '') == expansionSnippets.replaceAll(' ', '')
    }
 
-    def "Generate Snippets for Remove operation"() {
+    def "Generates Scala code for Remove operation"() {
         given: 'A Parser builds a Tree for a remove delta in a change set'
             Parser parser = new Parser()
             def changeSet = 1
@@ -61,7 +67,7 @@ class ScalaGeneratorSpecs extends Specification {
         when: "generator generates scala code"
             def result = generator.generate(CONTRACTION, tree)
 
-        then: "generates Scala snippets"
+        then: 'generates request and response maps for remove'
             def contractionSnippets =
                 """
                     override implicit var transformType = TransformType.CONTRACTION
@@ -78,11 +84,17 @@ class ScalaGeneratorSpecs extends Specification {
                               document -- fields
                             })
                     ))
+
+                    override var requestExpansions: Map[ChangeSetCollectionKey, Double] =
+                    Map()
+
+                    override var requestContractions: Map[ChangeSetCollectionKey, Double] =
+                    Map((1L, "someDatabase.collectionName") -> 1d)
                 """
             result.replaceAll(' ', '') == contractionSnippets.replaceAll(' ', '')
     }
 
-    def "Generate Snippets for Copy operation"() {
+    def "Generates Scala code for Copy operation"() {
             given: 'A Parser builds a Tree for a copy delta in a change set'
             Parser parser = new Parser()
             def changeSet = 1
@@ -98,7 +110,7 @@ class ScalaGeneratorSpecs extends Specification {
         when: "generator generates scala code"
             def result = generator.generate(EXPANSION, tree)
 
-        then: "it generates Scala snippets for copy operation"
+        then: 'it generates request and response maps for copy operation'
             def expectedCopySnippets =
                 """
                     override implicit var transformType = TransformType.EXPANSION
@@ -116,11 +128,17 @@ class ScalaGeneratorSpecs extends Specification {
 
                     override var contractions: Map[String, VersionedSnippets] =
                     Map()
+
+                    override var requestExpansions: Map[ChangeSetCollectionKey, Double] =
+                    Map((1L, "someDatabase.collectionName") -> 1d)
+
+                    override var requestContractions: Map[ChangeSetCollectionKey, Double] =
+                    Map()
                 """
             result.replaceAll(' ', '') == expectedCopySnippets.replaceAll(' ', '')
     }
 
-    def "Generate Snippets for Split operation"() {
+    def "Generates Scala code for Split operation"() {
 
         given: "a delta for split operation with regex that produces 2 tokens"
             def splitDelta = {
@@ -140,7 +158,7 @@ class ScalaGeneratorSpecs extends Specification {
         when: "generator generates scala code"
             def result = generator.generate(EXPANSION, tree)
 
-        then : "it generates Scala snippets for split operation"
+        then : 'it generates request and response maps for split operation'
             def expectedSplitSnippets =
                 """
                     override implicit var transformType = TransformType.EXPANSION
@@ -152,6 +170,12 @@ class ScalaGeneratorSpecs extends Specification {
                     ))
 
                     override var contractions: Map[String, VersionedSnippets] =
+                    Map()
+
+                    override var requestExpansions: Map[ChangeSetCollectionKey, Double] =
+                    Map((1L, "someDatabase.collectionName") -> 1d)
+
+                    override var requestContractions: Map[ChangeSetCollectionKey, Double] =
                     Map()
                 """
             result.replaceAll(' ', '') == expectedSplitSnippets.replaceAll(' ', '')
@@ -177,7 +201,7 @@ class ScalaGeneratorSpecs extends Specification {
         when: "generator generates scala code"
             def result = generator.generate(EXPANSION, tree)
 
-        then: "it generates Scala snippets for merge operation"
+        then: 'it generates request and response maps for merge operation'
             def expectedMergeIntoSnippets =
                 """
                     override implicit var transformType = TransformType.EXPANSION
@@ -193,11 +217,17 @@ class ScalaGeneratorSpecs extends Specification {
 
                     override var contractions: Map[String, VersionedSnippets] =
                     Map()
+
+                    override var requestExpansions: Map[ChangeSetCollectionKey, Double] =
+                    Map((1L, "someDatabase.collectionName") -> 1d)
+
+                    override var requestContractions: Map[ChangeSetCollectionKey, Double] =
+                    Map()
                 """
             result.replaceAll(' ', '') == expectedMergeIntoSnippets.replaceAll(' ', '')
     }
 
-    def "Generates empty maps for expansion delta in contraction mode"() {
+    def "Generates empty Scala maps for expansion delta in contraction mode"() {
         given: "An expansion delta"
             def expansionDelta = {
                 using someDatabase
@@ -216,7 +246,7 @@ class ScalaGeneratorSpecs extends Specification {
         when: "generator generates scala code in contraction mode"
             def result = generator.generate(CONTRACTION, tree)
 
-        then: "it generates Scala snippet of empty maps for expansion operation in contraction mode"
+        then: 'it generates empty request and reponse maps for expansion operation in contraction mode'
         def expectedSnippets =
             """
                 override implicit var transformType = TransformType.CONTRACTION
@@ -226,11 +256,17 @@ class ScalaGeneratorSpecs extends Specification {
 
                 override var contractions: Map[String, VersionedSnippets] =
                 Map()
+
+                override var requestExpansions: Map[ChangeSetCollectionKey, Double] =
+                Map()
+
+                override var requestContractions: Map[ChangeSetCollectionKey, Double] =
+                Map()
             """
         result.replaceAll(' ', '') == expectedSnippets.replaceAll(' ', '')
     }
 
-    def "Generates empty maps for contraction delta in expansion mode"() {
+    def "Generates empty Scala maps for contraction delta in expansion mode"() {
         given: "A contraction delta"
             def contractionDelta = {
                 using someDatabase
@@ -249,7 +285,7 @@ class ScalaGeneratorSpecs extends Specification {
         when: "generator generates scala code in contraction mode"
             def result = generator.generate(EXPANSION, tree)
 
-        then: "it generates Scala snippet of empty maps for contraction operation in expansion mode"
+        then: 'it generates Scala empty request and response maps for contraction operation in expansion mode'
             def expectedSnippets =
                 """
                     override implicit var transformType = TransformType.EXPANSION
@@ -258,6 +294,12 @@ class ScalaGeneratorSpecs extends Specification {
                     Map()
 
                     override var contractions: Map[String, VersionedSnippets] =
+                    Map()
+
+                    override var requestExpansions: Map[ChangeSetCollectionKey, Double] =
+                    Map()
+
+                    override var requestContractions: Map[ChangeSetCollectionKey, Double] =
                     Map()
                 """
             result.replaceAll(' ', '') == expectedSnippets.replaceAll(' ', '')

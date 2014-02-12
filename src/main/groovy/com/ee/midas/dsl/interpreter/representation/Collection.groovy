@@ -14,8 +14,8 @@ import static com.ee.midas.transform.TransformType.EXPANSION
 @Slf4j
 class Collection {
     final String name
-    private final Map<Long, Tuple> versionedExpansions = [:]
-    private final Map<Long, Tuple> versionedContractions = [:]
+    private final Map<Long, Tuple> versionedExpansions = [:] as LinkedHashMap
+    private final Map<Long, Tuple> versionedContractions = [:] as LinkedHashMap
     private Long curExpansionVersion = 1
     private Long curContractionVersion = 1
     private final Context ctx

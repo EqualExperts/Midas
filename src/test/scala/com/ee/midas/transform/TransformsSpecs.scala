@@ -36,6 +36,9 @@ class TransformsSpecs extends Specification with Mockito {
 
     override var expansions : Map[String, VersionedSnippets] = Map("validCollectionForExpansion" -> dummyVersionExpansion)
     override var contractions : Map[String, VersionedSnippets] = Map("validCollectionForContraction" -> dummyVersionContraction)
+
+    override var requestExpansions: Map[ChangeSetCollectionKey, Double] = Map()
+    override var requestContractions: Map[ChangeSetCollectionKey, Double] = Map()
   }
 
   "transforms trait" should {

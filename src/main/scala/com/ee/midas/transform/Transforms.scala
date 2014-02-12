@@ -11,6 +11,11 @@ abstract class Transforms extends Versioner with Deployable[Transforms] {
   type VersionedSnippets = TreeMap[Double, Snippet]
   var expansions : Map[String, VersionedSnippets]
   var contractions : Map[String, VersionedSnippets]
+  
+  type ChangeSetCollectionKey = (Long, String)
+  var requestExpansions: Map[ChangeSetCollectionKey, Double]
+  var requestContractions: Map[ChangeSetCollectionKey, Double]
+  
   implicit var transformType: TransformType
 
   def injectState(fromTransforms: Transforms) = {

@@ -18,57 +18,67 @@ public class ScalaGenerator implements Generator<String> {
     @Override
     public String generate(TransformType transformType, Tree tree) {
         log.info('Generating Scala Code Midas-Snippets for $transformType...')
-        def snippets = generateSnippets(transformType, tree)
+        def snippets = generateResponseSnippets(transformType, tree)
 
-        def transformationEntries = snippets.collect { fullCollectionName, versionedSnippets ->
+        def responseTransformationEntries = snippets.collect { fullCollectionName, versionedSnippets ->
             """\"$fullCollectionName\" ->
                 TreeMap(${versionedSnippets.join("$TAB$TAB, ")})"""
         }.join(', ')
 
+        def requestTransformationEntries =
+            generateRequestTransformations(transformType, tree).join(", ")
+
         if (transformType == EXPANSION) {
-            """
-            override implicit var transformType = TransformType.EXPANSION
+            return  """
+                    override implicit var transformType = TransformType.EXPANSION
 
-            override var expansions: Map[String, VersionedSnippets] =
-            Map(${transformationEntries})
+                    override var expansions: Map[String, VersionedSnippets] =
+                    Map(${responseTransformationEntries})
 
-            override var contractions: Map[String, VersionedSnippets] =
-            Map()
-            """
-        } else if (transformType == CONTRACTION) {
-            """
-            override implicit var transformType = TransformType.CONTRACTION
+                    override var contractions: Map[String, VersionedSnippets] =
+                    Map()
 
-            override var expansions: Map[String, VersionedSnippets] =
-            Map()
+                    override var requestExpansions: Map[ChangeSetCollectionKey, Double] =
+                    Map(${requestTransformationEntries})
 
-            override var contractions: Map[String, VersionedSnippets] =
-            Map(${transformationEntries})
-            """
-        } else {
-            """
-            override implicit var transformType = TransformType.EXPANSION
-
-            override var expansions: Map[String, VersionedSnippets] = Map()
-
-            override var contractions: Map[String, VersionedSnippets] = Map()
-            """
+                    override var requestContractions: Map[ChangeSetCollectionKey, Double] =
+                    Map()
+                    """
         }
+        if (transformType == CONTRACTION) {
+
+            return  """
+                    override implicit var transformType = TransformType.CONTRACTION
+
+                    override var expansions: Map[String, VersionedSnippets] =
+                    Map()
+
+                    override var contractions: Map[String, VersionedSnippets] =
+                    Map(${responseTransformationEntries})
+
+                    override var requestExpansions: Map[ChangeSetCollectionKey, Double] =
+                    Map()
+
+                    override var requestContractions: Map[ChangeSetCollectionKey, Double] =
+                    Map(${requestTransformationEntries})
+                    """
+        }
+        ""
     }
 
     private def toFullCollectionName(String dbName, String collectionName) {
         "$dbName.$collectionName"
     }
 
-    private def generateSnippets(TransformType transformType, Tree tree) {
+    private def generateResponseSnippets(TransformType transformType, Tree tree) {
         log.info("Started snippets generation for $transformType TransformType...")
         def snippets = [:]
         tree.eachWithVersionedMap(transformType) { String dbName, String collectionName, versionedMap ->
             def versionedSnippets = versionedMap.collect { Long version, Tuple values ->
                 def (verb, args, changeSet) = values
-                log.info("Generating Snippet for... $dbName.$collectionName => Version = $version, Verb = $verb, Args = $args, ChangeSet = $changeSet")
-                def snippet = "$verb"(*args)
-                asScalaMapEntry(version, snippet)
+                log.info("Generating Snippet for... $dbName.$collectionName [in ChangeSet $changeSet] => Version = $version, Verb = $verb, Args = $args")
+                String snippet = "$verb"(*args)
+                asScalaResponseMapEntry(version, snippet)
             }
             def fullCollectionName = toFullCollectionName(dbName, collectionName)
             if(!versionedSnippets.isEmpty())
@@ -78,8 +88,28 @@ public class ScalaGenerator implements Generator<String> {
         snippets
     }
 
-    private String asScalaMapEntry(Long version, String snippet) {
+    private String asScalaResponseMapEntry(Long version, String snippet) {
         "${version}d -> $snippet"
+    }
+
+    private def generateRequestTransformations(TransformType transformType, Tree tree) {
+        log.info("Started Generating Response Transforms for $transformType TransformType...")
+        def response = []
+        tree.eachWithVersionedMap(transformType) { String dbName, String collectionName, Map versionedMap ->
+            def fullCollectionName = toFullCollectionName(dbName, collectionName)
+            response << versionedMap.collectEntries { Long version, Tuple values ->
+                def (verb, args, changeSet) = values
+                [changeSet, version]
+            }.collect { changeSet, version ->
+                asScalaRequestMapEntry(changeSet, fullCollectionName, version)
+            }
+        }
+        log.info("Completed Generating Response Transforms $response for $transformType TransformType!")
+        response.flatten()
+    }
+
+    private String asScalaRequestMapEntry(Long changeSet, String fullCollectionName, Long version) {
+        "(${changeSet}L, \"$fullCollectionName\") -> ${version}d"
     }
 
     //------------------- verb translations ------------------------------

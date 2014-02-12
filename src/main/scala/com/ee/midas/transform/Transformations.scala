@@ -9,6 +9,10 @@ class Transformations extends Transforms with Parser {
   //  WARNING: DO NOT WRITE ANYTHING IN THIS FILE, IT IS REGENERATED AT RUNTIME!!
   override var expansions: Map[String, VersionedSnippets] = Map()
   override var contractions: Map[String, VersionedSnippets] = Map()
+
+  override var requestExpansions: Map[ChangeSetCollectionKey, Double] = Map()
+  override var requestContractions: Map[ChangeSetCollectionKey, Double] = Map()
+
   override implicit var transformType = TransformType.EXPANSION
 }
 

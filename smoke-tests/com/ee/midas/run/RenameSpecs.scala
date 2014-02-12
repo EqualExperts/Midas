@@ -10,6 +10,7 @@ class RenameSpecs extends Specification with Forms {
   var expansionDelta1: Delta = null
   var expansionDelta2: Delta = null
   var contractionDelta: Delta = null
+  var configFile: Delta = null
 
   def is = s2"""
     ${"Rename Operation".title}
@@ -50,6 +51,17 @@ class RenameSpecs extends Specification with Forms {
           form
       }
 
+    2. Create a midas.config file in deltaSpecs folder
+       ${
+          val baseDeltaDir = "/deltaSpecs"
+          configFile = Delta(baseDeltaDir, "", () => {
+            """mode = expansion
+            """
+          } )
+          val form = configFile.saveAs("midas.config")
+          form
+       }
+
     2. Create delta file "0001_copy_transactions_orders_OrderListToYourCartField.delta" to copy "OrderList"
        into "YourCart" at location "deltaSpecs" in "expansion" folder
       ${
@@ -78,7 +90,7 @@ class RenameSpecs extends Specification with Forms {
 
     4. Start Midas in EXPANSION mode
       ${
-          midasTerminal = CommandTerminal("--port", "27020", "--deltasDir", System.getProperty("user.dir") + "/deltaSpecs", "--mode", "EXPANSION")
+          midasTerminal = CommandTerminal("--port", "27020", "--deltasDir", System.getProperty("user.dir") + "/deltaSpecs")
           val form = midasTerminal.startMidas
           form
       }
@@ -117,26 +129,25 @@ class RenameSpecs extends Specification with Forms {
           form
       }
 
-    8. Restart Midas in CONTRACTION mode
-      ${
-          val form = midasTerminal.stopMidas(27020)
+    8. Create a midas.config file in deltaSpecs folder
+       ${
+          val baseDeltaDir = "/deltaSpecs"
+          configFile = Delta(baseDeltaDir, "", () => {
+            """mode = contraction
+            """
+          } )
+          val form = configFile.saveAs("midas.config")
           form
-       }
-
-      ${
-          midasTerminal = CommandTerminal("--port", "27040", "--deltasDir", System.getProperty("user.dir") + "/deltaSpecs", "--mode", "CONTRACTION")
-          val form = midasTerminal.startMidas
-          form
-      }
+        }
 
     9. Connect with midas and verify that "OrderList" and "ShippingAddress.zipcode" fields are removed from documents
       ${
-          val form = MongoShell("Open Command Terminal", "localhost", 27040)
+          val form = MongoShell("Open Command Terminal", "localhost", 27020)
             .useDatabase("transactions")
             .verifyIfRemoved("orders", Array("OrderList", "ShippingAddress.zipcode"))
             .retrieve()
           form
-      }
+        }
 
     10. Clean up the database
       ${
@@ -147,18 +158,21 @@ class RenameSpecs extends Specification with Forms {
           form
       }
 
+    12. Shutdown Midas
+      ${
+          val form = midasTerminal.stopMidas(27020)
+          form
+        }
+
     11. Cleanup deltas directory
       ${
           expansionDelta1.delete("0001_copy_transactions_orders_OrderListToYourCartField.delta")
           expansionDelta2.delete("0002_copy_transactions_orders_ZipcodeToPincodeField.delta")
           contractionDelta.delete("0001_removeFrom_transactions_orders_OrderListField.delta")
+          configFile.delete("midas.config")
       }
 
-    12. Shutdown Midas
-      ${
-          val form = midasTerminal.stopMidas(27040)
-          form
-       }
+
                                                                                                    """
 }
 

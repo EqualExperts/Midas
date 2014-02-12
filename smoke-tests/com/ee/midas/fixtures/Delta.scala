@@ -7,10 +7,12 @@ import org.specs2.specification.Forms._
 case class Delta(baseDeltaDir: String , transformType: String, deltaStr: () => String) {
 
   val deltasPath = System.getProperty("user.dir") + baseDeltaDir
-  val fullDirPath = if(transformType.equals("EXPANSION"))
-    deltasPath + "/expansion"
-  else
-    deltasPath + "/contraction"
+  val fullDirPath = transformType match {
+      case "EXPANSION" => deltasPath + "/expansion"
+      case "CONTRACTION" => deltasPath + "/contraction"
+      case "" => deltasPath
+  }
+
   val deltasDir = new File(deltasPath)
   val typeDir = new File(fullDirPath)
   deltasDir.mkdir

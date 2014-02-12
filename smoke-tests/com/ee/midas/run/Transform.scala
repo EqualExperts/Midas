@@ -4,7 +4,7 @@ import org.specs2._
 import specification._
 import com.ee.midas.fixtures.{Delta, CommandTerminal, MongoShell}
 
-class TransformSpecs extends Specification with Forms {
+class Transform extends Specification with Forms {
   sequential
   var midasTerminal = CommandTerminal("")
   var expansionDelta1: Delta = null

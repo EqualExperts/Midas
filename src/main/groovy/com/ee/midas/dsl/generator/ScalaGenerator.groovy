@@ -64,12 +64,11 @@ public class ScalaGenerator implements Generator<String> {
         log.info("Started snippets generation for $transformType TransformType...")
         def snippets = [:]
         tree.eachWithVersionedMap(transformType) { String dbName, String collectionName, versionedMap ->
-            def versionedSnippets = versionedMap.collect { version, operation ->
-                def operationName = operation['name']
-                def args = operation['args'] as List<String>
-                log.info("Generating Snippet for... $dbName.$collectionName => Version = $version, Operation = $operationName, Args = $args")
-                def snippet = "$operationName"(*args)
-                "${version}d -> $snippet"
+            def versionedSnippets = versionedMap.collect { Long version, Tuple values ->
+                def (verb, args, changeSet) = values
+                log.info("Generating Snippet for... $dbName.$collectionName => Version = $version, Verb = $verb, Args = $args, ChangeSet = $changeSet")
+                def snippet = "$verb"(*args)
+                asScalaMapEntry(version, snippet)
             }
             def fullCollectionName = toFullCollectionName(dbName, collectionName)
             if(!versionedSnippets.isEmpty())
@@ -79,7 +78,11 @@ public class ScalaGenerator implements Generator<String> {
         snippets
     }
 
-    //------------------- operations ------------------------------
+    private String asScalaMapEntry(Long version, String snippet) {
+        "${version}d -> $snippet"
+    }
+
+    //------------------- verb translations ------------------------------
     private String remove(String json) {
         """
             ((document: BSONObject) => {

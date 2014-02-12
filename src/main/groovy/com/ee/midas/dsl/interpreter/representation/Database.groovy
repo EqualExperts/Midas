@@ -20,15 +20,13 @@ class Database {
 
     @CompileStatic
     def getProperty(String name) {
-        Collection collection = null
         if(collections.containsKey(name)) {
             log.debug("Using Collection with $name")
-            collection = collections[name]
+            collections[name]
         } else {
             log.info("Creating Collection $name")
-            collection = collections[name] = new Collection(name, ctx)
+            collections[name] = new Collection(name, ctx)
         }
-        collection
     }
 
 

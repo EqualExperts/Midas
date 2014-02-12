@@ -1,6 +1,7 @@
 package com.ee.midas.dsl.interpreter.representation
 
 import com.ee.midas.dsl.grammar.Verb
+import static com.ee.midas.dsl.grammar.Verb.*
 import com.ee.midas.transform.TransformType
 import spock.lang.Specification
 
@@ -74,11 +75,12 @@ class CollectionSpecs extends Specification {
             collection.add('{"age":0}')
 
         when: "it creates a versioned Map for EXPANSION type"
-            LinkedHashMap versionedMap = collection.asVersionedMap(TransformType.EXPANSION)
+            def versionedMap = collection.asVersionedMap(TransformType.EXPANSION)
 
         then: "the map should contain operation of expansion type"
-            LinkedHashMap expectedMap  = ["${1}":[name: Verb.add.name(), args:['{"age":0}']]]
-            versionedMap.equals(expectedMap)
+            def expectedMap = [1L: new Tuple(add, ['{"age":0}'], 0)]
+            versionedMap.size() == expectedMap.size()
+            versionedMap[1] == expectedMap[1]
     }
 
     def "it creates a versioned map for single CONTRACTION"() {
@@ -88,11 +90,12 @@ class CollectionSpecs extends Specification {
             collection.remove('{"age":0}')
 
         when: "it creates a versioned Map for CONTRACTION type"
-            LinkedHashMap versionedMap = collection.asVersionedMap(TransformType.CONTRACTION)
+            def versionedMap = collection.asVersionedMap(TransformType.CONTRACTION)
 
         then: "the map should contain operation of contraction type"
-            LinkedHashMap expectedMap  = ["${1}":['name':Verb.remove.name(), 'args':['{"age":0}']]]
-            versionedMap.equals(expectedMap)
+            def expectedMap  = [1L: new Tuple(remove, ['{"age":0}'], 0)]
+            versionedMap.size() == expectedMap.size()
+            versionedMap[1] == expectedMap[1]
     }
 
     def "it creates a versioned map for multiple EXPANSIONs"() {
@@ -103,14 +106,17 @@ class CollectionSpecs extends Specification {
             collection.add('{"city":"pune"}')
 
         when: "it creates a versioned Map for EXPANSION type"
-            LinkedHashMap versionedMap = collection.asVersionedMap(TransformType.EXPANSION)
+            def versionedMap = collection.asVersionedMap(TransformType.EXPANSION)
 
         then: "the map should contain operations of expansion type"
-            LinkedHashMap expectedMap  = ["${1}":['name':Verb.add.name(),
-                                                  'args':['{"age":0}']],
-                                          "${2}":['name':Verb.add.name(),
-                                                  'args':['{"city":"pune"}']]]
-            versionedMap.equals(expectedMap)
+            def expectedMap = [
+                1L: new Tuple(add, ['{"age":0}'], 0),
+                2L: new Tuple(add, ['{"city":"pune"}'], 0)
+            ]
+        versionedMap.size() == expectedMap.size()
+        expectedMap.each { version, value ->
+            assert versionedMap[version] == value
+        }
     }
 
     def "it creates a versioned map for multiple CONTRACTIONs"() {
@@ -121,14 +127,17 @@ class CollectionSpecs extends Specification {
             collection.remove('{"city":"pune"}')
 
         when: "it creates a versioned Map for CONTRACTION type"
-            LinkedHashMap versionedMap = collection.asVersionedMap(TransformType.CONTRACTION)
+            def versionedMap = collection.asVersionedMap(TransformType.CONTRACTION)
 
         then: "the map should contain operations of contraction type"
-            LinkedHashMap expectedMap  = ["${1}":['name':Verb.remove.name(),
-                                                  'args':['{"age":0}']],
-                                          "${2}":['name':Verb.remove.name(),
-                                                  'args':['{"city":"pune"}']]]
-            versionedMap.equals(expectedMap)
+            def expectedMap  = [
+                    1L: new Tuple(remove, ['{"age":0}'], 0),
+                    2L: new Tuple(remove, ['{"city":"pune"}'], 0)
+            ]
+            versionedMap.size() == expectedMap.size()
+            expectedMap.each { version, value ->
+                assert versionedMap[version] == value
+            }
     }
 
     def "it ignores contraction operations when versioning EXPANSIONs"() {
@@ -141,17 +150,17 @@ class CollectionSpecs extends Specification {
             collection.remove('["city"]')
 
         when: "it creates a versioned Map for EXPANSION type"
-            LinkedHashMap versionedExpansionMap = collection.asVersionedMap(TransformType.EXPANSION)
+            def versionedMap = collection.asVersionedMap(TransformType.EXPANSION)
 
         then: "the map should contain operations of expansion type only"
-            LinkedHashMap expectedExpansionMap = [
-                    "${1}" : ['name': Verb.add.name(),
-                         'args': ['{"age":0}']],
-                    "${2}" : ['name': Verb.add.name(),
-                         'args':['{"city":"pune"}']]
-                    ]
-
-            versionedExpansionMap.equals(expectedExpansionMap)
+            def expectedMap = [
+                    1L: new Tuple(add, ['{"age":0}'], 0),
+                    2L: new Tuple(add, ['{"city":"pune"}'], 0)
+            ]
+            versionedMap.size() == expectedMap.size()
+            expectedMap.each { version, value ->
+                assert versionedMap[version] == value
+            }
     }
 
     def "it ignores expansion operations when versioning CONTRACTIONs"() {
@@ -164,17 +173,17 @@ class CollectionSpecs extends Specification {
             collection.remove('["city"]')
 
         when: "it creates a versioned Map for CONTRACTION type"
-            LinkedHashMap versionedContractionMap = collection.asVersionedMap(TransformType.CONTRACTION)
-
+            def versionedMap = collection.asVersionedMap(TransformType.CONTRACTION)
 
         then: "the map should contain operations of contraction type only"
-            LinkedHashMap expectedContractionMap  = [
-                    "${1}" : ['name': Verb.remove.name(),
-                            'args': ['["dob"]']],
-                    "${2}" : ['name': Verb.remove.name(),
-                            'args': ['["city"]']]
+            def expectedMap  = [
+                    1L: new Tuple(remove, ['["dob"]'], 0),
+                    2L: new Tuple(remove, ['["city"]'], 0)
             ]
-            versionedContractionMap.equals(expectedContractionMap)
+            versionedMap.size() == expectedMap.size()
+            expectedMap.each { version, value ->
+                assert versionedMap[version] == value
+            }
 
     }
 

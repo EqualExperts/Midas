@@ -48,21 +48,26 @@ public class Reader {
     public Tree read(final List<File> deltaFiles) {
         def parser = new Parser()
         deltaFiles.each { deltaFile ->
-            def deltaFileName = deltaFile.absolutePath
-            log.info("Reading $deltaFileName")
+            def deltaFileAbsoluteName = deltaFile.absolutePath
+            log.info("Reading $deltaFileAbsoluteName")
             def dsl = deltaFile.text
             def code = """{-> $dsl}"""
             //shell evaluates once, hence create new each time
             def shell = createNewShell()
-            def delta = shell.evaluate(code, deltaFileName)
+            def delta = shell.evaluate(code, deltaFileAbsoluteName)
             try {
-                parser.parse(delta)
+                Long changeSet = extractChangeSet(deltaFile)
+                parser.parse(changeSet, delta)
             } catch (Throwable t) {
-                throw new InvalidGrammar("$deltaFileName --> ${t.message}")
+                throw new InvalidGrammar("$deltaFileAbsoluteName --> ${t.message}")
             }
             //http://groovy.dzone.com/news/groovyshell-and-memory-leaks
             shell = null
         }
         parser.ast()
+    }
+
+    private Long extractChangeSet(File delta) {
+        0
     }
 }

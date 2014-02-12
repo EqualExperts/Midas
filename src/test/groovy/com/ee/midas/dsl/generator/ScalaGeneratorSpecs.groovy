@@ -9,9 +9,10 @@ import spock.lang.Specification
 class ScalaGeneratorSpecs extends Specification {
 
     def "Generate Snippets for Add operation"() {
-        given: "A Parser builds a Tree"
+        given: 'A Parser builds a Tree for a delta in a change set'
             Parser parser = new Parser()
-            parser.parse { ->
+            def changeSet = 1
+            parser.parse(changeSet) { ->
                 using someDatabase
                 db.collectionName.add('{"newField" : "newValue"}')
             }
@@ -45,9 +46,10 @@ class ScalaGeneratorSpecs extends Specification {
    }
 
     def "Generate Snippets for Remove operation"() {
-        given: "A Parser builds a Tree"
-            Parser parser  = new Parser()
-            parser.parse { ->
+        given: 'A Parser builds a Tree for a remove delta in a change set'
+            Parser parser = new Parser()
+            def changeSet = 1
+            parser.parse(changeSet) { ->
                 using someDatabase
                 db.collectionName.remove('["newField"]')
             }
@@ -81,9 +83,10 @@ class ScalaGeneratorSpecs extends Specification {
     }
 
     def "Generate Snippets for Copy operation"() {
-        given: "A Parser builds a Tree for a copy operation"
-            Parser parser  = new Parser()
-            parser.parse { ->
+            given: 'A Parser builds a Tree for a copy delta in a change set'
+            Parser parser = new Parser()
+            def changeSet = 1
+            parser.parse(changeSet) { ->
                 using someDatabase
                 db.collectionName.copy("fromOldField", "toNewField")
             }
@@ -125,9 +128,10 @@ class ScalaGeneratorSpecs extends Specification {
                 db.collectionName.split("sourceField", "some regex", "{ \"token1\": \"\$1\", \"token2\": \"\$2\"}")
             }
 
-        and: "A Parser builds a Tree for a split operation"
-            Parser parser  = new Parser()
-            parser.parse(splitDelta)
+        and: "A Parser builds a Tree for that delta in a changeSet"
+            Parser parser = new Parser()
+            def changeSet = 1
+            parser.parse(changeSet, splitDelta)
             Tree tree = parser.ast()
 
         and: "A Scala generator"
@@ -161,9 +165,10 @@ class ScalaGeneratorSpecs extends Specification {
                 db.collectionName.merge("[\"field1\",\"field2\"]", "separator", "targetField")
             }
 
-        and: "A Parser builds a Tree for a merge operation"
+        and: "A Parser builds a Tree for that delta in a change set"
             Parser parser = new Parser()
-            parser.parse(mergeDelta)
+            def changeSet = 1
+            parser.parse(changeSet, mergeDelta)
             Tree tree = parser.ast()
 
         and: "A Scala generator"
@@ -199,9 +204,10 @@ class ScalaGeneratorSpecs extends Specification {
                 db.collectionName.add("{\"field1\": \"value1\",\"field2\": \"value2\"}")
             }
 
-        and: "A Parser builds a Tree for expansion operation"
+        and: "A Parser builds a Tree for expansion delta in a change set"
             Parser parser = new Parser()
-            parser.parse(expansionDelta)
+            def changeSet = 1
+            parser.parse(changeSet, expansionDelta)
             Tree tree = parser.ast()
 
         and: "A Scala generator"
@@ -231,9 +237,10 @@ class ScalaGeneratorSpecs extends Specification {
                 db.collectionName.remove("[\"field1\",\"field2\"]")
             }
 
-        and: "A Parser builds a Tree for contraction operation"
+        and: "A Parser builds a Tree for contraction delta in a change set"
             Parser parser = new Parser()
-            parser.parse(contractionDelta)
+            def changeSet = 1
+            parser.parse(changeSet, contractionDelta)
             Tree tree = parser.ast()
 
         and: "A Scala generator"

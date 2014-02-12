@@ -1,10 +1,7 @@
 package com.ee.midas.interceptor
 
-import java.io.{ByteArrayInputStream, InputStream}
+import java.io.{InputStream}
 import com.ee.midas.utils.Loggable
-import org.bson.io.Bits
-import org.bson.BasicBSONEncoder
-import com.mongodb.{DBObject, DBCollection, DefaultDBDecoder, DBDecoder}
 import com.ee.midas.transform.TransformType
 
 class RequestInterceptor (tracker: MessageTracker, transformType: TransformType) extends MidasInterceptable with Loggable {

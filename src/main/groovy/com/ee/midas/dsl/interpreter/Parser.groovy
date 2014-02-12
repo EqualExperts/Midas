@@ -19,12 +19,10 @@ class Parser {
 
     def using(db) {
         log.info "Setting db context to ${db.toString()}"
-        tree.updateDB(db)
     }
 
-    public Tree parse(Closure closure) {
-//    public Tree parse(Long changeSet, Closure closure) {
-        tree.updateCS(0)
+    public Tree parse(Long changeSet, Closure closure) {
+        tree.updateCS(changeSet)
         def cloned = closure.clone()
         cloned.delegate = this
         cloned.resolveStrategy = Closure.DELEGATE_FIRST

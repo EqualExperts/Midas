@@ -31,17 +31,17 @@ class Collection {
         Verb verb = asVerb(name)
         def parameters = args? args as List<String> : []
         verb.validate(parameters)
+        def changeSet = ctx.currentCS()
         if (verb.isExpansion()) {
-            log.info("${this.name} Adding Expansion $verb with $args")
-            versionedExpansions[curExpansionVersion++] = [verb, args, ctx.currentCS()]
+            log.info("${this.name} Adding Expansion $verb with $args to changeSet $changeSet")
+            versionedExpansions[curExpansionVersion++] = new Tuple(verb, args, changeSet)
             return
         }
         if (verb.isContraction()) {
-            log.info("${this.name} Adding Contraction $verb with $args")
-            versionedContractions[curContractionVersion++] = [verb, args, ctx.currentCS()]
+            log.info("${this.name} Adding Contraction $verb with $args to changeSet $changeSet")
+            versionedContractions[curContractionVersion++] = new Tuple(verb, args, changeSet)
             return
         }
-
     }
 
     @CompileStatic
@@ -63,14 +63,7 @@ class Collection {
         if(transformType == CONTRACTION) {
             versionedTransforms = versionedContractions
         }
-
-        versionedTransforms.collectEntries { Map.Entry entry ->
-            Tuple grammarWithArgs = (Tuple) entry.value
-            Verb grammar = Verb.valueOf(grammarWithArgs[0] as String)
-            def args = grammarWithArgs[1]
-            def operation = ['name': grammar.name(), 'args': args]
-            ["$entry.key" : operation]
-        }
+        versionedTransforms
     }
 
     def String toString() {

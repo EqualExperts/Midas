@@ -7,7 +7,7 @@ import java.util.regex.Pattern
 @Slf4j
 class FileExtension {
     //Expect File URL: ../deltasDir/app/changeSet#/[expansion | contraction]/filename.delta
-    private static Pattern changeSetPattern = Pattern.compile('''.*/([\\d]+).*/.*/.*delta$''')
+    private static Pattern changeSetPattern = Pattern.compile('''.*[/\\\\]([\\d]+).*[/\\\\].*[/\\\\].*delta$''')
 
     static Long changeSet(File self) {
         def absPath = self.absolutePath

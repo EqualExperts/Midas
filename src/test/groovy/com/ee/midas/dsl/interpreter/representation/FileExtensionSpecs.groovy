@@ -30,25 +30,26 @@ class FileExtensionSpecs extends Specification {
                     55        | '/deltas/application/55-CustomerFeature/expansions/03-addNameField.delta'
                    256        | '/deltas/application/000256-SomeFeature/expansions/01-addNameField.delta'
                    555        | '/deltas/application/555.09-SomeFeature/expansions/01-addNameField.delta'
+                   1001       | '/deltas/application/1001Top10Feature/expansions/01-addNameField.delta'
     }
 
     def "does not extract change set from File "() {
         when: 'a file without changeset number'
-        def file = new File('/deltas/application/NewCustomerFeature/expansions/01-addNameField.delta')
+            def file = new File('/deltas/application/NewCustomerFeature/expansions/01-addNameField.delta')
 
         then: 'return -1 to indicate change set is not present'
-        use (FileExtension) {
-            file.changeSet() == -1
-        }
+            use (FileExtension) {
+                file.changeSet() == -1
+            }
     }
 
     def "does not extract change set from File with incorrect format"() {
         when: 'a file without changeset number'
-        def file = new File('/expansions/01-addNameField.delta')
+            def file = new File('/expansions/01-addNameField.delta')
 
         then: 'return -1 to indicate change set is not present'
-        use (FileExtension) {
-            file.changeSet() == -1
-        }
+            use (FileExtension) {
+                file.changeSet() == -1
+            }
     }
 }

@@ -50,7 +50,7 @@ case class Update(data: Array[Byte]) extends Request {
   }
 
   def versioned(transformType: TransformType): Array[Byte] = {
-    val (selector,updator) = getSelectorUpdator
+    val (selector, updator) = getSelectorUpdator
     val versionedUpdator = addVersion(updator, transformType)
     val versionedPayload = selector.toBytes ++ versionedUpdator.toBytes
     initialBytes ++ versionedPayload

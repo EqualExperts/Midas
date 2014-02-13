@@ -22,7 +22,7 @@ class TransformerSpecs extends Specification with Mockito {
           val transformer = new Transformer(deployableHolder)
 
           //Then
-          transformer.canTransformDocuments(fullCollectionName)  mustEqual true
+          transformer.canTransformResponse(fullCollectionName)  mustEqual true
           there was one(transforms).canBeApplied(fullCollectionName)
         }
 
@@ -38,7 +38,7 @@ class TransformerSpecs extends Specification with Mockito {
           val transformer = new Transformer(deployableHolder)
 
           //Then
-          transformer.canTransformDocuments(fullCollectionName) mustEqual true
+          transformer.canTransformResponse(fullCollectionName) mustEqual true
           there was one(transforms).canBeApplied(fullCollectionName)
         }
 
@@ -56,7 +56,7 @@ class TransformerSpecs extends Specification with Mockito {
           val transformer = new Transformer(deployableHolder)
 
           //Then
-          transformer.transform(document)(fullCollectionName)  mustEqual  expectedDocument
+          transformer.transformResponse(document, fullCollectionName)  mustEqual  expectedDocument
           there was one(transforms).map(document)(fullCollectionName)
         }
 
@@ -74,7 +74,7 @@ class TransformerSpecs extends Specification with Mockito {
           val transformer = new Transformer(deployableHolder)
 
           //Then
-          transformer.transform(document)(fullCollectionName)  mustEqual  expectedDocument
+          transformer.transformResponse(document, fullCollectionName)  mustEqual  expectedDocument
           there was one(transforms).map(document)(fullCollectionName)
         }
       }

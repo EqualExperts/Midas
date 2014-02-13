@@ -2,9 +2,10 @@ package com.ee.midas.interceptor
 
 import java.io.{InputStream}
 import com.ee.midas.utils.Loggable
-import com.ee.midas.transform.TransformType
+import com.ee.midas.transform.{Transformer, TransformType}
 
-class RequestInterceptor (tracker: MessageTracker, transformType: TransformType) extends MidasInterceptable with Loggable {
+class RequestInterceptor (tracker: MessageTracker, transformType: TransformType, transformer: Transformer = null)
+  extends MidasInterceptable with Loggable {
 
   private val CSTRING_TERMINATION_DELIM = 0
 
@@ -13,33 +14,48 @@ class RequestInterceptor (tracker: MessageTracker, transformType: TransformType)
     (result map (_.toChar) mkString)
  }
 
-  def read(src: InputStream, header: BaseMongoHeader): Array[Byte] = {
-    val remaining = new Array[Byte](header.payloadSize)
-
-    src.read(remaining)
-    import BaseMongoHeader.OpCode._
-    header.opCode match {
-      case OP_QUERY | OP_GET_MORE => {
-        val fullCollectionName = extractFullCollectionName(remaining)
-        tracker.track(header.requestID, fullCollectionName)
-      }
-
-      case OP_UPDATE | OP_INSERT => {
-        val payload: Request = if(header.opCode == OP_UPDATE) Update(remaining) else Insert(remaining)
-        val versionedPayload = payload.versioned(transformType)
-        val newLength = versionedPayload.length
-        header.updateLength(newLength)
-        return header.bytes ++ versionedPayload
-      }
-
-      case _ => ""
-    }
-    header.bytes ++ remaining
-  }
-
-  def readHeader(src: InputStream): BaseMongoHeader = {
-    val header = BaseMongoHeader(src)
+  def readHeader(request: InputStream): BaseMongoHeader = {
+    val header = BaseMongoHeader(request)
     logInfo(header.toString)
     header
+  }
+
+  def read(request: InputStream, header: BaseMongoHeader): Array[Byte] = {
+    if (header.hasPayload) {
+      val requestWithoutHeader = new Array[Byte](header.payloadSize)
+      request.read(requestWithoutHeader)
+      modifyIfRequired(requestWithoutHeader, header)
+    }
+    else
+      header.bytes
+  }
+
+  import BaseMongoHeader.OpCode._
+  def modifyIfRequired(request: Array[Byte], header: BaseMongoHeader): Array[Byte] = {
+    val fullCollectionName = extractFullCollectionName(request)
+    header.opCode match {
+      case OP_INSERT
+        if (transformer.canTransformRequest(fullCollectionName)) =>
+          return modify(Insert(request), fullCollectionName, header)
+
+      case OP_UPDATE
+        if (transformer.canTransformRequest(fullCollectionName)) =>
+          return modify(Update(request), fullCollectionName, header)
+
+      case OP_QUERY | OP_GET_MORE => tracker.track(header.requestID, fullCollectionName)
+
+      case _ =>
+    }
+    header.bytes ++ request
+  }
+
+  def modify(request: Request, fullCollectionName: String, header: BaseMongoHeader): Array[Byte] = {
+    //route versioning to transformer
+    //1 fullCollectionName
+    //2 ChangeSet number??
+    val versionedPayload = request.versioned(transformType)
+    val newLength = versionedPayload.length
+    header.updateLength(newLength)
+    header.bytes ++ versionedPayload
   }
 }

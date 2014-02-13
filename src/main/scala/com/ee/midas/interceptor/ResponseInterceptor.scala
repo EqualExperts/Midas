@@ -9,29 +9,32 @@ import com.ee.midas.transform.Transformer
 class ResponseInterceptor (tracker: MessageTracker, transformer: Transformer)
   extends MidasInterceptable with Loggable {
 
-  def readHeader(inputStream: InputStream): BaseMongoHeader = {
-    val header = MongoHeader(inputStream)
+  def readHeader(response: InputStream): BaseMongoHeader = {
+    val header = MongoHeader(response)
     logInfo(header.toString)
     header
   }
 
-  def read(inputStream: InputStream, header: BaseMongoHeader): Array[Byte] = {
+  def read(response: InputStream, header: BaseMongoHeader): Array[Byte] = {
     if (header.hasPayload) {
-      modifyPayloadIfRequired(inputStream, header.asInstanceOf[MongoHeader])
+      modifyIfRequired(response, header.asInstanceOf[MongoHeader])
     }
     else header.bytes
   }
   
-  private def modifyPayload(in: InputStream, header: MongoHeader)(implicit fullCollectionName: String): Array[Byte] = {
-    val documents = extractDocumentsFrom(in, header)
-    val transformedDocuments = documents map transformer.transform
+  private def modify(response: InputStream, fullCollectionName: String, header: MongoHeader): Array[Byte] = {
+    val documents = extractDocumentsFrom(response, header)
+    val transformedDocuments = documents map (document => transformer.transformResponse(document, fullCollectionName))
     val newPayloadBytes = transformedDocuments flatMap (_.toBytes)
     header.updateLength(newPayloadBytes.length)
     newPayloadBytes.toArray
   }
-  
-  private def payload(in: InputStream, header: MongoHeader): Array[Byte] = {
-    val stream = new FixedSizeStream(in, header.payloadSize)
+
+  //Info: Why this method?
+  //It turns out that passing payload without modifying was failing when returning large number (around 1000) documents
+  //from a query.  Hence, in order that client does not bomb, we extract the payload and re-assemble it.
+  private def reassemble(response: InputStream, header: MongoHeader): Array[Byte] = {
+    val stream = new FixedSizeStream(response, header.payloadSize)
     val totalDocuments = header.documentsCount
     val documents = 1 to totalDocuments map { n =>
       val document: BSONObject = stream
@@ -41,26 +44,24 @@ class ResponseInterceptor (tracker: MessageTracker, transformer: Transformer)
     payloadBytes.toArray
   }
 
-  private def modifyPayloadIfRequired(in: InputStream, header: MongoHeader): Array[Byte] = {
+  private def modifyIfRequired(response: InputStream, header: MongoHeader): Array[Byte] = {
     val headerBytes = header.bytes
     val requestId = header.responseTo 
     val payloadBytes = (tracker.fullCollectionName(requestId)) match {
-      case Some(fcName) =>
-        implicit val fullCollectionName = fcName
-        if (transformer.canTransformDocuments) {
-           modifyPayload(in, header)
-        } else {
-           payload(in, header)
-        }
-      case None => payload(in, header)
+      case Some(fullCollectionName) =>
+        if (transformer.canTransformResponse(fullCollectionName))
+          modify(response, fullCollectionName, header)
+        else
+          reassemble(response, header)
+
+      case None => reassemble(response, header)
     }
     tracker untrack requestId
     headerBytes ++ payloadBytes
   }
   
-  private def extractDocumentsFrom(inputStream: InputStream, header: MongoHeader): List[BSONObject] = {
-    logInfo(s"Payload Size")
-    val stream = new FixedSizeStream(inputStream, header.payloadSize)
+  private def extractDocumentsFrom(response: InputStream, header: MongoHeader): List[BSONObject] = {
+    val stream = new FixedSizeStream(response, header.payloadSize)
     val totalDocuments = header.documentsCount
     val documents = 1 to totalDocuments map { n =>
       val document: BSONObject = stream

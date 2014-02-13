@@ -21,6 +21,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
     val mockSrc = mock[InputStream]
 
     val header = mock[BaseMongoHeader]
+    header.hasPayload returns true
     header.opCode returns BaseMongoHeader.OpCode.OP_QUERY
     header.requestID returns requestID
     header.payloadSize returns payloadSize

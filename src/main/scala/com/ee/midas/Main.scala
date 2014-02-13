@@ -91,11 +91,12 @@ object Main extends App with Loggable with Parser {
           val newConMsg = s"New connection received from Remote IP: ${application.getInetAddress} Remote Port: ${application.getPort}, Local Port: ${application.getLocalPort}"
           logInfo(newConMsg)
           println(newConMsg)
-          try{
+          try {
             val mongoSocket = new Socket(config.mongoHost, config.mongoPort)
             val tracker = new MessageTracker()
-            val requestInterceptable = new RequestInterceptor(tracker, mode)
-            val responseInterceptable = new ResponseInterceptor(tracker, new Transformer(deployableHolder))
+            val transformer = new Transformer(deployableHolder)
+            val requestInterceptable = new RequestInterceptor(tracker, mode, transformer)
+            val responseInterceptable = new ResponseInterceptor(tracker, transformer)
 
             val duplexPipe = application  <|==|> (mongoSocket, requestInterceptable, responseInterceptable)
             duplexPipe.start

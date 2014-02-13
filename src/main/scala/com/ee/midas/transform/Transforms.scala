@@ -9,8 +9,8 @@ abstract class Transforms extends Versioner with Deployable[Transforms] {
   type Snippet = BSONObject => BSONObject
   type Snippets = Iterable[Snippet]
   type VersionedSnippets = TreeMap[Double, Snippet]
-  var responseExpansions : Map[String, VersionedSnippets]
-  var responseContractions : Map[String, VersionedSnippets]
+  var responseExpansions: Map[String, VersionedSnippets]
+  var responseContractions: Map[String, VersionedSnippets]
   
   type ChangeSetCollectionKey = (Long, String)
   var requestExpansions: Map[ChangeSetCollectionKey, Double]
@@ -57,20 +57,22 @@ abstract class Transforms extends Versioner with Deployable[Transforms] {
       case (document, snippet) => (snippet andThen version)(document)
     }
 
-  override def toString =
+  override def toString = {
+    val separator = "\n\t\t\t\t\t\t"
     s"""
       |======================================================================
       |Request
       | |
-      | +--> Expansions = ${requestExpansions.size} [${requestExpansions mkString "\n"}]
+      | +--> Expansions = ${requestExpansions.size} [${requestExpansions mkString separator}]
       | |
-      | +--> Contractions = ${requestContractions.size} [${requestContractions mkString "\n"}]
+      | +--> Contractions = ${requestContractions.size} [${requestContractions mkString separator}]
       |----------------------------------------------------------------------
       |Response
       | |
-      | +--> Expansions = ${responseExpansions.size} [${responseExpansions mkString "\n"}]
+      | +--> Expansions = ${responseExpansions.size} [${responseExpansions mkString separator}]
       | |
-      | +--> Contractions = ${responseContractions.size} [${responseContractions mkString "\n"}]
+      | +--> Contractions = ${responseContractions.size} [${responseContractions mkString separator}]
       |======================================================================
      """.stripMargin
+  }
 }

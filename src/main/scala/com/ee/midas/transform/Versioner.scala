@@ -6,7 +6,7 @@ import com.ee.midas.utils.Loggable
 
 trait Versioner extends Loggable {
 
-  def getVersion(document: BSONObject)(implicit transformType: TransformType) = {
+  def getVersion(document: BSONObject)(transformType: TransformType) = {
     val versionFieldName = transformType.versionFieldName()
     if(document.containsField(versionFieldName)) {
       val version = document.get(versionFieldName).asInstanceOf[Double]
@@ -16,9 +16,9 @@ trait Versioner extends Loggable {
     }
   }
 
-  def version (document: BSONObject)(implicit transformType: TransformType): BSONObject = {
+  def version (document: BSONObject)(transformType: TransformType): BSONObject = {
     val versionFieldName = transformType.versionFieldName()
-    getVersion(document) match {
+    getVersion(document)(transformType) match {
       case Some(version) => {
         logDebug("Current Version %f of Document %s".format(version, document))
         val nextVersion = version + 1d

@@ -41,14 +41,14 @@ class TransformsSpecs extends Specification with Mockito {
     override var requestContractions: Map[ChangeSetCollectionKey, Double] = Map()
   }
 
-  "transforms trait" should {
+  "Response transforms" should {
     "apply expansion snippets" in new Transformations {
       //given
-      override implicit var transformType = TransformType.EXPANSION
+      override var transformType = TransformType.EXPANSION
       val document = new BasicBSONObject("name", "dummy")
 
       //when
-      val transformedDocument = map(document)("validCollectionForExpansion")
+      val transformedDocument = transformResponse(document, "validCollectionForExpansion")
 
       //then
       transformedDocument.containsField("expansion1") && transformedDocument.containsField("expansion2")
@@ -56,11 +56,11 @@ class TransformsSpecs extends Specification with Mockito {
 
     "add expansion version to a virgin document" in new Transformations {
       //given
-      override implicit var transformType = TransformType.EXPANSION
+      override var transformType = TransformType.EXPANSION
       val document = new BasicBSONObject("name", "dummy")
 
       //when
-      val transformedDocument = map(document)("validCollectionForExpansion")
+      val transformedDocument = transformResponse(document, "validCollectionForExpansion")
 
       //then
       transformedDocument.get(TransformType.EXPANSION.versionFieldName()) must_== (dummyVersionExpansion.size)
@@ -68,13 +68,13 @@ class TransformsSpecs extends Specification with Mockito {
 
     "update expansion version of already transformed document" in new Transformations {
       //given
-      override implicit var transformType = TransformType.EXPANSION
+      override var transformType = TransformType.EXPANSION
       val initialVersion = 1d
       val document = new BasicBSONObject("name", "dummy")
       document.put(TransformType.EXPANSION.versionFieldName, initialVersion)
 
       //when
-      val transformedDocument = map(document)("validCollectionForExpansion")
+      val transformedDocument = transformResponse(document, "validCollectionForExpansion")
 
       //then
       !transformedDocument.containsField("expansion1") &&
@@ -84,10 +84,10 @@ class TransformsSpecs extends Specification with Mockito {
     "apply contraction snippets" in new Transformations {
       //given
       val document = new BasicBSONObject("name", "dummy")
-      override implicit var transformType = TransformType.CONTRACTION
+      override var transformType = TransformType.CONTRACTION
 
       //when
-      val transformedDocument = map(document)("validCollectionForContraction")
+      val transformedDocument = transformResponse(document, "validCollectionForContraction")
 
       //then
       transformedDocument.containsField("contraction1") && transformedDocument.containsField("contraction2")
@@ -96,10 +96,10 @@ class TransformsSpecs extends Specification with Mockito {
     "add contraction version to a virgin document" in new Transformations {
       //given
       val document = new BasicBSONObject("name", "dummy")
-      override implicit var transformType = TransformType.CONTRACTION
+      override var transformType = TransformType.CONTRACTION
 
       //when
-      val transformedDocument = map(document)("validCollectionForContraction")
+      val transformedDocument = transformResponse(document, "validCollectionForContraction")
 
       //then
       transformedDocument.get(TransformType.CONTRACTION.versionFieldName()) must_== (dummyVersionContraction.size)
@@ -107,14 +107,14 @@ class TransformsSpecs extends Specification with Mockito {
 
     "update contraction version of already transformed document" in new Transformations {
       //given
-      override implicit var transformType = TransformType.CONTRACTION
+      override var transformType = TransformType.CONTRACTION
 
       val initialVersion = 1d
       val document = new BasicBSONObject("name", "dummy")
       document.put(TransformType.CONTRACTION.versionFieldName, initialVersion)
 
       //when
-      val transformedDocument = map(document)("validCollectionForContraction")
+      val transformedDocument = transformResponse(document, "validCollectionForContraction")
 
       //then
       !transformedDocument.containsField("expansion1") &&
@@ -123,7 +123,7 @@ class TransformsSpecs extends Specification with Mockito {
 
     "accept new expansions and contractions" in new Transformations {
       //given
-      override implicit var transformType = TransformType.EXPANSION
+      override var transformType = TransformType.EXPANSION
       val newTransformsMock = mock[Transforms]
       val mockExpansions = mock[Map[String, newTransformsMock.VersionedSnippets]]
       val mockContractions = mock[Map[String, newTransformsMock.VersionedSnippets]]
@@ -140,32 +140,32 @@ class TransformsSpecs extends Specification with Mockito {
 
     "return false if transformations cannot be applied for a collection name" in new Transformations {
       //given
-      override implicit var transformType = TransformType.EXPANSION
+      override var transformType = TransformType.EXPANSION
       val collection = "invalidCollectionName"
 
       //when
       //then
-      canBeApplied(collection) must beFalse
+      canTransformResponse(collection) must beFalse
     }
 
     "return true if expansion can be applied for a collection name" in new Transformations {
       //given
-      override implicit var transformType = TransformType.EXPANSION
+      override var transformType = TransformType.EXPANSION
       val collection = "validCollectionForExpansion"
 
       //when
       //then
-      canBeApplied(collection) must beTrue
+      canTransformResponse(collection) must beTrue
     }
 
     "return true if contraction can be applied for a collection name" in new Transformations {
       //given
-      override implicit var transformType = TransformType.CONTRACTION
+      override var transformType = TransformType.CONTRACTION
       val collection = "validCollectionForContraction"
 
       //when
       //then
-      canBeApplied(collection) must beTrue
+      canTransformResponse(collection) must beTrue
     }
 
   }

@@ -14,16 +14,18 @@ class TransformerSpecs extends Specification with Mockito {
           //Given
           val deployableHolder =  mock[DeployableHolder[Transforms]]
           val transforms = mock[Transforms]
+
           val fullCollectionName = "testCollection"
           deployableHolder.get returns transforms
-          transforms.canBeApplied(fullCollectionName) returns true
+
+          transforms.canTransformResponse(fullCollectionName) returns true
 
           //When
           val transformer = new Transformer(deployableHolder)
 
           //Then
           transformer.canTransformResponse(fullCollectionName)  mustEqual true
-          there was one(transforms).canBeApplied(fullCollectionName)
+          there was one(transforms).canTransformResponse(fullCollectionName)
         }
 
         "check if document can be transformed in CONTRACTION mode" in {
@@ -32,14 +34,14 @@ class TransformerSpecs extends Specification with Mockito {
           val transforms = mock[Transforms]
           deployableHolder.get returns transforms
           val fullCollectionName = "testCollection"
-          transforms.canBeApplied(fullCollectionName) returns true
+          transforms.canTransformResponse(fullCollectionName) returns true
 
           //When
           val transformer = new Transformer(deployableHolder)
 
           //Then
           transformer.canTransformResponse(fullCollectionName) mustEqual true
-          there was one(transforms).canBeApplied(fullCollectionName)
+          there was one(transforms).canTransformResponse(fullCollectionName)
         }
 
         "transforms document in EXPANSION mode" in {
@@ -50,14 +52,14 @@ class TransformerSpecs extends Specification with Mockito {
           deployableHolder.get returns transforms
           val document = new BasicBSONObject("name","testCollection")
           val expectedDocument = document.append("new","value")
-          transforms.map(document)(fullCollectionName) returns expectedDocument
+          transforms.transformResponse(document, fullCollectionName) returns expectedDocument
 
           //When
           val transformer = new Transformer(deployableHolder)
 
           //Then
           transformer.transformResponse(document, fullCollectionName)  mustEqual  expectedDocument
-          there was one(transforms).map(document)(fullCollectionName)
+          there was one(transforms).transformResponse(document, fullCollectionName)
         }
 
         "transforms document in CONTRACTION mode" in {
@@ -68,14 +70,14 @@ class TransformerSpecs extends Specification with Mockito {
           deployableHolder.get returns transforms
           val document = new BasicBSONObject("name","testCollection")
           val expectedDocument = document.append("new","value")
-          transforms.map(document)(fullCollectionName) returns expectedDocument
+          transforms.transformResponse(document, fullCollectionName) returns expectedDocument
 
           //When
           val transformer = new Transformer(deployableHolder)
 
           //Then
           transformer.transformResponse(document, fullCollectionName)  mustEqual  expectedDocument
-          there was one(transforms).map(document)(fullCollectionName)
+          there was one(transforms).transformResponse(document, fullCollectionName)
         }
       }
 }

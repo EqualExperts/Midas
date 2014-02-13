@@ -27,7 +27,7 @@ class ScalaGeneratorSpecs extends Specification {
         then: 'generates request and response maps for add operation'
             def expansionSnippets =
                 """
-                    override implicit var transformType = TransformType.EXPANSION
+                    override var transformType = TransformType.EXPANSION
 
                     override var responseExpansions: Map[String, VersionedSnippets] =
                     Map(\"someDatabase.collectionName\" ->
@@ -70,7 +70,7 @@ class ScalaGeneratorSpecs extends Specification {
         then: 'generates request and response maps for remove'
             def contractionSnippets =
                 """
-                    override implicit var transformType = TransformType.CONTRACTION
+                    override var transformType = TransformType.CONTRACTION
 
                     override var responseExpansions: Map[String, VersionedSnippets] =
                     Map()
@@ -113,7 +113,7 @@ class ScalaGeneratorSpecs extends Specification {
         then: 'it generates request and response maps for copy operation'
             def expectedCopySnippets =
                 """
-                    override implicit var transformType = TransformType.EXPANSION
+                    override var transformType = TransformType.EXPANSION
 
                     override var responseExpansions: Map[String, VersionedSnippets] =
                     Map(\"someDatabase.collectionName\" ->
@@ -161,7 +161,7 @@ class ScalaGeneratorSpecs extends Specification {
         then : 'it generates request and response maps for split operation'
             def expectedSplitSnippets =
                 """
-                    override implicit var transformType = TransformType.EXPANSION
+                    override var transformType = TransformType.EXPANSION
 
                     override var responseExpansions: Map[String, VersionedSnippets] =
                     Map(\"someDatabase.collectionName\" ->
@@ -204,7 +204,7 @@ class ScalaGeneratorSpecs extends Specification {
         then: 'it generates request and response maps for merge operation'
             def expectedMergeIntoSnippets =
                 """
-                    override implicit var transformType = TransformType.EXPANSION
+                    override var transformType = TransformType.EXPANSION
 
                     override var responseExpansions: Map[String, VersionedSnippets] =
                     Map(\"someDatabase.collectionName\" ->
@@ -249,7 +249,7 @@ class ScalaGeneratorSpecs extends Specification {
         then: 'it generates empty response map for expansion operation in contraction mode'
         def expectedSnippets =
             """
-                override implicit var transformType = TransformType.CONTRACTION
+                override var transformType = TransformType.CONTRACTION
 
                 override var responseExpansions: Map[String, VersionedSnippets] =
                 Map()
@@ -288,7 +288,7 @@ class ScalaGeneratorSpecs extends Specification {
         then: 'it generates Scala empty request and response maps for contraction operation in expansion mode'
             def expectedSnippets =
                 """
-                    override implicit var transformType = TransformType.EXPANSION
+                    override var transformType = TransformType.EXPANSION
 
                     override var responseExpansions: Map[String, VersionedSnippets] =
                     Map()

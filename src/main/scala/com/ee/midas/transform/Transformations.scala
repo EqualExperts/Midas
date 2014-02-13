@@ -13,7 +13,7 @@ class Transformations extends Transforms with Parser {
   override var requestExpansions: Map[ChangeSetCollectionKey, Double] = Map()
   override var requestContractions: Map[ChangeSetCollectionKey, Double] = Map()
 
-  override implicit var transformType = TransformType.EXPANSION
+  override var transformType = TransformType.EXPANSION
 }
 
 

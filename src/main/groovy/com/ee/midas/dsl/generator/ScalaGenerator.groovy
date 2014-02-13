@@ -29,7 +29,7 @@ public class ScalaGenerator implements Generator<String> {
                 generateRequestTransformations(EXPANSION, tree).join(", ")
 
             return  """
-                    override implicit var transformType = TransformType.EXPANSION
+                    override var transformType = TransformType.EXPANSION
 
                     override var responseExpansions: Map[String, VersionedSnippets] =
                     Map(${responseTransformationEntries})
@@ -52,7 +52,7 @@ public class ScalaGenerator implements Generator<String> {
                 generateRequestTransformations(CONTRACTION, tree).join(", ")
 
             return  """
-                    override implicit var transformType = TransformType.CONTRACTION
+                    override var transformType = TransformType.CONTRACTION
 
                     override var responseExpansions: Map[String, VersionedSnippets] =
                     Map()

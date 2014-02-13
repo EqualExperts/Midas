@@ -178,21 +178,6 @@ class ParserSpecs extends Specification {
     }
 
     "Parse application" in {
-      "configuration without node" in new ConfigParser {
-        //Given
-        val appName = "testApp"
-        val input =
-          s"""
-            |$appName {
-            |  mode = contraction
-            |}
-          """.stripMargin
-
-        //When-Then
-        val application = Result(parseAll(app, input))
-        application mustEqual Application(appName, TransformType.CONTRACTION, Nil)
-      }
-
       "valid application configuration with single node" in new ConfigParser {
         //Given
         val appName = "testApp"
@@ -252,6 +237,22 @@ class ParserSpecs extends Specification {
          ))
      }
    }
+
+    "Fail to Parse application" in {
+      "configuration without node" in new ConfigParser {
+        //Given
+        val appName = "testApp"
+        val input =
+          s"""
+            |$appName {
+            |  mode = contraction
+            |}
+          """.stripMargin
+
+        //When-Then
+        Result(parseAll(app, input)) must throwA[IllegalArgumentException]
+      }
+    }
 
     "Parse configuration" in {
 

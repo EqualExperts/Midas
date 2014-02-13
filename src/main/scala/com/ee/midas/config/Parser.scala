@@ -39,9 +39,6 @@ import com.ee.midas.utils.Loggable
  *       changeSet = 7
  *     }
  *   }
- *   app3 {
- *     mode = expansion
- *   }
  * }
  *
  * BNF
@@ -49,7 +46,7 @@ import com.ee.midas.utils.Loggable
  * apps ::=  "apps" "{" {app} "}"
  * app  ::=  name "{" mode nodes "}"
  * mode ::= "mode" "=" "expansion" | "contraction"
- * nodes ::= "{" {node} "}"
+ * nodes ::= "{" node {node} "}"
  * node ::=  name "{" ip changeSet "}"
  * ip   ::=  "ip" "=" ipv4 | ipv6 | ipv4MappedIpv6
  * ipv6 ::= ipv6Full | ipv6Compressed
@@ -65,7 +62,7 @@ trait Parser extends JavaTokenParsers with Loggable {
 
   def configuration: Parser[Configuration] = "apps" ~ "{" ~> rep(app) <~ "}"  ^^ (new Configuration(_))
 
-  def app: Parser[Application] = ident ~ "{" ~ mode ~ rep(node) ~ "}" ^^ { case name~"{"~mode~nodes~"}" => Application(name, mode, nodes) }
+  def app: Parser[Application] = ident ~ "{" ~ mode ~  rep1(node) ~ "}" ^^ { case name~"{"~mode~nodes~"}" => Application(name, mode, nodes) }
 
   def node: Parser[Node] = ident ~ "{" ~ ip ~ changeSet ~ "}" ^^ { case name~"{"~addr~cs~"}" => Node(name, addr, cs) }
 

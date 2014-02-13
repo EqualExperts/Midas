@@ -227,7 +227,7 @@ class ScalaGeneratorSpecs extends Specification {
             result.replaceAll(' ', '') == expectedMergeIntoSnippets.replaceAll(' ', '')
     }
 
-    def "Generates empty Scala maps for expansion delta in contraction mode"() {
+    def "Generates empty Scala expansion response map for expansion delta in contraction mode"() {
         given: "An expansion delta"
             def expansionDelta = {
                 using someDatabase
@@ -246,7 +246,7 @@ class ScalaGeneratorSpecs extends Specification {
         when: "generator generates scala code in contraction mode"
             def result = generator.generate(CONTRACTION, tree)
 
-        then: 'it generates empty request and reponse maps for expansion operation in contraction mode'
+        then: 'it generates empty response map for expansion operation in contraction mode'
         def expectedSnippets =
             """
                 override implicit var transformType = TransformType.CONTRACTION
@@ -258,7 +258,7 @@ class ScalaGeneratorSpecs extends Specification {
                 Map()
 
                 override var requestExpansions: Map[ChangeSetCollectionKey, Double] =
-                Map()
+                Map((1L, "someDatabase.collectionName") -> 1d)
 
                 override var requestContractions: Map[ChangeSetCollectionKey, Double] =
                 Map()

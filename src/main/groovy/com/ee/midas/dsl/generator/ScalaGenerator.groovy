@@ -17,7 +17,6 @@ public class ScalaGenerator implements Generator<String> {
 
     @Override
     public String generate(TransformType transformType, Tree tree) {
-        log.info('Generating Scala Code Midas-Snippets for $transformType...')
         def snippets = generateResponseSnippets(transformType, tree)
 
         def responseTransformationEntries = snippets.collect { fullCollectionName, versionedSnippets ->
@@ -25,10 +24,10 @@ public class ScalaGenerator implements Generator<String> {
                 TreeMap(${versionedSnippets.join("$TAB$TAB, ")})"""
         }.join(', ')
 
-        def requestTransformationEntries =
-            generateRequestTransformations(transformType, tree).join(", ")
-
         if (transformType == EXPANSION) {
+            def requestTransformationEntries =
+                generateRequestTransformations(EXPANSION, tree).join(", ")
+
             return  """
                     override implicit var transformType = TransformType.EXPANSION
 
@@ -46,6 +45,11 @@ public class ScalaGenerator implements Generator<String> {
                     """
         }
         if (transformType == CONTRACTION) {
+            def requestExpansionEntries =
+                generateRequestTransformations(EXPANSION, tree).join(", ")
+
+            def requestContractionEntries =
+                generateRequestTransformations(CONTRACTION, tree).join(", ")
 
             return  """
                     override implicit var transformType = TransformType.CONTRACTION
@@ -57,10 +61,10 @@ public class ScalaGenerator implements Generator<String> {
                     Map(${responseTransformationEntries})
 
                     override var requestExpansions: Map[ChangeSetCollectionKey, Double] =
-                    Map()
+                    Map(${requestExpansionEntries})
 
                     override var requestContractions: Map[ChangeSetCollectionKey, Double] =
-                    Map(${requestTransformationEntries})
+                    Map(${requestContractionEntries})
                     """
         }
         ""
@@ -71,7 +75,7 @@ public class ScalaGenerator implements Generator<String> {
     }
 
     private def generateResponseSnippets(TransformType transformType, Tree tree) {
-        log.info("Started snippets generation for $transformType TransformType...")
+        log.info("Started Response Snippets generation for $transformType TransformType...")
         def snippets = [:]
         tree.eachWithVersionedMap(transformType) { String dbName, String collectionName, versionedMap ->
             def versionedSnippets = versionedMap.collect { Long version, Tuple values ->
@@ -84,7 +88,7 @@ public class ScalaGenerator implements Generator<String> {
             if(!versionedSnippets.isEmpty())
                 snippets[fullCollectionName] = versionedSnippets
         }
-        log.info("Completed snippets generation for $transformType TransformType!")
+        log.info("Completed Response Snippets generation for $transformType TransformType!")
         snippets
     }
 

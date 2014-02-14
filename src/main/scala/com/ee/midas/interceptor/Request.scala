@@ -32,6 +32,7 @@ case class Update(data: Array[Byte]) extends Request {
   override protected val payloadStartIndex = extractFullCollectionName(data).length + updateFlagLength + delimiterLength
   val (initialBytes, payload) = extractPayload(data)
   val (selector, updator) = getSelectorUpdator
+  var setOperatorPresent: Boolean = false
 
   def getUpdateFlag(): Int = {
     val result = data.dropWhile(_ != CSTRING_TERMINATION_DELIM)
@@ -51,11 +52,24 @@ case class Update(data: Array[Byte]) extends Request {
   }
 
   def extractDocument: BSONObject = {
-    updator
+    updator.containsField("$set") match {
+      case true => {
+           setOperatorPresent = true
+           updator.get("$set").asInstanceOf[BSONObject]
+      }
+      case false => updator
+    }
   }
 
   def reassemble(modifiedDocument: BSONObject): Array[Byte] = {
-    val modifiedPayload = selector.toBytes ++ modifiedDocument.toBytes
+    val modifiedUpdator: BSONObject = setOperatorPresent match {
+      case true => {
+        updator.put("$set", modifiedDocument)
+        updator
+      }
+      case false => modifiedDocument
+    }
+    val modifiedPayload = selector.toBytes ++ modifiedUpdator.toBytes
     initialBytes ++ modifiedPayload
   }
 }

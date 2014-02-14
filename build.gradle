@@ -54,7 +54,7 @@ project.ext {
 
     //code coverage lib
     coberturaCoverageReportsDirName = "$reporting.baseDir/cobertura"
-    coberturaLineCoverageBaseline = 79 //reduced from 85
+    coberturaLineCoverageBaseline = 80 //reduced from 85
     coberturaBranchCoverageBaseline = 41 //reduced from 70
 
     //dependency analysis

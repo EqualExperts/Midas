@@ -2,7 +2,7 @@ package com.ee.midas.interceptor
 
 import org.bson.io.Bits
 import com.mongodb.{DefaultDBDecoder, DBDecoder, DBCollection}
-import org.bson.BSONObject
+import org.bson.{BasicBSONObject, BSONObject}
 import java.io.ByteArrayInputStream
 import com.ee.midas.transform.DocumentOperations._
 
@@ -63,10 +63,7 @@ case class Update(data: Array[Byte]) extends Request {
 
   def reassemble(modifiedDocument: BSONObject): Array[Byte] = {
     val modifiedUpdator: BSONObject = setOperatorPresent match {
-      case true => {
-        updator.put("$set", modifiedDocument)
-        updator
-      }
+      case true => new BasicBSONObject("$set", modifiedDocument)
       case false => modifiedDocument
     }
     val modifiedPayload = selector.toBytes ++ modifiedUpdator.toBytes

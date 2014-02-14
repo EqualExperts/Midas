@@ -2,7 +2,8 @@ package com.ee.midas.transform
 
 import com.ee.midas.hotdeploy.Deployable
 
-abstract class Transforms extends Deployable[Transforms] with ResponseTransforms with RequestTransforms {
+abstract class Transforms extends Deployable[Transforms]
+  with ResponseTransforms with RequestTransforms {
 
   var transformType: TransformType
 

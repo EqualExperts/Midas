@@ -90,12 +90,3 @@ trait Parser extends JavaTokenParsers with Loggable {
   }
 }
 
-final case class ChangeSet(number: Long) {
-  require(number >= 0L)
-}
-
-final case class Node(name: String, ip: InetAddress, changeSet: ChangeSet)
-
-final case class Application(name: String, mode: TransformType, nodes: List[Node])
-
-final case class Configuration (applications: List[Application])

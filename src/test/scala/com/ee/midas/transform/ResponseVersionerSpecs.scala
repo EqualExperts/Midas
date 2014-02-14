@@ -6,8 +6,8 @@ import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class VersionerSpecs extends Specification with Versioner{
-  "Versioner " should {
+class ResponseVersionerSpecs extends Specification with ResponseVersioner{
+  "Response Versioner " should {
 
     "add version field for expansion if it doesn't exist in a document" in {
       //given

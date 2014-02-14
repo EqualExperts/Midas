@@ -5,7 +5,11 @@ import org.bson.BSONObject
 import com.ee.midas.transform.DocumentOperations._
 import com.ee.midas.utils.Loggable
 import com.ee.midas.transform.Transformer
-
+//todo: Design changes for later
+// Request really needs to be composed of MongoHeader and Transformer
+// Current scenario is like anemic domain model where we have header and transformer
+// both outside. RequestInterceptor, the client, co-ordinates header, sucks out info from
+// request, transforms it, and puts it back in the response.
 class ResponseInterceptor (tracker: MessageTracker, transformer: Transformer)
   extends MidasInterceptable with Loggable {
 

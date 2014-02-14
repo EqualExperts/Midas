@@ -4,7 +4,7 @@ import org.bson.BSONObject
 import DocumentOperations._
 import com.ee.midas.utils.Loggable
 
-trait Versioner extends Loggable {
+trait ResponseVersioner extends Loggable {
 
   def getVersion(document: BSONObject)(transformType: TransformType) = {
     val versionFieldName = transformType.versionFieldName()

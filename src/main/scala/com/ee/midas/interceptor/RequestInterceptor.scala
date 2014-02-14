@@ -3,8 +3,9 @@ package com.ee.midas.interceptor
 import java.io.{InputStream}
 import com.ee.midas.utils.Loggable
 import com.ee.midas.transform.{Transformer, TransformType}
+import java.net.{InetAddress}
 
-class RequestInterceptor (tracker: MessageTracker, transformType: TransformType, transformer: Transformer = null)
+class RequestInterceptor (tracker: MessageTracker, transformType: TransformType, transformer: Transformer = null, ip: InetAddress = null)
   extends MidasInterceptable with Loggable {
 
   private val CSTRING_TERMINATION_DELIM = 0
@@ -34,25 +35,21 @@ class RequestInterceptor (tracker: MessageTracker, transformType: TransformType,
   def modifyIfRequired(request: Array[Byte], header: BaseMongoHeader): Array[Byte] = {
     val fullCollectionName = extractFullCollectionName(request)
     header.opCode match {
-      case OP_INSERT
-        if (transformer.canTransformRequest(fullCollectionName)) =>
-          return modify(Insert(request), fullCollectionName, header)
-
-      case OP_UPDATE
-        if (transformer.canTransformRequest(fullCollectionName)) =>
-          return modify(Update(request), fullCollectionName, header)
-
+      case OP_INSERT => return modify(Insert(request), fullCollectionName, header)
+      case OP_UPDATE => return modify(Update(request), fullCollectionName, header)
       case OP_QUERY | OP_GET_MORE => tracker.track(header.requestID, fullCollectionName)
-
       case _ =>
     }
     header.bytes ++ request
   }
 
   def modify(request: Request, fullCollectionName: String, header: BaseMongoHeader): Array[Byte] = {
-    //route versioning to transformer
-    //1 fullCollectionName
-    //2 ChangeSet number??
+    // todo NEW API:
+//    val document = request.extractDocument
+//    val modifiedDocument = transformer.transformRequest(document, fullCollectionName, ip)
+//    val modifiedPayload = request.assemble(modifiedDocument)
+//    val newLength = modifiedPayload.length
+
     val versionedPayload = request.versioned(transformType)
     val newLength = versionedPayload.length
     header.updateLength(newLength)

@@ -1,9 +1,38 @@
 package com.ee.midas.transform
 
-trait RequestTransforms {
+import com.ee.midas.config.{ChangeSet}
+import TransformType._
+import org.bson.BSONObject
+
+trait RequestTransforms extends RequestVersioner {
   type ChangeSetCollectionKey = (Long, String)
   var requestExpansions: Map[ChangeSetCollectionKey, Double]
   var requestContractions: Map[ChangeSetCollectionKey, Double]
 
-  def canTransformRequest(fullCollectionName: String): Boolean = false
+  var transformType: TransformType
+
+  def transformRequest(document: BSONObject, changeSet: Long, fullCollectionName: String): BSONObject = {
+    val key = (changeSet, fullCollectionName)
+    transformType match {
+      case EXPANSION => {
+        if(requestExpansions.isDefinedAt(key)) {
+          val version = requestExpansions(key)
+          addExpansionVersion(document, version)
+        }
+        document
+      }
+
+      case CONTRACTION => {
+        if (requestExpansions.isDefinedAt(key)) {
+          val expansionVersion = requestExpansions(key)
+          addExpansionVersion(document, expansionVersion)
+        }
+        if (requestContractions.isDefinedAt(key)) {
+          val contractionVersion = requestContractions(key)
+          addContractionVersion(document, contractionVersion)
+        }
+        document
+      }
+    }
+  }
 }

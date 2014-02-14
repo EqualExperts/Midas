@@ -3,6 +3,7 @@ package com.ee.midas.transform
 import com.mongodb.util.JSON
 import org.bson.BSONObject
 import com.ee.midas.transform.DocumentOperations._
+import com.ee.midas.config.Application
 import com.ee.midas.dsl.expressions.Parser
 
 class Transformations extends Transforms with Parser {

@@ -4,7 +4,7 @@ import org.bson.BSONObject
 import scala.collection.immutable.TreeMap
 import TransformType._
 
-trait ResponseTransforms extends Versioner {
+trait ResponseTransforms extends ResponseVersioner {
   type Snippet = BSONObject => BSONObject
   type Snippets = Iterable[Snippet]
   type VersionedSnippets = TreeMap[Double, Snippet]

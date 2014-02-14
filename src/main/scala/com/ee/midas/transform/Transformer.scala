@@ -1,11 +1,23 @@
 package com.ee.midas.transform
 
 import org.bson.BSONObject
-import com.ee.midas.hotdeploy.{Deployable, DeployableHolder}
+import com.ee.midas.hotdeploy.{DeployableHolder}
+import java.net.InetAddress
+import com.ee.midas.config.{ChangeSet, Application}
 
-class Transformer(deployableHolder: DeployableHolder[Transforms]) {
+class Transformer(transformsHolder: DeployableHolder[Transforms], private var application: Application = Application("NOAPP", TransformType.EXPANSION, Nil)) {
 
-  def transforms: Transforms = deployableHolder.get
+  def transforms: Transforms = transformsHolder.get
+
+  def getApplication =
+    this.synchronized {
+      application
+    }
+
+  def updateApplication(newApplication: Application) =
+    this.synchronized {
+      this.application = newApplication
+    }
 
   def canTransformResponse(fullCollectionName: String): Boolean =
     transforms.canTransformResponse(fullCollectionName)
@@ -15,7 +27,10 @@ class Transformer(deployableHolder: DeployableHolder[Transforms]) {
     transforms.transformResponse(document, fullCollectionName)
   }
 
-  def canTransformRequest(fullCollectionName: String): Boolean = {
-    transforms.canTransformRequest(fullCollectionName)
+  def transformRequest(document: BSONObject, fullCollectionName: String, ip: InetAddress): BSONObject = {
+    getApplication.changeSet(ip) match {
+      case Some(ChangeSet(cs)) => transforms.transformRequest(document, cs, fullCollectionName)
+      case None => document
+    }
   }
 }

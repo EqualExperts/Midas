@@ -16,7 +16,10 @@ final case class Application(name: String, mode: TransformType, nodes: List[Node
   def getNode(ip: InetAddress): Option[Node] =
     nodes.find(node => node.ip == ip)
   
-  def changeSet(ip: InetAddress): Option[ChangeSet] = ???
+  def changeSet(ip: InetAddress): Option[ChangeSet] = nodes.filter(node => node.ip == ip) match {
+    case Nil => None
+    case node :: remainingNodes => Option(node.changeSet)
+  }
 }
 
 final case class Configuration (applications: List[Application]) {

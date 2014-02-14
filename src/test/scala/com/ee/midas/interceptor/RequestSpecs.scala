@@ -3,10 +3,8 @@ package com.ee.midas.interceptor
 import org.specs2.mutable.Specification
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
-import org.bson.BasicBSONObject
-import com.ee.midas.transform.TransformType
-import java.io.ByteArrayInputStream
-import com.mongodb.{DefaultDBDecoder, DBDecoder, DBCollection}
+import org.bson.{BSONObject, BasicBSONObject}
+import com.ee.midas.transform.DocumentOperations._
 
 @RunWith(classOf[JUnitRunner])
 class RequestSpecs extends Specification {
@@ -51,49 +49,66 @@ class RequestSpecs extends Specification {
        updateRequest.getUpdateFlag mustEqual 0
      }
 
-     "Give Versioned data after adding version to Updator Document" in {
+    "Extract Updator Document" in {
+      //Given
+      val expectedUpdator : BasicBSONObject = new BasicBSONObject()
+      expectedUpdator.put("name", "midas")
+
+      //When
+      val updator = updateRequest.extractDocument
+
+     //Then
+      updator mustEqual expectedUpdator
+    }
+
+    "Get reassembled Update request with modified updator" in {
        //Given
        val updateFlagLength = 4
        val payloadStartsAt = updateRequest.extractFullCollectionName(updatePayload).length + updateFlagLength + 1
-       val decoder: DBDecoder = new DefaultDBDecoder
-       val expectedUpdatorDoc : BasicBSONObject = new BasicBSONObject()
-       expectedUpdatorDoc.put("name", "midas")
-       expectedUpdatorDoc.put("_expansionVersion", 0)
+       val modifiedDocument : BSONObject = new BasicBSONObject()
+       modifiedDocument.put("name", "midas")
+       modifiedDocument.put("_expansionVersion", 0)
+       val expectedmodifiedpayload = updatePayload.take(payloadStartsAt) ++ updateRequest.selector.toBytes ++
+                                     modifiedDocument.toBytes
 
        //When
-       val versionedData = updateRequest.versioned(TransformType.EXPANSION)
-       val versionedPayload: Array[Byte] = versionedData.drop(payloadStartsAt)
-
-       val stream = new ByteArrayInputStream(versionedPayload)
-       val ignoringCollection: DBCollection = null
-       val selector = decoder.decode(stream, ignoringCollection)
-       val updator = decoder.decode(stream, ignoringCollection)
+       val modifiedPayload = updateRequest.reassemble(modifiedDocument)
 
        //Then
-       updator mustEqual expectedUpdatorDoc
+       modifiedPayload mustEqual expectedmodifiedpayload
      }
 
    }
 
   "Insert Request" should {
-    "Give Versioned data after adding version to Insert Document" in {
+
+    "Extract Document" in {
       //Given
-      val decoder: DBDecoder = new DefaultDBDecoder
-      val ignoringCollection: DBCollection = null
-      val payloadStartsAt = insertRequest.extractFullCollectionName(insertPayload).length + 1
+      val expectedDocument : BSONObject = new BasicBSONObject()
+      expectedDocument.put("_id", new BasicBSONObject( "$oid", "52f86f75e007b742f73b8b7f") )
+      expectedDocument.put("document", 1.0000000013969839)
 
       //When
-      val versionedData = insertRequest.versioned(TransformType.EXPANSION)
-
-      val versionedPayload: Array[Byte] = versionedData.drop(payloadStartsAt)
-      val versionedDocument = decoder.decode(versionedPayload, ignoringCollection)
+      val document = insertRequest.extractDocument
 
       //Then
-      versionedDocument.containsField("document") mustEqual true
-      versionedDocument.containsField("_expansionVersion") mustEqual true
-      versionedDocument.get("_expansionVersion") mustEqual 0
+      document.toString mustEqual expectedDocument.toString
     }
 
+    "Get reassembled Insert request with modified document" in {
+      //Given
+      val payloadStartsAt = insertRequest.extractFullCollectionName(insertPayload).length + 1
+      val modifiedDocument : BSONObject = new BasicBSONObject()
+      modifiedDocument.put("name", "midas")
+      modifiedDocument.put("_expansionVersion", 0)
+      val expectedmodifiedpayload =insertPayload.take(payloadStartsAt) ++ modifiedDocument.toBytes
+
+      //When
+      val modifiedPayload = insertRequest.reassemble(modifiedDocument)
+
+      //Then
+      modifiedPayload mustEqual expectedmodifiedpayload
+    }
   }
 
 }

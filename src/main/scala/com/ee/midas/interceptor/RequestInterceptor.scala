@@ -44,15 +44,11 @@ class RequestInterceptor (tracker: MessageTracker, transformType: TransformType,
   }
 
   def modify(request: Request, fullCollectionName: String, header: BaseMongoHeader): Array[Byte] = {
-    // todo NEW API:
-//    val document = request.extractDocument
-//    val modifiedDocument = transformer.transformRequest(document, fullCollectionName, ip)
-//    val modifiedPayload = request.assemble(modifiedDocument)
-//    val newLength = modifiedPayload.length
-
-    val versionedPayload = request.versioned(transformType)
-    val newLength = versionedPayload.length
+    val document = request.extractDocument
+    val modifiedDocument = transformer.transformRequest(document, fullCollectionName, ip)
+    val modifiedPayload = request.reassemble(modifiedDocument)
+    val newLength = modifiedPayload.length
     header.updateLength(newLength)
-    header.bytes ++ versionedPayload
+    header.bytes ++ modifiedPayload
   }
 }

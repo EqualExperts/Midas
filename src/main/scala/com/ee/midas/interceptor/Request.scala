@@ -6,6 +6,7 @@ import org.bson.{BasicBSONObject, BSONObject}
 import java.io.ByteArrayInputStream
 import com.ee.midas.transform.DocumentOperations._
 
+
 //todo: Design changes for later
 // Request really needs to be composed of BaseMongoHeader and Transformer
 // Current scenario is like anemic domain model where we have header and transformer
@@ -32,7 +33,6 @@ case class Update(data: Array[Byte]) extends Request {
   override protected val payloadStartIndex = extractFullCollectionName(data).length + updateFlagLength + delimiterLength
   val (initialBytes, payload) = extractPayload(data)
   val (selector, updator) = getSelectorUpdator
-  var setOperatorPresent: Boolean = false
 
   def getUpdateFlag(): Int = {
     val result = data.dropWhile(_ != CSTRING_TERMINATION_DELIM)
@@ -51,22 +51,13 @@ case class Update(data: Array[Byte]) extends Request {
     (selector, updator)
   }
 
+
   def extractDocument: BSONObject = {
-    updator.containsField("$set") match {
-      case true => {
-           setOperatorPresent = true
-           updator.get("$set").asInstanceOf[BSONObject]
-      }
-      case false => updator
-    }
+    updator
   }
 
   def reassemble(modifiedDocument: BSONObject): Array[Byte] = {
-    val modifiedUpdator: BSONObject = setOperatorPresent match {
-      case true => new BasicBSONObject("$set", modifiedDocument)
-      case false => modifiedDocument
-    }
-    val modifiedPayload = selector.toBytes ++ modifiedUpdator.toBytes
+    val modifiedPayload = selector.toBytes ++ modifiedDocument.toBytes
     initialBytes ++ modifiedPayload
   }
 }

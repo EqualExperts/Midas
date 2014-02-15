@@ -1,6 +1,5 @@
 package com.ee.midas.dsl.interpreter.representation
 
-import com.ee.midas.dsl.grammar.Verb
 import static com.ee.midas.dsl.grammar.Verb.*
 import com.ee.midas.transform.TransformType
 import spock.lang.Specification
@@ -110,8 +109,8 @@ class CollectionSpecs extends Specification {
 
         then: "the map should contain operations of expansion type"
             def expectedMap = [
-                1L: new Tuple(add, ['{"age":0}'], 0),
-                2L: new Tuple(add, ['{"city":"pune"}'], 0)
+                1d: new Tuple(add, ['{"age":0}'], 0),
+                2d: new Tuple(add, ['{"city":"pune"}'], 0)
             ]
         versionedMap.size() == expectedMap.size()
         expectedMap.each { version, value ->
@@ -131,8 +130,8 @@ class CollectionSpecs extends Specification {
 
         then: "the map should contain operations of contraction type"
             def expectedMap  = [
-                    1L: new Tuple(remove, ['{"age":0}'], 0),
-                    2L: new Tuple(remove, ['{"city":"pune"}'], 0)
+                    1d: new Tuple(remove, ['{"age":0}'], 0),
+                    2d: new Tuple(remove, ['{"city":"pune"}'], 0)
             ]
             versionedMap.size() == expectedMap.size()
             expectedMap.each { version, value ->
@@ -154,8 +153,8 @@ class CollectionSpecs extends Specification {
 
         then: "the map should contain operations of expansion type only"
             def expectedMap = [
-                    1L: new Tuple(add, ['{"age":0}'], 0),
-                    2L: new Tuple(add, ['{"city":"pune"}'], 0)
+                    1d: new Tuple(add, ['{"age":0}'], 0),
+                    2d: new Tuple(add, ['{"city":"pune"}'], 0)
             ]
             versionedMap.size() == expectedMap.size()
             expectedMap.each { version, value ->
@@ -177,8 +176,8 @@ class CollectionSpecs extends Specification {
 
         then: "the map should contain operations of contraction type only"
             def expectedMap  = [
-                    1L: new Tuple(remove, ['["dob"]'], 0),
-                    2L: new Tuple(remove, ['["city"]'], 0)
+                    1d: new Tuple(remove, ['["dob"]'], 0),
+                    2d: new Tuple(remove, ['["city"]'], 0)
             ]
             versionedMap.size() == expectedMap.size()
             expectedMap.each { version, value ->

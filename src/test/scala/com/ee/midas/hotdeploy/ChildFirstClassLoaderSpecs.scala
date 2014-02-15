@@ -1,6 +1,6 @@
 package com.ee.midas.hotdeploy
 
-import org.specs2.mutable.Specification
+import org.specs2.mutable.{BeforeAfter, Specification}
 import com.ee.midas.Main
 import java.io.{FileWriter, File}
 import com.ee.midas.utils.ScalaCompiler
@@ -11,6 +11,10 @@ import org.specs2.runner.JUnitRunner
 class ChildFirstClassLoaderSpecs extends Specification with ScalaCompiler {
 
   val loader = Main.getClass.getClassLoader
+  val resourceDir = new File("src/test/scala/resources")
+  val srcScalaPath = new File(resourceDir.getAbsolutePath + "/generated/scala")
+  val binScalaPath = new File(resourceDir.getAbsolutePath + "/generated/scala/bin")
+
 
   val srcScalaDirURI = "generated/scala/"
   val srcScalaFilename = "someScalaObject.scala"
@@ -22,8 +26,19 @@ class ChildFirstClassLoaderSpecs extends Specification with ScalaCompiler {
   val srcScalaDir = loader.getResource(srcScalaDirURI)
   val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
 
+  trait SetupTeardown extends BeforeAfter {
+    def before: Any = {
+      binScalaPath.mkdirs()
+    }
+
+    def after: Any = {
+      binScalaPath.delete
+    }
+
+  }
+
   "Child First Class Loader" should {
-    "load the given class" in {
+    "load the given class" in new SetupTeardown {
       //given
       if(!srcScalaFile.exists()) {
         srcScalaFile.createNewFile()

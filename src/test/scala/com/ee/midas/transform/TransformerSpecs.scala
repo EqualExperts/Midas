@@ -9,6 +9,7 @@ import org.bson.BasicBSONObject
 
 @RunWith(classOf[JUnitRunner])
 class TransformerSpecs extends Specification with Mockito {
+  /*
       "Transformer" should {
         "check if document can be transformed in EXPANSION mode" in {
           //Given
@@ -80,4 +81,5 @@ class TransformerSpecs extends Specification with Mockito {
           there was one(transforms).transformResponse(document, fullCollectionName)
         }
       }
+      */
 }

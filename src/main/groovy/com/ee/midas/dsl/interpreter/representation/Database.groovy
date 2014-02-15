@@ -1,9 +1,14 @@
 package com.ee.midas.dsl.interpreter.representation
 
+import com.ee.midas.dsl.grammar.Verb
 import com.ee.midas.transform.TransformType
 import groovy.transform.CompileStatic
 import groovy.transform.ToString
 import groovy.util.logging.Slf4j
+import scala.Function3
+import scala.Unit
+import scala.Tuple3
+
 
 @ToString
 @Slf4j
@@ -36,6 +41,14 @@ class Database {
         def dbName = this.name
         collections.each { String name, Collection collection ->
             closure(dbName, name, collection.asVersionedMap(transformType))
+        }
+    }
+
+    @CompileStatic
+    void foreachDelta(TransformType transformType, Function3<String, String, scala.collection.mutable.Map<Double, Tuple3<Verb, List<String>, Long>>, Unit> fn) {
+        def dbName = this.name
+        collections.each { String name, Collection collection ->
+            fn.apply(dbName, name, collection.asVersionedScalaMap(transformType))
         }
     }
 

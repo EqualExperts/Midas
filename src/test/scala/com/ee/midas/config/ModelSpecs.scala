@@ -9,7 +9,8 @@ import com.ee.midas.transform.TransformType
 @RunWith(classOf[JUnitRunner])
 class ModelSpecs extends Specification {
   //Given
-  val node1 = Node("node1", InetAddress.getByName("127.0.0.1"), ChangeSet(1))
+  val node1Ip = "127.0.0.1"
+  val node1 = Node("node1", InetAddress.getByName(node1Ip), ChangeSet(1))
   val node2 = Node("node2", InetAddress.getByName("127.0.0.0"), ChangeSet(2))
   val nodes = List(node1, node2)
   val application = Application("App1", TransformType.EXPANSION, nodes)

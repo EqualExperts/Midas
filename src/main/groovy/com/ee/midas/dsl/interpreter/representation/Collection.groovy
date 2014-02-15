@@ -8,16 +8,17 @@ import groovy.util.logging.Slf4j
 
 import static com.ee.midas.transform.TransformType.CONTRACTION
 import static com.ee.midas.transform.TransformType.EXPANSION
-
+import static scala.collection.JavaConverters.*
+import scala.Tuple3
 
 @ToString
 @Slf4j
 class Collection {
     final String name
-    private final Map<Long, Tuple> versionedExpansions = [:] as LinkedHashMap
-    private final Map<Long, Tuple> versionedContractions = [:] as LinkedHashMap
-    private Long curExpansionVersion = 1
-    private Long curContractionVersion = 1
+    private final Map<Double, Tuple> versionedExpansions = [:] as LinkedHashMap
+    private final Map<Double, Tuple> versionedContractions = [:] as LinkedHashMap
+    private Double curExpansionVersion = 1
+    private Double curContractionVersion = 1
     private final Context ctx
 
     Collection(String name, Context ctx) {
@@ -55,7 +56,7 @@ class Collection {
 
     @CompileStatic
     def asVersionedMap(TransformType transformType) {
-        Map<Long, Tuple> versionedTransforms = null
+        Map<Double, Tuple> versionedTransforms = null
         if(transformType == EXPANSION) {
             versionedTransforms = versionedExpansions
         }
@@ -64,6 +65,22 @@ class Collection {
             versionedTransforms = versionedContractions
         }
         versionedTransforms
+    }
+
+    scala.collection.mutable.Map<Double, Tuple3<Verb, List<String>, Long>> asVersionedScalaMap(TransformType transformType) {
+        Map<Double, Tuple> versionedTransforms = null
+        if(transformType == EXPANSION) {
+            versionedTransforms = versionedExpansions
+        }
+
+        if(transformType == CONTRACTION) {
+            versionedTransforms = versionedContractions
+        }
+        def scalizedMapContents = versionedTransforms.collectEntries { double version, Tuple values ->
+           def (Verb verb, java.util.List<String> args, long changeSet) = values
+           [version, new Tuple3(verb, args, changeSet)]
+        }
+        mapAsScalaMapConverter(scalizedMapContents).asScala()
     }
 
     def String toString() {

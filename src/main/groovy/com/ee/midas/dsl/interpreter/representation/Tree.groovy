@@ -1,8 +1,12 @@
 package com.ee.midas.dsl.interpreter.representation
 
+import com.ee.midas.dsl.grammar.Verb
 import com.ee.midas.transform.TransformType
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
+import scala.Function3
+import scala.Unit
+import scala.Tuple3
 
 @Slf4j
 public class Tree {
@@ -46,6 +50,13 @@ public class Tree {
     def eachWithVersionedMap(TransformType transformType, Closure closure) {
         databases.each { name, Database database ->
             database.eachWithVersionedMap(transformType, closure)
+        }
+    }
+
+    @CompileStatic
+    void foreachDelta(TransformType transformType, Function3<String, String, scala.collection.mutable.Map<Double, Tuple3<Verb, List<String>, Long>>, Unit> fn) {
+        databases.each { String name, Database database ->
+            database.foreachDelta(transformType, fn)
         }
     }
 }

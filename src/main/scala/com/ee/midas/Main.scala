@@ -5,23 +5,21 @@ import com.ee.midas.pipes.{SocketConnector, DuplexPipe}
 import java.net._
 import com.ee.midas.utils.{DirectoryWatcher, Accumulator, Loggable}
 import com.ee.midas.interceptor.{MessageTracker, RequestInterceptor, ResponseInterceptor}
-import com.ee.midas.dsl.generator.ScalaGenerator
+import com.ee.midas.dsl.generator.{ScalaGenerator}
 import com.ee.midas.dsl.interpreter.Reader
 import com.ee.midas.dsl.Translator
-import java.io.{PrintWriter, File}
-import com.ee.midas.transform.{Transformer, Transformations, Transforms, TransformType}
-import com.ee.midas.hotdeploy.DeployableHolder
+import java.io.{File}
+import com.ee.midas.transform.{Transformer, Transforms}
 import java.nio.file.StandardWatchEventKinds._
 import com.ee.midas.config.{Parser}
 
-object Main extends App with Loggable with Parser {
+object Main extends App with Loggable with Parser with DeltasProcessor {
   val maxClientConnections = 50
 
   override def main(args:Array[String]): Unit = {
     CLIParser.parse(args) match {
       case Some(config) =>
         val waitBeforeProcessing = 100
-        val loader = Main.getClass.getClassLoader
 
         val midasConfigURL = config.midasConfig
         val app = parse(midasConfigURL)
@@ -31,31 +29,16 @@ object Main extends App with Loggable with Parser {
         println(modeMsg)
 
         //Todo: tweak scala style rule so that we don't have to give types when declaring variables.
-        val srcScalaTemplateURI = "templates/Transformations.scala.template"
-        val srcScalaDirURI = "generated/scala/"
-        val binDirURI = "generated/scala/bin/"
-        val srcScalaFilename = "Transformations.scala"
-        val clazzName = "com.ee.midas.transform.Transformations"
-
-        val classpathURI = "."
-        val classpathDir = loader.getResource(classpathURI)
-        val binDir = loader.getResource(binDirURI)
-        val srcScalaTemplate = loader.getResource(srcScalaTemplateURI)
-        val srcScalaDir = loader.getResource(srcScalaDirURI)
-        logInfo(s"Source Scala Dir = $srcScalaDir")
-
-        val srcScalaFile = new File(srcScalaDir.getPath + srcScalaFilename)
         val appDir = app.name
         val deltasDirURL: URL = deltasDir(config, appDir)
         val processingDeltaFilesMsg = s"Processing Delta Files...from Dir ${deltasDirURL}"
         println(processingDeltaFilesMsg)
         logInfo(processingDeltaFilesMsg)
-        val transformsHolder = createTransformsHolder
-        val transformer = new Transformer(transformsHolder, app)
-        implicit val deltasProcessor =
-          new DeltaFilesProcessor(new Translator(new Reader(), new ScalaGenerator()), transformsHolder)
-        processDeltaFiles(mode, deltasDirURL, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
-
+        val translator = new Translator[Transforms](new Reader, new ScalaGenerator)
+        val initialTransforms = processDeltas(translator, app.mode, deltasDirURL)
+        logInfo(s"Initial Transforms => $initialTransforms")
+        val transformer = new Transformer(initialTransforms, app)
+      
         val dirWatchMsg = s"Setting up Directory Watcher for ${config.baseDeltasDir}..."
         println(dirWatchMsg)
         logInfo(dirWatchMsg)
@@ -67,7 +50,9 @@ object Main extends App with Loggable with Parser {
           val app = parse(midasConfigURL)
           transformer.updateApplication(app)
           val deltasDirURL = deltasDir(config, appDir)
-          processDeltaFiles(app.mode, deltasDirURL, srcScalaTemplate, srcScalaFile, binDir, clazzName, classpathDir)
+          val newTransforms = processDeltas(translator, app.mode, deltasDirURL)
+          logInfo(s"New Transforms => $newTransforms")
+          transformer.updateTransforms(newTransforms)
         })
         watcher.start
 
@@ -126,35 +111,7 @@ object Main extends App with Loggable with Parser {
     serverSocket.accept()
   }
 
-  private def processDeltaFiles(transformType: TransformType, deltasDir: URL, srcScalaTemplate: URL, srcScalaFile: File, binDir: URL,
-                                clazzName: String, classpathDir: URL)(implicit deltasProcessor: DeltaFilesProcessor): Unit = {
-    val writer = new PrintWriter(srcScalaFile, "utf-8")
-    try {
-      val processDeltaFilesMsg = s"Compiling and Deploying Delta Files in Midas..."
-      logInfo(processDeltaFilesMsg)
-      println(processDeltaFilesMsg)
-      deltasProcessor.process(transformType, deltasDir, srcScalaTemplate, writer, srcScalaFile, binDir, clazzName, classpathDir)
-    } catch {
-      case e: Exception =>
-        val errMsg = s"Error Processing Delta File: ${e.getMessage}, Please fix the compilation issue in delta file and rethrow it in the appropriate directory!"
-        logInfo(errMsg)
-        println(errMsg)
-    } finally {
-      writer.close()
-    }
-  }
-  
   private def deltasDir(config: MidasCmdConfig, appDir: String): URL = {
     new File(config.baseDeltasDir.getPath + "/" + appDir).toURI.toURL
   }
-  
-  private def createTransformsHolder =
-    new DeployableHolder[Transforms] {
-      // create a transformations class at runtime
-      // compile it
-      // generate byte code for that class
-      // load the generated byte codes
-      // create instance of that transformation class.
-      def createDeployable: Transforms = new Transformations
-    }
 }

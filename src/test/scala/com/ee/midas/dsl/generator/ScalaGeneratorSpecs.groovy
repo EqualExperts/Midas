@@ -31,7 +31,7 @@ class ScalaGeneratorSpecs extends Specification {
 
                     override var responseExpansions: Map[String, VersionedSnippets] =
                     Map(\"someDatabase.collectionName\" ->
-                        TreeMap(1d ->
+                        TreeMap(1.0d ->
                             ((document: BSONObject) => {
                               val json = \"\"\"{\"newField\" : \"newValue\"}\"\"\"
                               val fields = JSON.parse(json).asInstanceOf[BSONObject]
@@ -43,7 +43,7 @@ class ScalaGeneratorSpecs extends Specification {
                     Map()
 
                     override var requestExpansions: Map[ChangeSetCollectionKey, Double] =
-                    Map((1L, \"someDatabase.collectionName\") -> 1d)
+                    Map((1L, \"someDatabase.collectionName\") -> 1.0d)
 
                     override var requestContractions: Map[ChangeSetCollectionKey, Double] =
                     Map()
@@ -77,7 +77,7 @@ class ScalaGeneratorSpecs extends Specification {
 
                     override var responseContractions: Map[String, VersionedSnippets] =
                     Map(\"someDatabase.collectionName\" ->
-                        TreeMap(1d ->
+                        TreeMap(1.0d ->
                             ((document: BSONObject) => {
                               val json = \"\"\"[\"newField\"]\"\"\"
                               val fields = JSON.parse(json).asInstanceOf[BSONObject]
@@ -89,7 +89,7 @@ class ScalaGeneratorSpecs extends Specification {
                     Map()
 
                     override var requestContractions: Map[ChangeSetCollectionKey, Double] =
-                    Map((1L, "someDatabase.collectionName") -> 1d)
+                    Map((1L, "someDatabase.collectionName") -> 1.0d)
                 """
             result.replaceAll(' ', '') == contractionSnippets.replaceAll(' ', '')
     }
@@ -117,7 +117,7 @@ class ScalaGeneratorSpecs extends Specification {
 
                     override var responseExpansions: Map[String, VersionedSnippets] =
                     Map(\"someDatabase.collectionName\" ->
-                        TreeMap(1d ->
+                        TreeMap(1.0d ->
                             ((document: BSONObject) => {
                               document(\"fromOldField\") match {
                                 case Some(fromFieldValue) => document(\"toNewField\") = fromFieldValue
@@ -130,7 +130,7 @@ class ScalaGeneratorSpecs extends Specification {
                     Map()
 
                     override var requestExpansions: Map[ChangeSetCollectionKey, Double] =
-                    Map((1L, "someDatabase.collectionName") -> 1d)
+                    Map((1L, "someDatabase.collectionName") -> 1.0d)
 
                     override var requestContractions: Map[ChangeSetCollectionKey, Double] =
                     Map()
@@ -165,7 +165,7 @@ class ScalaGeneratorSpecs extends Specification {
 
                     override var responseExpansions: Map[String, VersionedSnippets] =
                     Map(\"someDatabase.collectionName\" ->
-                        TreeMap(1d ->
+                        TreeMap(1.0d ->
                             ((document: BSONObject) => document <~> ("sourceField", Pattern.compile("someregex"), \"""{"token1": "\$1", "token2": "\$2" }""\"))
                     ))
 
@@ -173,7 +173,7 @@ class ScalaGeneratorSpecs extends Specification {
                     Map()
 
                     override var requestExpansions: Map[ChangeSetCollectionKey, Double] =
-                    Map((1L, "someDatabase.collectionName") -> 1d)
+                    Map((1L, "someDatabase.collectionName") -> 1.0d)
 
                     override var requestContractions: Map[ChangeSetCollectionKey, Double] =
                     Map()
@@ -208,7 +208,7 @@ class ScalaGeneratorSpecs extends Specification {
 
                     override var responseExpansions: Map[String, VersionedSnippets] =
                     Map(\"someDatabase.collectionName\" ->
-                        TreeMap(1d ->
+                        TreeMap(1.0d ->
                             ((document: BSONObject) => {
                               val fields = List("field1","field2")
                               document >~< ("targetField", "separator", fields)
@@ -219,7 +219,7 @@ class ScalaGeneratorSpecs extends Specification {
                     Map()
 
                     override var requestExpansions: Map[ChangeSetCollectionKey, Double] =
-                    Map((1L, "someDatabase.collectionName") -> 1d)
+                    Map((1L, "someDatabase.collectionName") -> 1.0d)
 
                     override var requestContractions: Map[ChangeSetCollectionKey, Double] =
                     Map()
@@ -258,7 +258,7 @@ class ScalaGeneratorSpecs extends Specification {
                 Map()
 
                 override var requestExpansions: Map[ChangeSetCollectionKey, Double] =
-                Map((1L, "someDatabase.collectionName") -> 1d)
+                Map((1L, "someDatabase.collectionName") -> 1.0d)
 
                 override var requestContractions: Map[ChangeSetCollectionKey, Double] =
                 Map()

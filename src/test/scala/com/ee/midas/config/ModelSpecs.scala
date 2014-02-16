@@ -29,7 +29,7 @@ class ModelSpecs extends Specification {
        node mustEqual Some(node2)
     }
 
-    "Give None if Node with that IP is not present" in {
+    "Give appropriate result if Node with that IP is not present" in {
       //Given
       val ip = InetAddress.getByName("127.0.0.9")
 
@@ -51,7 +51,7 @@ class ModelSpecs extends Specification {
       actualChangeSet mustEqual Some(ChangeSet(2))
     }
 
-    "Give None if Change Set for the IP is not present" in {
+    "Give appropriate result if Change Set for the IP is not present" in {
       //Given
       val ip = InetAddress.getByName("127.0.0.10")
 
@@ -62,7 +62,7 @@ class ModelSpecs extends Specification {
       actualChangeSet mustEqual None
     }
 
-    "Returns true if IP is present in application" in {
+    "Check if IP is present in the application" in {
       //Given
       val ip = InetAddress.getByName("127.0.0.0")
 
@@ -73,7 +73,7 @@ class ModelSpecs extends Specification {
       nodePresent mustEqual true
     }
 
-    "Returns false if IP is not present in application" in {
+    "Check if IP is not present in the application" in {
       //Given
       val ip = InetAddress.getByName("127.0.0.6")
 
@@ -88,7 +88,7 @@ class ModelSpecs extends Specification {
 
   "Configuration" should {
 
-     "Return True if any of the Application has given IP" in {
+     "Check if any of the Application has given IP" in {
         //Given
         val ip = InetAddress.getByName("127.0.0.0")
 
@@ -99,7 +99,7 @@ class ModelSpecs extends Specification {
        appPresent mustEqual true
      }
 
-    "Return False if any of the Application has given IP" in {
+    "Check if any of the Application do not have given IP" in {
       //Given
       val ip = InetAddress.getByName("127.0.0.9")
 
@@ -121,7 +121,7 @@ class ModelSpecs extends Specification {
       app mustEqual Some(application)
     }
 
-    "Give None if Application with that IP is not present" in {
+    "Give appropriate result if Application with that IP is not present" in {
       //Given
       val ip = InetAddress.getByName("127.0.0.9")
 

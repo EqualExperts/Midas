@@ -22,7 +22,7 @@ class FieldSpecs extends Specification {
       result mustEqual Literal(zipValue)
     }
 
-    "returns null if field is not present in the document" in {
+    "give appropriate result if field is not present in the document" in {
       //Given
       val fieldExpression = Field("pin")
       val document = new BasicBSONObject()

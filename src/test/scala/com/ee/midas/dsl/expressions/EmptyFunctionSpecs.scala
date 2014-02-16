@@ -7,8 +7,8 @@ import org.specs2.mutable.Specification
 
 @RunWith(classOf[JUnitRunner])
 class EmptyFunctionSpecs extends Specification {
-  "Empty" should {
-    "return null when no arguments are supplied" in {
+  "Empty Function" should {
+    "Give appropriate result when no values are supplied" in {
       //Given
       val empty = EmptyFunction()
       val document = new BasicBSONObject()
@@ -20,7 +20,7 @@ class EmptyFunctionSpecs extends Specification {
       result mustEqual null
     }
 
-    "return null when 1 argument is supplied" in {
+    "Give appropriate result when 1 value is supplied" in {
       //Given
       val empty = EmptyFunction(Literal(1))
       val document = new BasicBSONObject()
@@ -32,7 +32,7 @@ class EmptyFunctionSpecs extends Specification {
       result mustEqual null
     }
 
-    "return null when more than 1 argument is supplied" in {
+    "Give appropriate result when more than 1 value is supplied" in {
       //Given
       val empty = EmptyFunction(Field("age"), Literal(3))
       val document = new BasicBSONObject()
@@ -43,6 +43,5 @@ class EmptyFunctionSpecs extends Specification {
       //Then
       result mustEqual null
     }
-
   }
 }

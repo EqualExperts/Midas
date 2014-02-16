@@ -21,7 +21,7 @@ class ParserSpecs extends Specification {
 
   "Parser" should {
     "Parse change set" in {
-      "valid changeset" in new ConfigParser {
+      "valid change set format" in new ConfigParser {
         //Given
         val input = "changeSet = 1"
 

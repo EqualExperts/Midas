@@ -8,7 +8,7 @@ import org.specs2.mutable.Specification
 @RunWith(classOf[JUnitRunner])
 class ArithmeticExpressionSpecs extends Specification {
   "Add" should {
-    "return 0 when no arguments are supplied" in {
+    "Give result as 0 when no values are supplied" in {
       //Given
       val add = Add()
       val document = new BasicBSONObject()
@@ -20,7 +20,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual 0
     }
 
-    "return sum of arguments supplied for Int" in {
+    "Give sum of Integer values supplied " in {
       //Given
       val add = Add(Literal(1), Literal(3))
       val document = new BasicBSONObject()
@@ -32,7 +32,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual 4
     }
 
-    "return sum of homogenous arg types" in {
+    "Give sum of homogenous types" in {
       //Given
       val add = Add(Literal(1d), Literal(3.5))
       val document = new BasicBSONObject()
@@ -44,7 +44,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual 4.5
     }
 
-    "return 0 for sum of nulls" in {
+    "Give results as 0 for sum of nulls" in {
       //Given
       val add = Add(Literal(null))
       val document = new BasicBSONObject()
@@ -57,7 +57,7 @@ class ArithmeticExpressionSpecs extends Specification {
     }
 
 
-    "return sum of field value and literal" in {
+    "Give sum of field value and literal" in {
       //Given
       val add = Add(Literal(1d), Field("age"))
       val document = new BasicBSONObject().append("age", 2)
@@ -69,7 +69,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual 3.0
     }
 
-    "return literal value as sum when field does not exist" in {
+    "Give literal value as sum when field does not exist" in {
       //Given
       val add = Add(Field("$age"), Literal(1d))
       val document = new BasicBSONObject()
@@ -84,7 +84,7 @@ class ArithmeticExpressionSpecs extends Specification {
   }
 
   "Multiply" should {
-    "return 0 when no arguments are supplied" in {
+    "Give result as 0 when no values are supplied" in {
       //Given
       val multiply = Multiply()
       val document = new BasicBSONObject()
@@ -96,7 +96,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual Literal(0)
     }
 
-    "return argument value when 1 argument is supplied" in {
+    "Give same value when 1 value is supplied" in {
       //Given
       val value = 3.5
       val multiply = Multiply(Literal(value))
@@ -109,7 +109,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual Literal(value)
     }
 
-    "return product of homogeneous args type" in {
+    "Give product of homogeneous types" in {
       //Given
       val multiply = Multiply(Literal(.5), Literal(2d))
       val document = new BasicBSONObject()
@@ -121,7 +121,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual Literal(1.0)
     }
 
-    "return product of field value and literal" in {
+    "Give product of field value and literal" in {
       //Given
       val multiply = Multiply(Literal(1d), Field("age"))
       val document = new BasicBSONObject().append("age", 2)
@@ -133,7 +133,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual 2.0
     }
 
-    "return product as 0 when field does not exist" in {
+    "Give product as 0 when field does not exist" in {
       //Given
       val multiply = Multiply(Field("age"), Literal(5))
       val document = new BasicBSONObject()
@@ -147,7 +147,7 @@ class ArithmeticExpressionSpecs extends Specification {
   }
 
   "Subtract" should {
-    "return 0 when no arguments are supplied" in {
+    "Give result as 0 when no values are supplied" in {
       //Given
       val subtract = Subtract()
       val document = new BasicBSONObject()
@@ -159,7 +159,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual 0
     }
 
-    "return 0 when 1 argument is supplied" in {
+    "Give result as 0 when 1 value is supplied" in {
       //Given
       val subtract = Subtract(Literal(0))
       val document = new BasicBSONObject()
@@ -171,7 +171,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual 0
     }
 
-    "return difference when minuend and subtrahend are supplied" in {
+    "Give difference when minuend and subtrahend are supplied" in {
       //Given
       val subtract = Subtract(Literal(1d), Literal(3.5))
       val document = new BasicBSONObject()
@@ -183,7 +183,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual -2.5
     }
 
-    "return difference of first two arguments when more than 2 are supplied ignoring the rest" in {
+    "Gives difference of first two values when more than 2 are supplied ignoring the rest" in {
       //Given
       val subtract = Subtract(Literal(1d), Literal(3.5), Literal(4), Literal(-3.2))
       val document = new BasicBSONObject()
@@ -195,7 +195,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual -2.5
     }
 
-    "return difference between of field value and literal" in {
+    "Gives difference between field value and literal" in {
       //Given
       val subtract = Subtract(Field("age"), Literal(1d))
       val document = new BasicBSONObject().append("age", 2)
@@ -207,7 +207,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual 1.0
     }
 
-    "return difference when field does not exist" in {
+    "Gives difference when field does not exist" in {
       //Given
       val subtract = Subtract(Field("age"), Literal(5))
       val document = new BasicBSONObject()
@@ -221,7 +221,7 @@ class ArithmeticExpressionSpecs extends Specification {
   }
 
   "Divide" should {
-    "return 0 when no arguments are supplied" in {
+    "Give result as 0 when no values are supplied" in {
       //Given
       val divide = Divide()
       val document = new BasicBSONObject()
@@ -233,7 +233,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual Literal(0)
     }
 
-    "return 0 when 1 argument is supplied" in {
+    "Give result as 0 when 1 value is supplied" in {
       //Given
       val divide = Divide(Literal(3))
       val document = new BasicBSONObject()
@@ -245,7 +245,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual Literal(0)
     }
 
-    "return division of homogeneous args type" in {
+    "Give division of homogeneous types" in {
       //Given
       val divide = Divide(Literal(-4), Literal(2d))
       val document = new BasicBSONObject()
@@ -257,7 +257,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual Literal(-2.0)
     }
 
-    "return division of field value and literal" in {
+    "Give division of field value and literal" in {
       //Given
       val divide = Divide(Field("age"), Literal(2d))
       val document = new BasicBSONObject().append("age", 2)
@@ -269,7 +269,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual 1.0
     }
 
-    "return division as 0 when field does not exist" in {
+    "Give result as 0 when field does not exist" in {
       //Given
       val divide = Divide(Field("age"), Literal(5))
       val document = new BasicBSONObject()
@@ -281,7 +281,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual 0
     }
 
-    "return NaN when a value is divided by 0" in {
+    "Give NaN when a value is divided by 0" in {
       //Given
       val divide = Divide(Literal(5), Literal(0))
       val document = new BasicBSONObject()
@@ -295,7 +295,7 @@ class ArithmeticExpressionSpecs extends Specification {
   }
 
   "Mod" should {
-    "return 0 when no arguments are supplied" in {
+    "Give result as 0 when no values are supplied" in {
       //Given
       val mod = Mod()
       val document = new BasicBSONObject()
@@ -307,7 +307,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual Literal(0)
     }
 
-    "return 0 when 1 argument is supplied" in {
+    "Give result as 0 when 1 value is supplied" in {
       //Given
       val mod = Mod(Literal(3))
       val document = new BasicBSONObject()
@@ -319,7 +319,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual Literal(0)
     }
 
-    "return remainder from division of homogeneous args type" in {
+    "Give remainder from division of homogeneous types" in {
       //Given
       val mod = Mod(Literal(-4), Literal(2d))
       val document = new BasicBSONObject()
@@ -331,7 +331,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual Literal(0)
     }
 
-    "return remainder from division of field value and literal" in {
+    "Give remainder from division of field value and literal" in {
       //Given
       val mod = Mod(Field("age"), Literal(2d))
       val document = new BasicBSONObject().append("age", 5)
@@ -343,7 +343,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual 1.0
     }
 
-    "return remainder as 0 when field does not exist" in {
+    "Give result as 0 when field does not exist" in {
       //Given
       val mod = Mod(Field("age"), Literal(5))
       val document = new BasicBSONObject()
@@ -355,7 +355,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual 0
     }
 
-    "return 0 when a value is divided by 0" in {
+    "Give result as 0 when a value is divided by 0" in {
       //Given
       val mod = Mod(Literal(5), Literal(0))
       val document = new BasicBSONObject()

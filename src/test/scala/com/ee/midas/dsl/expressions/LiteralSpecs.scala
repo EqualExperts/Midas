@@ -9,7 +9,7 @@ import org.bson.BasicBSONObject
 @RunWith(classOf[JUnitRunner])
 class LiteralSpecs extends Specification {
   "Literal" should {
-    "always return the same value for an Integer" in {
+    "always give same value for an Integer" in {
       //Given
       val one = 1
       val literal = Literal(one)
@@ -22,7 +22,7 @@ class LiteralSpecs extends Specification {
       result mustEqual one
     }
 
-    "always return the same value for a Double" in {
+    "always give the same value for a Double" in {
       //Given
       val one = 1d
       val constant = Literal(one)
@@ -35,7 +35,7 @@ class LiteralSpecs extends Specification {
       result mustEqual one
     }
 
-    "always return the same value for a String" in {
+    "always give the same value for a String" in {
       //Given
       val one = "one"
       val literal = Literal(one)

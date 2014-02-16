@@ -8,7 +8,7 @@ import org.specs2.mutable.Specification
 @RunWith(classOf[JUnitRunner])
 class StringExpressionSpecs extends Specification {
   "Concat" should {
-    "returns empty string when no arguments are supplied" in {
+    "returns empty string when no values are supplied" in {
       //Given
       val concat = Concat()
       val document = new BasicBSONObject()
@@ -56,7 +56,7 @@ class StringExpressionSpecs extends Specification {
       result mustEqual "Mr. Test"
     }
 
-    "Treats literals with null values as empty string" in {
+    "Treat literals with null values as empty string" in {
       //Given
       val concat = Concat(Literal("Mr. "), Field("name"), Field("surname"))
       val document = new BasicBSONObject().append("name", "Test")

@@ -5,14 +5,14 @@ import com.mongodb.DBCollection
 import com.mongodb.Mongo
 import com.mongodb.util.JSON
 
-class DataInserter {
+class DocumentInserter {
 
     def host
     def port
     def frequency
     def mongo
 
-    def DataInserter(host, port, frequency) {
+    def DocumentInserter(host, port, frequency) {
         this.host = host
         this.port = port
         this.frequency = frequency
@@ -29,14 +29,16 @@ class DataInserter {
                 collection.insert(document)
                 docsInserted++
             }
-            sleepFor(frequency.interval)
+            sleepFor(frequency.every)
         }
     }
 
-    def sleepFor(millis) {
-        println("insert -- sleeping for ${millis/1000} secs at ${new Date().seconds}")
-        Thread.sleep(millis)
-        println("insert -- woke up after ${millis/1000} secs at ${new Date().seconds}")
+    def sleepFor(givenTime) {
+        def time, unit
+        (time, unit) = givenTime
+        println("insert -- sleeping for $time $unit at ${new Date().seconds}")
+        unit.sleep(time)
+        println("insert -- woke up after $time $unit at ${new Date().seconds}")
     }
 
 }

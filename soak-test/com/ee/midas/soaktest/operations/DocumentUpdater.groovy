@@ -7,14 +7,14 @@ import com.mongodb.Mongo
 import groovy.transform.Field
 import groovy.transform.TupleConstructor
 
-class DataUpdater {
+class DocumentUpdater {
 
     def host
     def port
     def frequency
     def mongo
 
-    def DataUpdater(host, port, frequency) {
+    def DocumentUpdater(host, port, frequency) {
         this.host = host
         this.port = port
         this.frequency = frequency
@@ -33,16 +33,18 @@ class DataUpdater {
             updateFunction(document, fieldToUpdate)
             collection.save(document)
             if(++documentsUpdated >= frequency.batchSize){
-                sleepFor(frequency.interval);
+                sleepFor(frequency.every);
                 documentsUpdated = 0
             }
         }
     }
 
     def sleepFor(millis) {
-        println("update -- sleeping for ${millis/1000} secs at ${new Date().seconds}")
-        Thread.sleep(millis)
-        println("update -- woke up after ${millis/1000} secs at ${new Date().seconds}")
+        def time, unit
+        (time, unit) = givenTime
+        println("update -- sleeping for $time $unit at ${new Date().seconds}")
+        unit.sleep(time)
+        println("update -- woke up after $time $unit at ${new Date().seconds}")
     }
 
     def displayDocument(DBObject dbObject) {

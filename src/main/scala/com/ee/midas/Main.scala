@@ -43,7 +43,7 @@ object Main extends App with Loggable with Parser with DeltasProcessor {
         println(dirWatchMsg)
         logInfo(dirWatchMsg)
         val watcher = new DirectoryWatcher(config.baseDeltasDir.getPath, List(ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY),
-          waitBeforeProcessing)(watchEvents => {
+          waitBeforeProcessing, stopWatchingOnException = false)(watchEvents => {
           watchEvents.foreach {watchEvent =>
             logInfo(s"Received ${watchEvent.kind()}, Context = ${watchEvent.context()}")
           }

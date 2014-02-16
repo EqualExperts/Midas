@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit._
 
 class DirectoryWatcher(dirURL: String, events: Seq[WatchEvent.Kind[_]], waitBeforeProcessing: Long = 1000,
-                       timeUnit: TimeUnit = MILLISECONDS)(onEvents: Seq[WatchEvent[_]] => Unit)
+                       timeUnit: TimeUnit = MILLISECONDS, stopWatchingOnException: Boolean = true)(onEvents: Seq[WatchEvent[_]] => Unit)
   extends Loggable with Runnable {
 
   private val dirWatcherThread = new Thread(this, getClass.getSimpleName + "-Thread")
@@ -60,7 +60,8 @@ class DirectoryWatcher(dirURL: String, events: Seq[WatchEvent.Kind[_]], waitBefo
       } catch {
         case e: Exception =>
           logError(s"Closing it due to ${e.getMessage}")
-          stopWatching
+          if(stopWatchingOnException)
+             stopWatching
       }
     }
     stopWatching

@@ -42,8 +42,9 @@ trait SnippetProvider extends Parser {
 
   private def merge(fieldsArray: String, separator: String, mergeField: String) : BSONObject => BSONObject = {
     val fields = fieldsArray.substring(1, fieldsArray.length() - 1)
+    val fieldList = fields.split(",").map(field => {field.trim.replaceAll("\"", "")}).toList
     ((document: BSONObject) => {
-        document >~< (mergeField, separator, fields.split(",").toList)
+        document >~< (mergeField, separator, fieldList)
     })
   }
 

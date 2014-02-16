@@ -43,7 +43,7 @@ class ResponseInterceptorSpecs extends Specification with Mockito {
         header.payloadSize returns payloadBytes.length
         tracker.fullCollectionName(responseID) returns Option(collectionName)
 
-        mockTransformer.canTransformResponse(collectionName) returns true
+        //mockTransformer.canTransformResponse(collectionName) returns true
         mockTransformer.transformResponse(payloadData, collectionName) returns transformedPayload
 
         //when:
@@ -75,22 +75,6 @@ class ResponseInterceptorSpecs extends Specification with Mockito {
 
         //then
         readData mustEqual header.bytes
-      }
-
-      "return payload as is for collections not mentioned in deltas" in new setup {
-        //given
-        header.hasPayload returns true
-        header.responseTo returns responseID
-        header.payloadSize returns payloadBytes.length
-        header.documentsCount returns 1
-        tracker.fullCollectionName(responseID) returns Option(collectionName)
-        mockTransformer.canTransformResponse(collectionName) returns false
-
-        //when:
-        val readData = resInterceptor.read(src, header)
-
-        //then
-        readData mustEqual (header.bytes ++ payloadBytes)
       }
 
       "return payload as is for untracked collections" in new setup {

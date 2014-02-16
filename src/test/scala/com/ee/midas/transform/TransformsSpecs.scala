@@ -7,7 +7,6 @@ import org.specs2.runner.JUnitRunner
 import org.specs2.mock.Mockito
 import scala.collection.immutable.TreeMap
 import org.specs2.specification.Scope
-import com.ee.midas.config.ChangeSet
 
 @RunWith(classOf[JUnitRunner])
 class TransformsSpecs extends Specification with Mockito {
@@ -43,7 +42,7 @@ class TransformsSpecs extends Specification with Mockito {
   }
 
   "Response transforms" should {
-    "apply expansion snippets" in new Transformations {
+    "apply expansion snippets for document with valid Collection name" in new Transformations {
       //given
       var transformType = TransformType.EXPANSION
       val document = new BasicBSONObject("name", "dummy")
@@ -55,7 +54,7 @@ class TransformsSpecs extends Specification with Mockito {
       transformedDocument.containsField("expansion1") && transformedDocument.containsField("expansion2")
     }
 
-    "add expansion version to a virgin document" in new Transformations {
+    "add expansion version to a virgin document with valid Collection name" in new Transformations {
       //given
       var transformType = TransformType.EXPANSION
       val document = new BasicBSONObject("name", "dummy")
@@ -67,7 +66,7 @@ class TransformsSpecs extends Specification with Mockito {
       transformedDocument.get(TransformType.EXPANSION.versionFieldName()) must_== (dummyVersionExpansion.size)
     }
 
-    "update expansion version of already transformed document" in new Transformations {
+    "update expansion version of already transformed document with valid Collection name" in new Transformations {
       //given
       var transformType = TransformType.EXPANSION
       val initialVersion = 1d
@@ -82,7 +81,7 @@ class TransformsSpecs extends Specification with Mockito {
         (transformedDocument.get(TransformType.EXPANSION.versionFieldName) must_== dummyVersionExpansion.size)
     }
 
-    "apply contraction snippets" in new Transformations {
+    "apply contraction snippets to the document with valid Collection name" in new Transformations {
       //given
       val document = new BasicBSONObject("name", "dummy")
       var transformType = TransformType.CONTRACTION
@@ -94,7 +93,7 @@ class TransformsSpecs extends Specification with Mockito {
       transformedDocument.containsField("contraction1") && transformedDocument.containsField("contraction2")
     }
 
-    "add contraction version to a virgin document" in new Transformations {
+    "add contraction version to a virgin document with valid Collection name" in new Transformations {
       //given
       val document = new BasicBSONObject("name", "dummy")
       override var transformType = TransformType.CONTRACTION
@@ -106,7 +105,7 @@ class TransformsSpecs extends Specification with Mockito {
       transformedDocument.get(TransformType.CONTRACTION.versionFieldName()) must_== (dummyVersionContraction.size)
     }
 
-    "update contraction version of already transformed document" in new Transformations {
+    "update contraction version of already transformed document with valid Collection name" in new Transformations {
       //given
       override var transformType = TransformType.CONTRACTION
 
@@ -122,34 +121,17 @@ class TransformsSpecs extends Specification with Mockito {
         (transformedDocument.get(TransformType.CONTRACTION.versionFieldName) must_== dummyVersionContraction.size)
     }
 
-    "return false if transformations cannot be applied for a collection name" in new Transformations {
+    "Do not transform document with invalid collection name" in new Transformations {
       //given
       override var transformType = TransformType.EXPANSION
       val collection = "invalidCollectionName"
+      val document = new BasicBSONObject("name", "dummy")
 
       //when
+      val transformedDocument = transformResponse(document, collection)
+
       //then
-      canTransformResponse(collection) must beFalse
-    }
-
-    "return true if expansion can be applied for a collection name" in new Transformations {
-      //given
-      override var transformType = TransformType.EXPANSION
-      val collection = "validCollectionForExpansion"
-
-      //when
-      //then
-      canTransformResponse(collection) must beTrue
-    }
-
-    "return true if contraction can be applied for a collection name" in new Transformations {
-      //given
-      override var transformType = TransformType.CONTRACTION
-      val collection = "validCollectionForContraction"
-
-      //when
-      //then
-      canTransformResponse(collection) must beTrue
+      transformedDocument mustEqual document
     }
 
   }
@@ -193,7 +175,7 @@ class TransformsSpecs extends Specification with Mockito {
       transformedDocument.get("_contractionVersion") mustEqual 2d
     }
 
-    "Do not override contraction version if already exists in CONTRACTION mode" in new Transformations {
+    "Do not override contraction version if already exists" in new Transformations {
       //given
       override var transformType = TransformType.CONTRACTION
       val document = new BasicBSONObject("name", "dummy")
@@ -208,7 +190,7 @@ class TransformsSpecs extends Specification with Mockito {
     }
 
 
-    "Do not override expansion version if already exists in CONTRACTION mode" in new Transformations {
+    "Do not override expansion version if already exists" in new Transformations {
       //given
       override var transformType = TransformType.CONTRACTION
       val document = new BasicBSONObject("name", "dummy")

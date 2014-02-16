@@ -10,10 +10,23 @@ trait ResponseTransforms extends ResponseTypes with ResponseVersioner {
 
   var transformType: TransformType
 
-  def canTransformResponse(fullCollectionName: String): Boolean =
-    responseExpansions.keySet.contains(fullCollectionName) || responseContractions.keySet.contains(fullCollectionName)
-
   def transformResponse(document: BSONObject, fullCollectionName: String) : BSONObject =  {
+    transformType match {
+      case EXPANSION => {
+         if(responseExpansions.keySet.contains(fullCollectionName))
+            transform(document, fullCollectionName)
+         document
+      }
+      case CONTRACTION => {
+        if(responseContractions.keySet.contains(fullCollectionName))
+          transform(document, fullCollectionName)
+        document
+      }
+    }
+
+  }
+
+  def transform(document: BSONObject, fullCollectionName: String) : BSONObject = {
     versionedSnippets(fullCollectionName) match {
       case map if map.isEmpty => document
       case vs =>

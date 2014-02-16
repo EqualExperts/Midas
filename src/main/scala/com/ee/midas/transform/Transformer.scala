@@ -25,9 +25,6 @@ class Transformer(private var transforms: Transforms, private var application: A
       transforms = newTransforms
     }
 
-  def canTransformResponse(fullCollectionName: String): Boolean =
-    transforms.canTransformResponse(fullCollectionName)
-
   def transformResponse(document: BSONObject, fullCollName: String): BSONObject = {
     implicit val fullCollectionName = fullCollName
     transforms.transformResponse(document, fullCollectionName)

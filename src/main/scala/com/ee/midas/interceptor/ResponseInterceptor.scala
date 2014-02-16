@@ -53,11 +53,7 @@ class ResponseInterceptor (tracker: MessageTracker, transformer: Transformer)
     val requestId = header.responseTo 
     val payloadBytes = (tracker.fullCollectionName(requestId)) match {
       case Some(fullCollectionName) =>
-        if (transformer.canTransformResponse(fullCollectionName))
-          modify(response, fullCollectionName, header)
-        else
-          reassemble(response, header)
-
+           modify(response, fullCollectionName, header)
       case None => reassemble(response, header)
     }
     tracker untrack requestId

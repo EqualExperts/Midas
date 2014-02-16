@@ -25,7 +25,7 @@ class FixedSizeStreamSpecs extends Specification with Mockito {
           there was one(inputStream).available()
        }
 
-     "Return EOF while reading a byte when limit is zero" in {
+     "Return End Of File while reading a byte when limit is zero" in {
        //Given
        val inputStream : InputStream = mock[InputStream]
        val limit = 0

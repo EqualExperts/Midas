@@ -175,7 +175,7 @@ class TransformsSpecs extends Specification with Mockito {
       transformedDocument.get("_contractionVersion") mustEqual 2d
     }
 
-    "Do not override contraction version if already exists" in new Transformations {
+    "Do not override contraction version if already exists in CONTRACTION mode" in new Transformations {
       //given
       override var transformType = TransformType.CONTRACTION
       val document = new BasicBSONObject("name", "dummy")
@@ -190,7 +190,7 @@ class TransformsSpecs extends Specification with Mockito {
     }
 
 
-    "Do not override expansion version if already exists" in new Transformations {
+    "Do not override expansion version if already exists in CONTRACTION mode" in new Transformations {
       //given
       override var transformType = TransformType.CONTRACTION
       val document = new BasicBSONObject("name", "dummy")

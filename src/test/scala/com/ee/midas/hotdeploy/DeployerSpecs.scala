@@ -9,7 +9,7 @@ import java.io.{FileWriter, File}
 import com.ee.midas.transform.Transforms
 
 @RunWith(classOf[JUnitRunner])
-object DeployerSpecs extends Specification with Deployer with ScalaCompiler {
+class DeployerSpecs extends Specification with Deployer with ScalaCompiler {
 
   sequential
 

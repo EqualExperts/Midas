@@ -9,43 +9,9 @@ import org.bson.BasicBSONObject
 
 @RunWith(classOf[JUnitRunner])
 class TransformerSpecs extends Specification with Mockito {
-  /*
+ /*
       "Transformer" should {
-        "check if document can be transformed in EXPANSION mode" in {
-          //Given
-          val deployableHolder =  mock[DeployableHolder[Transforms]]
-          val transforms = mock[Transforms]
-
-          val fullCollectionName = "testCollection"
-          deployableHolder.get returns transforms
-
-          transforms.canTransformResponse(fullCollectionName) returns true
-
-          //When
-          val transformer = new Transformer(deployableHolder)
-
-          //Then
-          transformer.canTransformResponse(fullCollectionName)  mustEqual true
-          there was one(transforms).canTransformResponse(fullCollectionName)
-        }
-
-        "check if document can be transformed in CONTRACTION mode" in {
-          //Given
-          val deployableHolder =  mock[DeployableHolder[Transforms]]
-          val transforms = mock[Transforms]
-          deployableHolder.get returns transforms
-          val fullCollectionName = "testCollection"
-          transforms.canTransformResponse(fullCollectionName) returns true
-
-          //When
-          val transformer = new Transformer(deployableHolder)
-
-          //Then
-          transformer.canTransformResponse(fullCollectionName) mustEqual true
-          there was one(transforms).canTransformResponse(fullCollectionName)
-        }
-
-        "transforms document in EXPANSION mode" in {
+         "transform document in EXPANSION mode" in {
           //Given
           val deployableHolder =  mock[DeployableHolder[Transforms]]
           val transforms = mock[Transforms]

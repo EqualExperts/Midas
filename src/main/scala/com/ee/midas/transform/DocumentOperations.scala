@@ -115,7 +115,7 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
           val nestedDocument = document.get(topLevelField).asInstanceOf[BSONObject]
           readNestedValue(rest, nestedDocument)
         } else {
-          Some(document.get(topLevelField))
+          apply(topLevelField)
         }
     }
   }

@@ -1,0 +1,7 @@
+demoApp1 {
+  mode = expansion
+  nodeA {
+    ip = 127.0.0.1
+    changeSet = 1
+  }
+}

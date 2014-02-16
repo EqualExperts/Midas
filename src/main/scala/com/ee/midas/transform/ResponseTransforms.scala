@@ -13,17 +13,16 @@ trait ResponseTransforms extends ResponseTypes with ResponseVersioner {
   def transformResponse(document: BSONObject, fullCollectionName: String) : BSONObject =  {
     transformType match {
       case EXPANSION => {
-         if(responseExpansions.keySet.contains(fullCollectionName))
+         if(responseExpansions.isDefinedAt(fullCollectionName))
             transform(document, fullCollectionName)
          document
       }
       case CONTRACTION => {
-        if(responseContractions.keySet.contains(fullCollectionName))
+        if(responseContractions.isDefinedAt(fullCollectionName))
           transform(document, fullCollectionName)
         document
       }
     }
-
   }
 
   def transform(document: BSONObject, fullCollectionName: String) : BSONObject = {

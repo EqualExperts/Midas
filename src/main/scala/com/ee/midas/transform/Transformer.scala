@@ -15,6 +15,11 @@ class Transformer(private var transforms: Transforms, private var application: A
       application
     }
 
+  def getTransforms =
+    this.synchronized {
+      transforms
+    }
+
   def updateApplication(newApplication: Application) =
     this.synchronized {
       application = newApplication
@@ -25,9 +30,8 @@ class Transformer(private var transforms: Transforms, private var application: A
       transforms = newTransforms
     }
 
-  def transformResponse(document: BSONObject, fullCollName: String): BSONObject = {
-    implicit val fullCollectionName = fullCollName
-    transforms.transformResponse(document, fullCollectionName)
+  def transformResponse(document: BSONObject, fullCollectionName: String): BSONObject = {
+    getTransforms.transformResponse(document, fullCollectionName)
   }
 
   def transformRequest(document: BSONObject, fullCollectionName: String, ip: InetAddress): BSONObject = {

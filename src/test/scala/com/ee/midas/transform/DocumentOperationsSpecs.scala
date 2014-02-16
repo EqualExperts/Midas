@@ -574,6 +574,22 @@ class DocumentOperationsSpecs extends Specification {
           actualDocument mustEqual document
         }
 
+        "Splitting a non-existent nested field results in no change in document" in {
+          //Given: A document
+          val document = new BasicBSONObject()
+            .append("name", "Mr Non Existent")
+
+          //When: A non-existent field "name" is split into "title", "fullName.firstName" and "fullName.lastName"
+          val actualDocument = DocumentOperations(document).<~>("details.name",
+            Pattern.compile("""^(Mr|Mrs|Ms|Miss) ([a-zA-Z]+) ([a-zA-Z]+)$"""),
+            """{"title": "$1", "fullName": { "firstName": "$2", "lastName": "$3" }}""")
+
+          //Then: Split was successful
+          actualDocument.containsField("title") must beFalse
+          actualDocument.containsField("fullName") must beFalse
+          actualDocument mustEqual document
+        }
+
         "Splits a field containing numeric data" in {
           //Given: A document
           val document = new BasicBSONObject()

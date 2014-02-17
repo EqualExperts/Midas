@@ -1,7 +1,10 @@
 package com.ee.midas.config
 
-import java.net.InetAddress
+import java.net.{URL, InetAddress}
 import com.ee.midas.transform.TransformType
+import java.io.File
+import scala.util.{Success, Failure}
+import com.ee.midas.utils.Loggable
 
 final case class ChangeSet(number: Long) {
   require(number >= 0L)
@@ -22,11 +25,29 @@ final case class Application(name: String, mode: TransformType, nodes: List[Node
   }
 }
 
-final case class Configuration (applications: List[Application]) {
-  def hasApplication(ip: InetAddress): Boolean = 
-    applications.exists(app => app.hasNode(ip))
+final case class Configuration(deltasDir: URL, appNames: List[String]) extends Loggable {
+  val appConfigFileExtn = ".midas"
+  private val appParsers = new ApplicationParsers {}
+  private val parsedApps: List[Application] = parseApps
   
-  def getApplication(ip: InetAddress): Option[Application] = 
-    applications.find(app => app.hasNode(ip))
+  private def parseApps = appNames map { appName =>
+    val appDir = appName
+    val appConfig: URL = new URL(s"${deltasDir}${appDir}${File.separator}${appName}${appConfigFileExtn}")
+    logInfo(s"Looking for Application Config in $appConfig")
+    appParsers.parse(appConfig) match {
+      case Success(app) => app
+      case Failure(t)   => logWarn(s"Could Not Parse Application $appName: ${t.getMessage}")
+    }
+  } collect {
+    case app: Application => app
+  }
 
+  def hasApplication(ip: InetAddress): Boolean = 
+    parsedApps.exists(app => app.hasNode(ip))
+
+  def hasApplication(name: String): Boolean =
+    parsedApps.exists(app => app.name == name)
+
+  def getApplication(ip: InetAddress): Option[Application] = 
+    parsedApps.find(app => app.hasNode(ip))
 }

@@ -3,47 +3,33 @@ package com.ee.midas.config
 import scala.util.parsing.combinator.JavaTokenParsers
 import java.net.{URL, InetAddress}
 import com.ee.midas.transform.TransformType
-import com.ee.midas.utils.Loggable
+import scala.util.Try
 
 /**
- * Example:
- * apps {
- *   app1 {
- *      mode = expansion
- *      siteANode1 {
- *         ip = x.x.x.x
- *         changeSet = 1
- *      }
- *      siteANode2 {
- *         ip = y.y.y.y
- *         changeSet = 1
- *      }
+ * Example:  app1.midas
  *
- *      siteBNode1 {
- *         ip = z.z.z.z
- *         changeSet = 1
- *      }
- *      siteBNode2 {
- *         ip = u.u.u.u
- *         changeSet = 1
- *      }
+ * app1 {
+ *   mode = expansion
+ *   siteANode1 {
+ *     ip = x.x.x.x
+ *     changeSet = 1
  *   }
- *   app2 {
- *     mode = contraction
- *     nodeP {
- *       ip = p.p.p.p
- *       changeSet = 8
- *     }
- *     nodeQ {
- *       ip = q.q.q.q
- *       changeSet = 7
- *     }
+ *   siteANode2 {
+ *     ip = y.y.y.y
+ *     changeSet = 1
+ *   }
+ *   siteBNode1 {
+ *     ip = z.z.z.z
+ *     changeSet = 1
+ *   }
+ *   siteBNode2 {
+ *     ip = u.u.u.u
+ *     changeSet = 1
  *   }
  * }
  *
- * BNF
+ * BNF for Application
  * --------------------------------------
- * apps ::=  "apps" "{" {app} "}"
  * app  ::=  name "{" mode nodes "}"
  * mode ::= "mode" "=" "expansion" | "contraction"
  * nodes ::= "{" node {node} "}"
@@ -51,16 +37,14 @@ import com.ee.midas.utils.Loggable
  * ip   ::=  "ip" "=" ipv4 | ipv6 | ipv4MappedIpv6
  * ipv6 ::= ipv6Full | ipv6Compressed
  * changeSet ::= wholeNumber
- * name ::=  unquotedStringLiteral
+ * name ::=  ident
  *
  */
 
-trait Parser extends JavaTokenParsers with Loggable {
+trait ApplicationParsers extends JavaTokenParsers {
 
   //Eat Java-Style comments like whitespace
   protected override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
-
-  def configuration: Parser[Configuration] = "apps" ~ "{" ~> rep(app) <~ "}"  ^^ (new Configuration(_))
 
   def app: Parser[Application] = ident ~ "{" ~ mode ~  rep1(node) ~ "}" ^^ { case name~"{"~mode~nodes~"}" => Application(name, mode, nodes) }
 
@@ -82,11 +66,9 @@ trait Parser extends JavaTokenParsers with Loggable {
       throw new IllegalArgumentException(s"Parsing Failed: $message")
   }
 
-  def parse(url: URL): Application = {
-    logInfo(s"Reading Configuration File from $url")
-    val config: String = scala.io.Source.fromURL(url).mkString
-    logInfo(s"Read Configuration $config")
-    parse(config)
+  def parse(appConfig: URL): Try[Application] = Try {
+    val configText = scala.io.Source.fromURL(appConfig).mkString
+    parse(configText)
   }
 }
 

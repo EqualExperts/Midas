@@ -11,9 +11,9 @@ import com.ee.midas.dsl.Translator
 import java.io.{File}
 import com.ee.midas.transform.{Transformer, Transforms}
 import java.nio.file.StandardWatchEventKinds._
-import com.ee.midas.config.{Parser}
+import com.ee.midas.config.{ApplicationParsers}
 
-object Main extends App with Loggable with Parser with DeltasProcessor {
+object Main extends App with Loggable with ApplicationParsers with DeltasProcessor {
   val maxClientConnections = 50
 
   override def main(args:Array[String]): Unit = {
@@ -22,7 +22,7 @@ object Main extends App with Loggable with Parser with DeltasProcessor {
         val waitBeforeProcessing = 100
 
         val midasConfigURL = config.midasConfig
-        val app = parse(midasConfigURL)
+        val app = parse(midasConfigURL).get
         val mode = app.mode
         val modeMsg = s"Starting Midas in ${mode} mode...on ${config.midasHost}, port ${config.midasPort}"
         logInfo(modeMsg)
@@ -47,12 +47,16 @@ object Main extends App with Loggable with Parser with DeltasProcessor {
           watchEvents.foreach {watchEvent =>
             logInfo(s"Received ${watchEvent.kind()}, Context = ${watchEvent.context()}")
           }
-          val app = parse(midasConfigURL)
-          transformer.updateApplication(app)
-          val deltasDirURL = deltasDir(config, appDir)
-          val newTransforms = processDeltas(translator, app.mode, deltasDirURL)
-          logInfo(s"New Transforms => $newTransforms")
-          transformer.updateTransforms(newTransforms)
+          parse(midasConfigURL) match {
+            case scala.util.Success(app) => {
+              transformer.updateApplication(app)
+              val deltasDirURL = deltasDir(config, appDir)
+              val newTransforms = processDeltas(translator, app.mode, deltasDirURL)
+              logInfo(s"New Transforms => $newTransforms")
+              transformer.updateTransforms(newTransforms)
+            }
+            case scala.util.Failure(e) => logError(s"Parsing Application Config for ${app.name} failed => ${e.getMessage}")
+          }
         })
         watcher.start
 

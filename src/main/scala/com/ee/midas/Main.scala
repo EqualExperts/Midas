@@ -94,17 +94,17 @@ object Main extends App with Loggable with ConfigurationParser with DeltasProces
           logInfo(newConMsg)
           println(newConMsg)
           try {
+            val mongoDB = new Socket(cmdConfig.mongoHost, cmdConfig.mongoPort)
             val duplexPipe = configuration.getApplication(appInetAddress) match {
               case Some(application) => {
-                val mongoSocket = new Socket(cmdConfig.mongoHost, cmdConfig.mongoPort)
                 val tracker = new MessageTracker()
                 val transformer = transformers(application.configDir)
                 val requestInterceptor = new RequestInterceptor(tracker, transformer, appInetAddress)
                 val responseInterceptor = new ResponseInterceptor(tracker, transformer)
-                appSocket <|==|> (mongoSocket, requestInterceptor, responseInterceptor)
+                appSocket <|==|> (mongoDB, requestInterceptor, responseInterceptor)
               }
               case None => 
-                appSocket <====> new Socket(cmdConfig.mongoHost, cmdConfig.mongoPort)
+                appSocket <====> mongoDB
             }
             duplexPipe.start
             val pipeReadyMsg = s"Setup All Connections, ready to receive traffic on $duplexPipe"

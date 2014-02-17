@@ -6,8 +6,9 @@ import com.mongodb.util.JSON
 import com.ee.midas.transform.DocumentOperations._
 import java.util.regex.Pattern
 import com.ee.midas.dsl.expressions.{Parser, Expression}
+import com.ee.midas.utils.Loggable
 
-trait SnippetProvider extends Parser {
+trait SnippetProvider extends Parser with Loggable {
    def toSnippet(verb: Verb, args: Array[String]): BSONObject => BSONObject = verb match {
      case Verb.add       => add(args(0))
      case Verb.remove    => remove(args(0))
@@ -50,7 +51,6 @@ trait SnippetProvider extends Parser {
 
   //todo: make split more performant by removing Pattern.compile at runtime, use memoization?.
   private def split(splitField: String, regex: String, json: String) : BSONObject => BSONObject = {
-    println("json === "+json)
      ((document: BSONObject) =>
        document <~> (splitField, Pattern.compile(regex), json))
   }

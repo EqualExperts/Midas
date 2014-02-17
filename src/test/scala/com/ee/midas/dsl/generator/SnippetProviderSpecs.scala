@@ -73,6 +73,112 @@ class SnippetProviderSpecs extends Specification {
         //Then
         (resultSnippet(document)) mustEqual expectedBSONObject
     }
+
+    "generate snippet for split" in new Snippet {
+        //Given
+        val verb = Verb.split
+        val args: Array[String] = Array("name", "^([a-zA-Z]+) ([a-zA-Z]+)$", "{ \"fName\": \"$1\", \"lName\": \"$2\" }")
+        val document: BSONObject = new BasicBSONObject("name", "John Kennedy")
+        val expectedBSONObject = new BasicBSONObject("name", "John Kennedy")
+        expectedBSONObject.put("fName", "John")
+        expectedBSONObject.put("lName", "Kennedy")
+
+        //When
+        val resultSnippet = snippet(verb,args)
+
+        //Then
+        resultSnippet(document) mustEqual expectedBSONObject
+    }
+
+    "generate snippet for transform operation add " in new Snippet {
+      //Given
+      val verb = Verb.transform
+      val args: Array[String] = Array("age", """{ $add: ["$age", 1] }""")
+      val document: BSONObject = new BasicBSONObject()
+      document.put("age", 10)
+      val expectedBSONObject = new BasicBSONObject("age", 11)
+
+      //When
+      val resultSnippet = snippet(verb,args)
+
+      //Then
+      resultSnippet(document) mustEqual expectedBSONObject
+    }
+
+    "generate snippet for transform operation subtract " in new Snippet {
+      //Given
+      val verb = Verb.transform
+      val args: Array[String] = Array("age", """{ $subtract: ["$age", 1] }""")
+      val document: BSONObject = new BasicBSONObject()
+      document.put("age", 10)
+      val expectedBSONObject = new BasicBSONObject("age", 9)
+
+      //When
+      val resultSnippet = snippet(verb,args)
+
+      //Then
+      resultSnippet(document) mustEqual expectedBSONObject
+    }
+
+    "generate snippet for transform operation multiply " in new Snippet {
+      //Given
+      val verb = Verb.transform
+      val args: Array[String] = Array("age", """{ $multiply: ["$age", 2] }""")
+      val document: BSONObject = new BasicBSONObject()
+      document.put("age", 10)
+      val expectedBSONObject = new BasicBSONObject("age", 20)
+
+      //When
+      val resultSnippet = snippet(verb,args)
+
+      //Then
+      resultSnippet(document) mustEqual expectedBSONObject
+    }
+
+    "generate snippet for transform operation divide " in new Snippet {
+      //Given
+      val verb = Verb.transform
+      val args: Array[String] = Array("age", """{ $divide: ["$age", 2] }""")
+      val document: BSONObject = new BasicBSONObject()
+      document.put("age", 10)
+      val expectedBSONObject = new BasicBSONObject("age", 5)
+
+      //When
+      val resultSnippet = snippet(verb,args)
+
+      //Then
+      resultSnippet(document) mustEqual expectedBSONObject
+    }
+
+    "generate snippet for transform operation mod " in new Snippet {
+      //Given
+      val verb = Verb.transform
+      val args: Array[String] = Array("age", """{ $mod: ["$age", 2] }""")
+      val document: BSONObject = new BasicBSONObject()
+      document.put("age", 10)
+      val expectedBSONObject = new BasicBSONObject("age", 0)
+
+      //When
+      val resultSnippet = snippet(verb,args)
+
+      //Then
+      resultSnippet(document) mustEqual expectedBSONObject
+    }
+
+    "generate snippet for transform operation concat" in new Snippet {
+      //Given
+      val verb = Verb.transform
+      val args: Array[String] = Array("name", """{ $concat: ["$name", "-"] }""")
+      val document: BSONObject = new BasicBSONObject()
+      document.put("name", "midas")
+      val expectedBSONObject = new BasicBSONObject("name", "midas-")
+
+      //When
+      val resultSnippet = snippet(verb,args)
+
+      //Then
+      resultSnippet(document) mustEqual expectedBSONObject
+    }
   }
 
 }

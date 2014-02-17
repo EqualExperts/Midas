@@ -51,7 +51,6 @@ class CLIParserSpecs extends Specification {
              config.mongoHost mustEqual "localhost"
              config.mongoPort mustEqual 27017
              config.baseDeltasDir mustEqual baseDeltasDirURI
-             config.midasConfig mustEqual midasConfigURL
              success
 
            case None =>

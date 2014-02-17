@@ -65,7 +65,7 @@ class ModelSpecs extends Specification {
   val node1 = Node(node1Name, node1Ip, ChangeSet(changeSet1))
   val node2 = Node(node2Name, node2Ip, ChangeSet(changeSet2))
   val nodes = List(node1, node2)
-  val application = Application(appName, TransformType.EXPANSION, nodes)
+  val application = Application(appConfigDir.toURI.toURL, appName, TransformType.EXPANSION, nodes)
   val configuration = Configuration(deltasDir.toURI.toURL, List(appName, nonExistentAppName))
 
   "Application" should {

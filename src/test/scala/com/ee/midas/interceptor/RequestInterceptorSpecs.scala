@@ -35,7 +35,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
 
      "read request from source" in new setup {
        //given
-       val reqInterceptor = new RequestInterceptor(tracker, TransformType.EXPANSION, transformer, ip)
+       val reqInterceptor = new RequestInterceptor(tracker, transformer, ip)
 
        //when
        reqInterceptor.read(mockSrc, header)
@@ -51,7 +51,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
        header.opCode returns BaseMongoHeader.OpCode.OP_DELETE
        val src = new ByteArrayInputStream(collectionBytes)
        header.payloadSize returns collectionBytes.size
-       val reqInterceptor = new RequestInterceptor(tracker, TransformType.EXPANSION, transformer, ip)
+       val reqInterceptor = new RequestInterceptor(tracker, transformer, ip)
 
        //when
        reqInterceptor.read(src, header)
@@ -67,7 +67,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
        val src = new ByteArrayInputStream(collectionBytes)
        header.payloadSize returns collectionBytes.size
        header.opCode returns BaseMongoHeader.OpCode.OP_GET_MORE
-       val reqInterceptor = new RequestInterceptor(tracker, TransformType.EXPANSION, transformer, ip)
+       val reqInterceptor = new RequestInterceptor(tracker, transformer, ip)
 
        //when
        reqInterceptor.read(src, header)
@@ -82,7 +82,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
        val src = new ByteArrayInputStream(collectionBytes)
        header.payloadSize returns collectionBytes.size
        header.opCode returns BaseMongoHeader.OpCode.OP_QUERY
-       val reqInterceptor = new RequestInterceptor(tracker, TransformType.EXPANSION, transformer, ip)
+       val reqInterceptor = new RequestInterceptor(tracker, transformer, ip)
 
        //when
        reqInterceptor.read(src, header)
@@ -96,7 +96,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
        val tgt = mock[OutputStream]
        val data = "request data".getBytes()
 
-       val reqInterceptor = new RequestInterceptor(tracker, TransformType.EXPANSION, transformer, ip)
+       val reqInterceptor = new RequestInterceptor(tracker, transformer, ip)
 
        //when
        reqInterceptor.write(data, tgt)
@@ -114,7 +114,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
          0x00.toByte, 0x08.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte)
        val inputStream: InputStream = new ByteArrayInputStream(headerBytes)
        val tracker = mock[MessageTracker]
-       val reqInterceptor = new RequestInterceptor(tracker, TransformType.EXPANSION, transformer, ip)
+       val reqInterceptor = new RequestInterceptor(tracker, transformer, ip)
 
        //when
        val header = reqInterceptor.readHeader(inputStream)

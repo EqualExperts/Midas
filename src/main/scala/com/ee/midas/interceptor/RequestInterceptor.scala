@@ -5,7 +5,7 @@ import com.ee.midas.utils.Loggable
 import com.ee.midas.transform.{Transformer, TransformType}
 import java.net.{InetAddress}
 
-class RequestInterceptor (tracker: MessageTracker, transformType: TransformType, transformer: Transformer, ip: InetAddress)
+class RequestInterceptor (tracker: MessageTracker, transformer: Transformer, ip: InetAddress)
   extends MidasInterceptable with Loggable {
 
   private val CSTRING_TERMINATION_DELIM = 0

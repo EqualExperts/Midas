@@ -9,8 +9,6 @@ case class MidasCmdConfig (val midasHost:String = "localhost",
                         val mongoHost: String = "localhost",
                         val mongoPort: Int = 27017,
                         val baseDeltasDir: URI)  {
-
-  val midasConfig = new URL(baseDeltasDir + "/midas.config")
 }
 
 object CLIParser extends Loggable {

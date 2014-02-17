@@ -4,6 +4,7 @@ import scala.util.parsing.combinator.JavaTokenParsers
 import java.net.{URL, InetAddress}
 import com.ee.midas.transform.TransformType
 import scala.util.Try
+import java.io.File
 
 /**
  * Example:  app1.midas
@@ -46,7 +47,7 @@ trait ApplicationParsers extends JavaTokenParsers {
   //Eat Java-Style comments like whitespace
   protected override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
-  def app: Parser[Application] = ident ~ "{" ~ mode ~  rep1(node) ~ "}" ^^ { case name~"{"~mode~nodes~"}" => Application(name, mode, nodes) }
+  def app(configDir: URL): Parser[Application] = ident ~ "{" ~ mode ~  rep1(node) ~ "}" ^^ { case name~"{"~mode~nodes~"}" => Application(configDir, name, mode, nodes) }
 
   def node: Parser[Node] = ident ~ "{" ~ ip ~ changeSet ~ "}" ^^ { case name~"{"~addr~cs~"}" => Node(name, addr, cs) }
 
@@ -60,15 +61,20 @@ trait ApplicationParsers extends JavaTokenParsers {
 
   def mode: Parser[TransformType] = "mode" ~ "=" ~> ("expansion" | "contraction") ^^ (s => TransformType.valueOf(s.toUpperCase))
 
-  def parse(input: String): Application = parseAll(app, input) match {
+  def parse(input: String, configDir: URL): Application = parseAll(app(configDir), input) match {
     case Success(value, _) => value
     case NoSuccess(message, _) =>
       throw new IllegalArgumentException(s"Parsing Failed: $message")
   }
 
-  def parse(appConfig: URL): Try[Application] = Try {
-    val configText = scala.io.Source.fromURL(appConfig).mkString
-    parse(configText)
+  final val appConfigFileExtn = ".midas"
+
+  def parse(absoluteAppConfigDir: URL): Try[Application] = Try {
+    val dir = new File(absoluteAppConfigDir.getFile)
+    val appConfigFilename = s"${dir.getName}$appConfigFileExtn"
+    val appConfigFile: URL = new URL(s"${absoluteAppConfigDir}${File.separator}${appConfigFilename}")
+    val configText = scala.io.Source.fromURL(appConfigFile).mkString
+    parse(configText, absoluteAppConfigDir)
   }
 }
 

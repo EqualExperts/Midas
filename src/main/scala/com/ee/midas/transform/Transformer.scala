@@ -1,14 +1,10 @@
 package com.ee.midas.transform
 
 import org.bson.BSONObject
-import com.ee.midas.hotdeploy.{DeployableHolder}
 import java.net.InetAddress
 import com.ee.midas.config.{ChangeSet, Application}
 
-//class Transformer(transformsHolder: DeployableHolder[Transforms], private var application: Application = Application("NOAPP", TransformType.EXPANSION, Nil)) {
-class Transformer(private var transforms: Transforms, private var application: Application = Application("NOAPP", TransformType.EXPANSION, Nil)) {
-
-//  def transforms: Transforms = transformsHolder.get
+class Transformer(private var transforms: Transforms, private var application: Application) {
 
   def getApplication =
     this.synchronized {
@@ -20,13 +16,9 @@ class Transformer(private var transforms: Transforms, private var application: A
       transforms
     }
 
-  def updateApplication(newApplication: Application) =
+  def update(newApplication: Application, newTransforms: Transforms) =
     this.synchronized {
       application = newApplication
-    }
-
-  def updateTransforms(newTransforms: Transforms) =
-    this.synchronized {
       transforms = newTransforms
     }
 
@@ -40,4 +32,6 @@ class Transformer(private var transforms: Transforms, private var application: A
       case None => document
     }
   }
+
+  override def toString = s"""Transformer for ${getApplication.name} => ${getTransforms}"""
 }

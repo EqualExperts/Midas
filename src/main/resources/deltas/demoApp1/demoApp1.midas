@@ -1,7 +1,7 @@
-demoApp1 {
+demoApp1Ver1_9 {
   mode = expansion
   nodeA {
     ip = 127.0.0.1
-    changeSet = 1
+    changeSet = 3
   }
 }

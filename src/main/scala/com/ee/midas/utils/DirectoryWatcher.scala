@@ -9,7 +9,7 @@ class DirectoryWatcher(dirURL: String, events: Seq[WatchEvent.Kind[_]], waitBefo
                        timeUnit: TimeUnit = MILLISECONDS, stopWatchingOnException: Boolean = true)(onEvents: Seq[WatchEvent[_]] => Unit)
   extends Loggable with Runnable {
 
-  private val dirWatcherThread = new Thread(this, getClass.getSimpleName + "-Thread")
+  private val dirWatcherThread = new Thread(this, getClass.getSimpleName + "-Thread-" + dirURL)
   private val fileSystem = FileSystems.getDefault
   private val watcher = fileSystem.newWatchService()
   private val os = System.getProperty("os.name")

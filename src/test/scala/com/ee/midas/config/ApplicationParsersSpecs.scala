@@ -217,12 +217,13 @@ class ApplicationParsersSpecs extends Specification {
             |  }
             |}
           """.stripMargin
+        val ignoreConfig: URL = null
 
         //When
-        val appNode = parseAll(app, input).get
+        val appNode = parseAll(app(ignoreConfig), input).get
 
         //Then
-        appNode mustEqual Application(appName, CONTRACTION,
+        appNode mustEqual Application(ignoreConfig, appName, CONTRACTION,
           List(Node(nodeName, InetAddress.getByName(localhost), ChangeSet(cs))))
       }
 
@@ -248,12 +249,14 @@ class ApplicationParsersSpecs extends Specification {
             |  }
             |}
           """.stripMargin
+       val ignoreConfig: URL = null
+
 
        //When
-       val appNode = parseAll(app, input).get
+       val appNode = parseAll(app(ignoreConfig), input).get
 
        //Then
-       appNode mustEqual Application(appName, EXPANSION,
+       appNode mustEqual Application(ignoreConfig, appName, EXPANSION,
          List(
            Node(node1, InetAddress.getByName(ip1), ChangeSet(cs)),
            Node(node2, InetAddress.getByName(ip2), ChangeSet(cs))
@@ -271,9 +274,10 @@ class ApplicationParsersSpecs extends Specification {
             |  mode = contraction
             |}
           """.stripMargin
+        val ignoreConfig: URL = null
 
         //When-Then
-        parseAll(app, input) mustEqual NoSuccess
+        parseAll(app(ignoreConfig), input) mustEqual NoSuccess
       }
     }
 
@@ -292,8 +296,14 @@ class ApplicationParsersSpecs extends Specification {
           |}
          """.stripMargin
 
-      val path: String = "/" + System.getProperty("user.dir")
-      val file = new File(path + "/appName.midas")
+      val deltasDir = new File("/" + System.getProperty("user.dir")).toURI.toURL
+      val appDir = "app"
+      val appConfigDir = new File(deltasDir.getPath + appDir)
+      appConfigDir.mkdirs()
+      appConfigDir.deleteOnExit()
+
+      val appConfigFilename = s"${appDir}.midas"
+      val file = new File(deltasDir.getPath + appDir + File.separator + appConfigFilename)
       file.createNewFile()
       file.deleteOnExit()
       val writer = new PrintWriter(file, "utf-8")
@@ -303,21 +313,25 @@ class ApplicationParsersSpecs extends Specification {
 
 
       "defined by Text" in {
+        //Given
+        val ignoreConfig: URL = null
+
         //When
-        val application = parse(configText)
+        val application = parse(configText, ignoreConfig)
 
         //Then
         val nodeA = Node("nodeA", InetAddress.getByName(nodeIp), ChangeSet(nodeChangeSet))
-        application mustEqual Application(appName, EXPANSION, List(nodeA))
+        application mustEqual Application(ignoreConfig, appName, EXPANSION, List(nodeA))
       }
 
       "defined by URL" in {
+        val appConfig = appConfigDir.toURI.toURL
         //When
-        val application = parse(file.toURI.toURL).get
+        val application = parse(appConfig).get
 
         //Then
         val nodeA = Node("nodeA", InetAddress.getByName(nodeIp), ChangeSet(nodeChangeSet))
-        application mustEqual Application(appName, EXPANSION, List(nodeA))
+        application mustEqual Application(appConfig, appName, EXPANSION, List(nodeA))
       }
     }
   }
@@ -343,12 +357,13 @@ class ApplicationParsersSpecs extends Specification {
             |  }
             |} // End of application
           """.stripMargin
+      val ignoreConfig: URL = null
 
       //When
-      val application = parseAll(app, input).get
+      val application = parseAll(app(ignoreConfig), input).get
 
       //Then
-      application mustEqual Application(appName, EXPANSION, List(nodeA))
+      application mustEqual Application(ignoreConfig, appName, EXPANSION, List(nodeA))
     }
 
     "configuration containing multi line comments" in {
@@ -369,12 +384,13 @@ class ApplicationParsersSpecs extends Specification {
             |  }
             |}
           """.stripMargin
+      val ignoreConfig: URL = null
 
       //When
-      val application = parseAll(app, input).get
+      val application = parseAll(app(ignoreConfig), input).get
 
       //Then
-      application mustEqual Application(appName, EXPANSION, List(nodeA))
+      application mustEqual Application(ignoreConfig, appName, EXPANSION, List(nodeA))
     }
   }
 
@@ -392,9 +408,10 @@ class ApplicationParsersSpecs extends Specification {
             |apps {
             |}
           """.stripMargin
+      val ignoreConfig: URL = null
 
       //When-Then
-      parseAll(app, input) mustEqual NoSuccess
+      parseAll(app(ignoreConfig), input) mustEqual NoSuccess
     }
   }
 }

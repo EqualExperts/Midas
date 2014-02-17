@@ -7,6 +7,7 @@ import org.specs2.mock.Mockito
 import org.bson.BasicBSONObject
 import com.ee.midas.transform.TransformType._
 import com.ee.midas.config.Application
+import java.net.URL
 
 @RunWith(classOf[JUnitRunner])
 class TransformerSpecs extends Specification with Mockito {
@@ -14,7 +15,8 @@ class TransformerSpecs extends Specification with Mockito {
     "Transformer" should {
        "Get Application" in {
           //Given
-          val application = Application("MyApp", EXPANSION, Nil)
+          val appConfigDir = new URL("file:/myApp")
+          val application = Application(appConfigDir, "MyApp", EXPANSION, Nil)
           val transforms = mock[Transforms]
           val transformer = new Transformer(transforms, application)
 
@@ -28,7 +30,9 @@ class TransformerSpecs extends Specification with Mockito {
        "Get Transforms" in {
          //Given
          val transforms = mock[Transforms]
-         val transformer = new Transformer(transforms)
+         val ignoreConfigDir: URL = null
+         val application = Application(ignoreConfigDir, "someApp", EXPANSION, Nil)
+         val transformer = new Transformer(transforms, application)
 
          //When
          val actualTransforms = transformer.getTransforms
@@ -37,45 +41,36 @@ class TransformerSpecs extends Specification with Mockito {
          actualTransforms mustEqual transforms
        }
 
-       "Update Application" in {
+       "Update Application and Transforms" in {
          //Given
-         val application = Application("MyApp", EXPANSION, Nil)
+         val appConfigDir = new URL("file:/myApp")
+         val application = Application(appConfigDir, "MyApp", EXPANSION, Nil)
          val transforms = mock[Transforms]
          val transformer = new Transformer(transforms, application)
-         val newApplication = Application("NewApp", EXPANSION, Nil)
+         val newApplication = Application(appConfigDir, "MyAppVer2_1_1", EXPANSION, Nil)
+         val newTransforms = mock[Transforms]
 
          //When
-         transformer.updateApplication(newApplication)
-         val updatedApplication = transformer.getApplication
+         transformer.update(newApplication, newTransforms)
 
          //Then
-         updatedApplication mustEqual newApplication
+         transformer.getTransforms  mustEqual newTransforms
+         transformer.getApplication mustEqual newApplication
        }
-
-      "Update Transforms" in {
-        //Given
-        val transforms = mock[Transforms]
-        val transformer = new Transformer(transforms)
-        val newTransforms = mock[Transforms]
-
-        //When
-        transformer.updateTransforms(newTransforms)
-        val actualTransforms = transformer.getTransforms
-
-        //Then
-        actualTransforms mustEqual newTransforms
-      }
 
      "transform document in EXPANSION mode" in {
       //Given
       val transforms = mock[Transforms]
+      val ignoreConfigDir: URL = null
+      val ignoreApplication = Application(ignoreConfigDir, "someApp", EXPANSION, Nil)
+
       val fullCollectionName : String = "name"
       val document = new BasicBSONObject("name","testCollection")
       val expectedDocument = document.append("new", "value")
       transforms.transformResponse(document, fullCollectionName) returns expectedDocument
 
       //When
-      val transformer = new Transformer(transforms)
+      val transformer = new Transformer(transforms, ignoreApplication)
 
       //Then
       transformer.transformResponse(document, fullCollectionName)  mustEqual  expectedDocument
@@ -85,13 +80,15 @@ class TransformerSpecs extends Specification with Mockito {
     "transforms document in CONTRACTION mode" in {
       //Given
       val transforms = mock[Transforms]
+      val ignoreConfigDir: URL = null
+      val ignoreApplication = Application(ignoreConfigDir, "someApp", EXPANSION, Nil)
       val fullCollectionName : String = "name"
       val document = new BasicBSONObject("name","testCollection")
       val expectedDocument = document.append("new","value")
       transforms.transformResponse(document, fullCollectionName) returns expectedDocument
 
       //When
-      val transformer = new Transformer(transforms)
+      val transformer = new Transformer(transforms, ignoreApplication)
 
       //Then
       transformer.transformResponse(document, fullCollectionName)  mustEqual  expectedDocument

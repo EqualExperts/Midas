@@ -8,11 +8,15 @@ import com.ee.midas.utils.Loggable
 
 final case class ChangeSet(number: Long) {
   require(number >= 0L)
+
+  override def toString = s"ChangeSet($number)"
 }
 
-final case class Node(name: String, ip: InetAddress, changeSet: ChangeSet)
+final case class Node(name: String, ip: InetAddress, changeSet: ChangeSet) {
+  override def toString = s"Node($name, $ip, $changeSet)"
+}
 
-final case class Application(name: String, mode: TransformType, nodes: List[Node]) {
+final case class Application(configDir: URL, name: String, mode: TransformType, nodes: List[Node]) {
   def hasNode(ip: InetAddress): Boolean =
     nodes.exists(node => node.ip == ip)
   
@@ -23,31 +27,35 @@ final case class Application(name: String, mode: TransformType, nodes: List[Node
     case None => None
     case Some(Node(_, _, cs)) => Some(cs)
   }
+
+  override def toString = s"""Application($configDir, $name, $mode, ${nodes mkString "," }"""
 }
 
-final case class Configuration(deltasDir: URL, appNames: List[String]) extends Loggable {
-  val appConfigFileExtn = ".midas"
-  private val appParsers = new ApplicationParsers {}
-  private val parsedApps: List[Application] = parseApps
+final case class Configuration(deltasDir: URL, private val apps: List[String]) extends Loggable {
   
-  private def parseApps = appNames map { appName =>
-    val appDir = appName
-    val appConfig: URL = new URL(s"${deltasDir}${appDir}${File.separator}${appName}${appConfigFileExtn}")
-    logInfo(s"Looking for Application Config in $appConfig")
-    appParsers.parse(appConfig) match {
-      case Success(app) => app
-      case Failure(t)   => logWarn(s"Could Not Parse Application $appName: ${t.getMessage}")
+  private val appParsers = new ApplicationParsers {}
+  val applications = apps map { app =>
+    val absoluteAppConfigDir: URL = new File(deltasDir.getPath + app).toURI.toURL
+    logInfo(s"Looking for Application Config in $absoluteAppConfigDir")
+    appParsers.parse(absoluteAppConfigDir) match {
+      case Success(app) => {
+        logInfo(s"Parsed Application Config in ${app.configDir}")
+        app
+      }
+      case Failure(t)   => logWarn(s"Could Not Parse Application $app: ${t.getMessage}")
     }
   } collect {
     case app: Application => app
   }
 
   def hasApplication(ip: InetAddress): Boolean = 
-    parsedApps.exists(app => app.hasNode(ip))
+    applications.exists(app => app.hasNode(ip))
 
   def hasApplication(name: String): Boolean =
-    parsedApps.exists(app => app.name == name)
+    applications.exists(app => app.name == name)
 
-  def getApplication(ip: InetAddress): Option[Application] = 
-    parsedApps.find(app => app.hasNode(ip))
+  def getApplication(ip: InetAddress): Option[Application] =
+    applications.find(app => app.hasNode(ip))
+
+  override def toString = s"""Configuration($deltasDir, ${applications mkString "," }"""
 }

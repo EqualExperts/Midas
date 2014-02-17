@@ -3,6 +3,7 @@ package com.ee.midas.config
 import scala.util.parsing.combinator.JavaTokenParsers
 import java.net.URL
 import scala.util.Try
+import java.io.File
 
 /**
  * Example: midas.config

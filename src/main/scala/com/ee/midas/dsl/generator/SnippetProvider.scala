@@ -50,6 +50,7 @@ trait SnippetProvider extends Parser {
 
   //todo: make split more performant by removing Pattern.compile at runtime, use memoization?.
   private def split(splitField: String, regex: String, json: String) : BSONObject => BSONObject = {
+    println("json === "+json)
      ((document: BSONObject) =>
        document <~> (splitField, Pattern.compile(regex), json))
   }

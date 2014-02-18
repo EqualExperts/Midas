@@ -43,7 +43,6 @@ class ResponseInterceptorSpecs extends Specification with Mockito {
         header.payloadSize returns payloadBytes.length
         tracker.fullCollectionName(responseID) returns Option(collectionName)
 
-        //mockTransformer.canTransformResponse(collectionName) returns true
         mockApplication.transformResponse(payloadData, collectionName) returns transformedPayload
 
         //when:
@@ -51,6 +50,7 @@ class ResponseInterceptorSpecs extends Specification with Mockito {
 
         //then
         readData mustEqual (header.bytes ++ encoder.encode(transformedPayload))
+        there was one(mockApplication).transformResponse(payloadData, collectionName)
       }
 
       "write response to target" in new setup {
@@ -93,7 +93,6 @@ class ResponseInterceptorSpecs extends Specification with Mockito {
         readData mustEqual (header.bytes ++ payloadBytes)
       }
 
-      //todo: convert this to mock and add specs for transformRequest and transformResponse
     }
 
   trait setup extends Scope {

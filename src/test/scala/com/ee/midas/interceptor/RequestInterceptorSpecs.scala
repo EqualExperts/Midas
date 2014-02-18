@@ -138,6 +138,32 @@ class RequestInterceptorSpecs extends Specification with Mockito {
 
      }
 
+     "transform request for OP_INSERT " in new setup {
+        //given
+        val insertPayload: Array[Byte] = Array(0x6d.toByte, 0x79.toByte, 0x64.toByte, 0x62.toByte, 0x2e.toByte, 0x6d.toByte,
+          0x79.toByte, 0x43.toByte, 0x6f.toByte, 0x6c.toByte, 0x6c.toByte, 0x65.toByte, 0x63.toByte, 0x74.toByte,
+          0x69.toByte, 0x6f.toByte, 0x6e.toByte, 0x00.toByte, 0x28.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte,
+          0x07.toByte, 0x5f.toByte, 0x69.toByte, 0x64.toByte, 0x00.toByte, 0x52.toByte, 0xf8.toByte, 0x6f.toByte,
+          0x75.toByte, 0xe0.toByte, 0x07.toByte, 0xb7.toByte, 0x42.toByte, 0xf7.toByte, 0x3b.toByte, 0x8b.toByte,
+          0x7f.toByte, 0x01.toByte, 0x64.toByte, 0x6f.toByte, 0x63.toByte, 0x75.toByte, 0x6d.toByte, 0x65.toByte,
+          0x6e.toByte, 0x74.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x60.toByte, 0x00.toByte, 0x00.toByte,
+          0x00.toByte, 0xf0.toByte, 0x3f.toByte, 0x00.toByte)
+
+        val src = new ByteArrayInputStream(insertPayload)
+        header.payloadSize returns insertPayload.size
+        header.opCode returns BaseMongoHeader.OpCode.OP_INSERT
+        override val collectionName = "mydb.myCollection"
+        val insertRequest = Insert(insertPayload)
+        val document = insertRequest.extractDocument
+        application.transformRequest(document, collectionName, ip) returns document
+        val reqInterceptor = new RequestInterceptor(tracker, application, ip)
+
+        //when
+        reqInterceptor.read(src, header)
+
+        //then
+        there was one(application).transformRequest(document, collectionName, ip)
+     }
      "Read header" in {
        //given
        val application: Application = null

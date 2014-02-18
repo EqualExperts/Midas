@@ -1,0 +1,26 @@
+use catalog
+
+/**
+ * Transform a field by using a built-in String Operations.
+ * ======================================================================================
+ * It takes in an input field and an expression containing built-in string
+ * function and returns the result by setting it on the output field.  If the output
+ * field does not exist, it is created, else its value is over-written.
+ *
+ * ======================================================================================
+ * 3 Arithmetic Operations
+ * ======================================================================================
+ * $concat - Takes an array of one or more string and concats them together, returning the
+ *           resultant string.
+ * syntax: db.things.transform("outputFieldName", "{ $concat: ["$name", "-" , ...] }")
+ * --------------------------------------------------------------------------------------
+ * $toLower - Takes an array of one string and convert it lower case.
+ * syntax: db.things.transform("outputFieldName", "{ $toLower: ["$name"] }")
+ * --------------------------------------------------------------------------------------
+ * $toUpper - Takes an array of one string and convert it upper case.
+ * syntax: db.things.transform("outputFieldName", "{ $toUpper: ["$name"] }")
+ */
+
+db.items.transform('itemName', '{ $concat: ["item - ", "$itemName"] }')
+db.items.transform('itemName', '{ $toUpper: ["$itemName"] }')
+db.items.transform('description', '{ $toLower: ["$description"] }')

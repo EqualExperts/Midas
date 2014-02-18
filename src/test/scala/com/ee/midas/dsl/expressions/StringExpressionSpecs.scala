@@ -68,4 +68,128 @@ class StringExpressionSpecs extends Specification {
       result mustEqual "Mr. Test"
     }
   }
+
+  "ToLower" should {
+    "returns empty string when no values are supplied" in {
+      //Given
+      val toLower = ToLower()
+      val document = new BasicBSONObject()
+
+      //When
+      val result = toLower.evaluate(document).value
+
+      //Then
+      result mustEqual ""
+    }
+
+    "convert string literal to lower case" in {
+      //Given
+      val toLower = ToLower(Literal("Hello"))
+      val document = new BasicBSONObject()
+
+      //When
+      val result = toLower.evaluate(document).value
+
+      //Then
+      result mustEqual "hello"
+    }
+
+    "return non-string literals as string" in {
+      //Given
+      val toLower = ToLower(Literal(1))
+      val document = new BasicBSONObject()
+
+      //When
+      val result = toLower.evaluate(document).value
+
+      //Then
+      result mustEqual "1"
+    }
+
+    "convert field value to lower case" in {
+      //Given
+      val toLower = ToLower(Field("name"))
+      val document = new BasicBSONObject().append("name", "TEST")
+
+      //When
+      val result = toLower.evaluate(document).value
+
+      //Then
+      result mustEqual "test"
+    }
+
+    "Treat literals with null values as empty string" in {
+      //Given
+      val toLower = ToLower(Literal(null))
+      val document = new BasicBSONObject()
+
+      //When
+      val result = toLower.evaluate(document).value
+
+      //Then
+      result mustEqual ""
+    }
+  }
+
+  "ToUpper" should {
+    "returns empty string when no values are supplied" in {
+      //Given
+      val toUpper = ToUpper()
+      val document = new BasicBSONObject()
+
+      //When
+      val result = toUpper.evaluate(document).value
+
+      //Then
+      result mustEqual ""
+    }
+
+    "convert string literal to uppper case" in {
+      //Given
+      val toUpper = ToUpper(Literal("Hello"))
+      val document = new BasicBSONObject()
+
+      //When
+      val result = toUpper.evaluate(document).value
+
+      //Then
+      result mustEqual "HELLO"
+    }
+
+    "return non-string literals as string" in {
+      //Given
+      val toUpper = ToUpper(Literal(1))
+      val document = new BasicBSONObject()
+
+      //When
+      val result = toUpper.evaluate(document).value
+
+      //Then
+      result mustEqual "1"
+    }
+
+    "convert field value to upper case" in {
+      //Given
+      val toUpper = ToUpper(Field("name"))
+      val document = new BasicBSONObject().append("name", "test")
+
+      //When
+      val result = toUpper.evaluate(document).value
+
+      //Then
+      result mustEqual "TEST"
+    }
+
+    "Treat literals with null values as empty string" in {
+      //Given
+      val toUpper = ToUpper(Literal(null))
+      val document = new BasicBSONObject()
+
+      //When
+      val result = toUpper.evaluate(document).value
+
+      //Then
+      result mustEqual ""
+    }
+  }
 }

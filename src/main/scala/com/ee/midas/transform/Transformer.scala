@@ -1,37 +1,37 @@
 package com.ee.midas.transform
 
-import org.bson.BSONObject
-import java.net.InetAddress
-import com.ee.midas.config.{ChangeSet, Application}
+abstract class Transformer extends ResponseTransformer with RequestTransformer {
 
-class Transformer(private var transforms: Transforms, private var application: Application) {
+  var transformType: TransformType
 
-  def getApplication =
-    this.synchronized {
-      application
-    }
+  override def toString = {
+    val separator = "\n\t\t\t\t\t\t"
+    s"""
+      |======================================================================
+      |Request
+      | |
+      | +--> Expansions = ${requestExpansions.size} [${requestExpansions mkString separator}]
+      | |
+      | +--> Contractions = ${requestContractions.size} [${requestContractions mkString separator}]
+      |----------------------------------------------------------------------
+      |Response
+      | |
+      | +--> Expansions = ${responseExpansions.size} [${responseExpansions mkString separator}]
+      | |
+      | +--> Contractions = ${responseContractions.size} [${responseContractions mkString separator}]
+      |======================================================================
+     """.stripMargin
+  }
+}
 
-  def getTransforms =
-    this.synchronized {
-      transforms
-    }
-
-  def update(newApplication: Application, newTransforms: Transforms) =
-    this.synchronized {
-      application = newApplication
-      transforms = newTransforms
-    }
-
-  def transformResponse(document: BSONObject, fullCollectionName: String): BSONObject = {
-    getTransforms.transformResponse(document, fullCollectionName)
+object Transformer {
+  private object EmptyTransformer extends Transformer {
+    var responseExpansions: Map[String, VersionedSnippets] = Map()
+    var responseContractions: Map[String, VersionedSnippets] = Map()
+    var transformType: TransformType = TransformType.EXPANSION
+    var requestExpansions: Map[ChangeSetCollectionKey, Double] = Map()
+    var requestContractions: Map[ChangeSetCollectionKey, Double] = Map()
   }
 
-  def transformRequest(document: BSONObject, fullCollectionName: String, ip: InetAddress): BSONObject = {
-    getApplication.changeSet(ip) match {
-      case Some(ChangeSet(cs)) => transforms.transformRequest(document, cs, fullCollectionName)
-      case None => document
-    }
-  }
-
-  override def toString = s"""Transformer for ${getApplication.name} => ${getTransforms}"""
+  def empty: Transformer = EmptyTransformer
 }

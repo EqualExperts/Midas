@@ -4,7 +4,7 @@ import org.bson.BSONObject
 import scala.collection.immutable.TreeMap
 import TransformType._
 
-trait ResponseTransforms extends ResponseTypes with ResponseVersioner {
+trait ResponseTransformer extends ResponseTypes with ResponseVersioner {
   var responseExpansions: Map[String, VersionedSnippets]
   var responseContractions: Map[String, VersionedSnippets]
 

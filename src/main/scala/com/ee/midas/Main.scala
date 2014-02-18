@@ -9,9 +9,9 @@ import com.ee.midas.dsl.generator.{ScalaGenerator}
 import com.ee.midas.dsl.interpreter.Reader
 import com.ee.midas.dsl.Translator
 import java.io.{File}
-import com.ee.midas.transform.{Transformer, Transforms}
+import com.ee.midas.transform.{Transformer}
 import java.nio.file.StandardWatchEventKinds._
-import com.ee.midas.config.{Configuration, ApplicationParsers, ConfigurationParser}
+import com.ee.midas.config.{Application, Configuration, ApplicationParsers, ConfigurationParser}
 
 object Main extends App with Loggable with ConfigurationParser with DeltasProcessor {
   val maxClientConnections = 50
@@ -42,8 +42,7 @@ object Main extends App with Loggable with ConfigurationParser with DeltasProces
         logInfo(startingMsg)
         println(startingMsg)
         
-        val transformers = scala.collection.mutable.Map[URL, Transformer]()
-        val translator = new Translator[Transforms](new Reader, new ScalaGenerator)
+        val translator = new Translator[Transformer](new Reader, new ScalaGenerator)
         parse(deltasDir) match {
           case scala.util.Failure(t) => throw new IllegalArgumentException(t)
           case scala.util.Success(config) => {
@@ -52,10 +51,9 @@ object Main extends App with Loggable with ConfigurationParser with DeltasProces
               val processingDeltaFilesMsg = s"Processing Delta Files for Application ${application.name} in mode ${application.mode} from Dir ${application.configDir}"
               println(processingDeltaFilesMsg)
               logInfo(processingDeltaFilesMsg)
-              val initialTransforms = processDeltas(translator, application.mode, application.configDir)
-              logInfo(s"Initial Transforms => $initialTransforms")
-              val transformer = new Transformer(initialTransforms, application)
-              transformers += (application.configDir -> transformer)
+              val initialTransformer = processDeltas(translator, application.mode, application.configDir)
+              logInfo(s"Initial Transformer => $initialTransformer")
+              application.transformer = initialTransformer
               val dirWatchMsg = s"Setting up Directory Watcher for Application ${application.name} on ${application.configDir}..."
               println(dirWatchMsg)
               logInfo(dirWatchMsg)
@@ -68,9 +66,10 @@ object Main extends App with Loggable with ConfigurationParser with DeltasProces
                   parse(application.configDir) match {
                     case scala.util.Success(updatedApp) => {
                       logInfo(s"Processing Deltas for Updated Application ${updatedApp.name}...")
-                      val newTransforms = processDeltas(translator, updatedApp.mode, application.configDir)
-                      transformer.update(updatedApp, newTransforms)
-                      logInfo(s"Installed New Transforms for Updated Application ${updatedApp.name} => $newTransforms")
+                      val newTransformer = processDeltas(translator, updatedApp.mode, application.configDir)
+                      updatedApp.transformer = newTransformer
+                      logInfo(s"Installed New Transforms for Updated Application ${updatedApp.name} => $newTransformer")
+                      configuration.update(updatedApp)
                     }
                     case scala.util.Failure(e) => {
                       logError(s"Parsing Updated Application Config for ${application.name} failed => ${e.getMessage})")
@@ -95,17 +94,21 @@ object Main extends App with Loggable with ConfigurationParser with DeltasProces
           println(newConMsg)
           try {
             val mongoDB = new Socket(cmdConfig.mongoHost, cmdConfig.mongoPort)
-            val duplexPipe = configuration.getApplication(appInetAddress) match {
-              case Some(application) => {
-                val tracker = new MessageTracker()
-                val transformer = transformers(application.configDir)
-                val requestInterceptor = new RequestInterceptor(tracker, transformer, appInetAddress)
-                val responseInterceptor = new ResponseInterceptor(tracker, transformer)
-                appSocket <|==|> (mongoDB, requestInterceptor, responseInterceptor)
+            val tracker = new MessageTracker()
+            val unconfiguredApp = Application.unconfigured
+            val application = if(configuration.hasApplication(appInetAddress)) {
+              configuration.getApplication(appInetAddress) match {
+                case Some(app) => app
+                case None => unconfiguredApp
               }
-              case None => 
-                appSocket <====> mongoDB
+            } else {
+              unconfiguredApp
             }
+            val requestInterceptor = new RequestInterceptor(tracker, application, appInetAddress)
+            val responseInterceptor = new ResponseInterceptor(tracker, application)
+            configuration.addApplicationListener(requestInterceptor, appInetAddress)
+            configuration.addApplicationListener(responseInterceptor, appInetAddress)
+            val duplexPipe = appSocket <|==|> (mongoDB, requestInterceptor, responseInterceptor)
             duplexPipe.start
             val pipeReadyMsg = s"Setup All Connections, ready to receive traffic on $duplexPipe"
             logInfo(pipeReadyMsg)

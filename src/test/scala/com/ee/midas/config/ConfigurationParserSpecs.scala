@@ -3,8 +3,7 @@ package com.ee.midas.config
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 import org.specs2.mutable.Specification
-import java.net.{URL, InetAddress}
-import com.ee.midas.transform.TransformType
+import java.net.{URL}
 import java.io.{PrintWriter, File}
 import org.specs2.specification.Scope
 

@@ -6,7 +6,7 @@ import org.specs2.mutable.Specification
 import com.ee.midas.utils.ScalaCompiler
 import com.ee.midas.{Main}
 import java.io.{FileWriter, File}
-import com.ee.midas.transform.Transforms
+import com.ee.midas.transform.Transformer
 
 @RunWith(classOf[JUnitRunner])
 class DeployerSpecs extends Specification with Deployer with ScalaCompiler {

@@ -8,7 +8,7 @@ import org.specs2.mock.Mockito
 import org.specs2.specification.Scope
 import com.mongodb.BasicDBObject
 import org.bson.BasicBSONEncoder
-import com.ee.midas.transform.Transformer
+import com.ee.midas.config.Application
 
 @RunWith(classOf[JUnitRunner])
 class ResponseInterceptorSpecs extends Specification with Mockito {
@@ -44,7 +44,7 @@ class ResponseInterceptorSpecs extends Specification with Mockito {
         tracker.fullCollectionName(responseID) returns Option(collectionName)
 
         //mockTransformer.canTransformResponse(collectionName) returns true
-        mockTransformer.transformResponse(payloadData, collectionName) returns transformedPayload
+        mockApplication.transformResponse(payloadData, collectionName) returns transformedPayload
 
         //when:
         val readData = resInterceptor.read(src, header)
@@ -93,6 +93,7 @@ class ResponseInterceptorSpecs extends Specification with Mockito {
         readData mustEqual (header.bytes ++ payloadBytes)
       }
 
+      //todo: convert this to mock and add specs for transformRequest and transformResponse
     }
 
   trait setup extends Scope {
@@ -110,9 +111,9 @@ class ResponseInterceptorSpecs extends Specification with Mockito {
     header.requestID returns requestID
 
     header.bytes returns bytes
-    val mockTransformer = mock[Transformer]
+    val mockApplication = mock[Application]
 
-    val resInterceptor = new ResponseInterceptor(tracker, mockTransformer)
+    val resInterceptor = new ResponseInterceptor(tracker, mockApplication)
     val payloadData = new BasicDBObject("value", 1)
     val encoder = new BasicBSONEncoder()
     val payloadBytes = encoder.encode(payloadData)

@@ -2,11 +2,11 @@ package com.ee.midas.interceptor
 
 import java.io.{InputStream}
 import com.ee.midas.utils.Loggable
-import com.ee.midas.transform.{Transformer, TransformType}
 import java.net.{InetAddress}
+import com.ee.midas.config.{ApplicationListener, Application}
 
-class RequestInterceptor (tracker: MessageTracker, transformer: Transformer, ip: InetAddress)
-  extends MidasInterceptable with Loggable {
+class RequestInterceptor (tracker: MessageTracker, application: Application, ip: InetAddress)
+  extends MidasInterceptable with Loggable with ApplicationListener {
 
   private val CSTRING_TERMINATION_DELIM = 0
 
@@ -45,10 +45,12 @@ class RequestInterceptor (tracker: MessageTracker, transformer: Transformer, ip:
 
   def modify(request: Request, fullCollectionName: String, header: BaseMongoHeader): Array[Byte] = {
     val document = request.extractDocument
-    val modifiedDocument = transformer.transformRequest(document, fullCollectionName, ip)
+    val modifiedDocument = application.transformRequest(document, fullCollectionName, ip)
     val modifiedPayload = request.reassemble(modifiedDocument)
     val newLength = modifiedPayload.length
     header.updateLength(newLength)
     header.bytes ++ modifiedPayload
   }
+
+  def onUpdate(application: Application): Unit = ???
 }

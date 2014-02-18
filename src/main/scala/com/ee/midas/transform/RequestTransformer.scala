@@ -4,7 +4,7 @@ import com.ee.midas.config.{ChangeSet}
 import TransformType._
 import org.bson.BSONObject
 
-trait RequestTransforms extends RequestTypes with RequestVersioner {
+trait RequestTransformer extends RequestTypes with RequestVersioner {
   var requestExpansions: Map[ChangeSetCollectionKey, Double]
   var requestContractions: Map[ChangeSetCollectionKey, Double]
 

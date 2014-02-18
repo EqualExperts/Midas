@@ -3,7 +3,7 @@ package com.ee.midas
 import org.specs2.mutable.{BeforeAfter, Specification}
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
-import com.ee.midas.transform.{Transforms}
+import com.ee.midas.transform.{Transformer}
 import com.ee.midas.dsl.Translator
 import com.ee.midas.dsl.interpreter.Reader
 import com.ee.midas.dsl.generator.{ScalaGenerator}
@@ -51,7 +51,7 @@ class DeltasProcessorSpecs extends Specification with Mockito with DeltasProcess
      "Delta File Processor" should {
          "process response expansion delta files " in new SetupTeardown {
            //Given
-           val translator = new Translator[Transforms](new Reader, new ScalaGenerator)
+           val translator = new Translator[Transformer](new Reader, new ScalaGenerator)
 
            //When
            val transforms = processDeltas(translator, EXPANSION, deltasDirURL)
@@ -68,7 +68,7 @@ class DeltasProcessorSpecs extends Specification with Mockito with DeltasProcess
 
          "process response contraction delta files " in new SetupTeardown {
            //Given
-           val translator = new Translator[Transforms](new Reader, new ScalaGenerator)
+           val translator = new Translator[Transformer](new Reader, new ScalaGenerator)
 
            //When
            val transforms = processDeltas(translator, CONTRACTION, deltasDirURL)
@@ -85,7 +85,7 @@ class DeltasProcessorSpecs extends Specification with Mockito with DeltasProcess
 
          "process request expansion delta files " in new SetupTeardown {
            //Given
-           val translator = new Translator[Transforms](new Reader, new ScalaGenerator)
+           val translator = new Translator[Transformer](new Reader, new ScalaGenerator)
 
            //When
            val transforms = processDeltas(translator, EXPANSION, deltasDirURL)
@@ -102,7 +102,7 @@ class DeltasProcessorSpecs extends Specification with Mockito with DeltasProcess
 
          "process request contraction delta files " in new SetupTeardown {
            //Given
-           val translator = new Translator[Transforms](new Reader, new ScalaGenerator)
+           val translator = new Translator[Transformer](new Reader, new ScalaGenerator)
 
            //When
            val transforms = processDeltas(translator, CONTRACTION, deltasDirURL)

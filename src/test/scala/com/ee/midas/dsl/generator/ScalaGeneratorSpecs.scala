@@ -4,7 +4,7 @@ import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 import org.specs2.mutable.Specification
 import com.ee.midas.dsl.Translator
-import com.ee.midas.transform.{RequestTypes, ResponseTypes, TransformType, Transforms}
+import com.ee.midas.transform.{RequestTypes, ResponseTypes, TransformType, Transformer}
 import com.ee.midas.dsl.interpreter.Reader
 import java.io.{PrintWriter, File}
 import java.util.ArrayList

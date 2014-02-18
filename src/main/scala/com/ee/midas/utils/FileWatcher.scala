@@ -26,7 +26,7 @@ class FileWatcher(fileURL: String, events: Seq[WatchEvent.Kind[_]], waitBeforePr
     fileSystem.getPath(fileURL.substring(0, indexOfSeparator))
 
   dirPath.register(watcher, events.toArray)
-  println("dirrrrrrrrrrrrrr path == "+dirPath)
+  println("dir path in file watcher == "+dirPath)
   private val file: Path = fileSystem.getPath(fileURL.substring(indexOfSeparator+1))
 
   logInfo(s"Will Watch file ${fileURL} for ${events} of Files...")
@@ -58,8 +58,8 @@ class FileWatcher(fileURL: String, events: Seq[WatchEvent.Kind[_]], waitBeforePr
         forMoreEvents(waitBeforeProcessing)
         val events = watchKey.pollEvents().asScala
         events.foreach { e =>
-          logInfo(s"myyyyyy  Detected ${e.kind()}, Context = ${e.context()}}")
-          println("fileeeeeeeeeeeeeeee  === "+file)
+          logInfo(s"File watcher  Detected ${e.kind()}, Context = ${e.context()}}")
+          println("file  === "+file)
           val context: Path = (e.context).asInstanceOf[Path]
           if(context.endsWith(file)) {
             onEvents(events)

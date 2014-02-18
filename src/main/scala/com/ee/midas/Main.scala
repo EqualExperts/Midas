@@ -3,7 +3,7 @@ package com.ee.midas
 
 import com.ee.midas.pipes.{SocketConnector, DuplexPipe}
 import java.net._
-import com.ee.midas.utils.{FileWatcher, DirectoryWatcher, Accumulator, Loggable}
+import com.ee.midas.utils.{DirectoryWatcher, Accumulator, Loggable}
 import com.ee.midas.interceptor.{MessageTracker, RequestInterceptor, ResponseInterceptor}
 import com.ee.midas.dsl.generator.{ScalaGenerator}
 import com.ee.midas.dsl.interpreter.Reader
@@ -81,13 +81,6 @@ object Main extends App with Loggable with ConfigurationParser with DeltasProces
               })
               accumulateWatcher(watcher)
               watcher.start
-              val fileWatcher = new FileWatcher((config.deltasDir.getPath + "midas.config"), List(ENTRY_MODIFY)) ( watchEvents => {
-                watchEvents.foreach {watchEvent =>
-                  logInfo(s"Received ${watchEvent.kind()}, Context = ${watchEvent.context()}")
-                  println("my watcher")
-                }}
-              )
-              fileWatcher.start
             }
           }
         }

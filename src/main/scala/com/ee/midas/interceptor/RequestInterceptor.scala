@@ -32,7 +32,7 @@ class RequestInterceptor (tracker: MessageTracker, application: Application, ip:
   }
 
   import BaseMongoHeader.OpCode._
-  def modifyIfRequired(request: Array[Byte], header: BaseMongoHeader): Array[Byte] = {
+  private def modifyIfRequired(request: Array[Byte], header: BaseMongoHeader): Array[Byte] = {
     val fullCollectionName = extractFullCollectionName(request)
     header.opCode match {
       case OP_INSERT => return modify(Insert(request), fullCollectionName, header)
@@ -43,7 +43,7 @@ class RequestInterceptor (tracker: MessageTracker, application: Application, ip:
     header.bytes ++ request
   }
 
-  def modify(request: Request, fullCollectionName: String, header: BaseMongoHeader): Array[Byte] = {
+  private def modify(request: Request, fullCollectionName: String, header: BaseMongoHeader): Array[Byte] = {
     val document = request.extractDocument
     val modifiedDocument = application.transformRequest(document, fullCollectionName, ip)
     val modifiedPayload = request.reassemble(modifiedDocument)

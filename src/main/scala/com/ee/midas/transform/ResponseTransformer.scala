@@ -25,7 +25,7 @@ trait ResponseTransformer extends ResponseTypes with ResponseVersioner {
     }
   }
 
-  def transform(document: BSONObject, fullCollectionName: String) : BSONObject = {
+  private def transform(document: BSONObject, fullCollectionName: String) : BSONObject = {
     versionedSnippets(fullCollectionName) match {
       case map if map.isEmpty => document
       case vs =>

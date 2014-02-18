@@ -32,7 +32,7 @@ case class Application(configDir: URL, name: String, mode: TransformType, nodes:
       case None => document
     }
 
-  def transformResponse(document: BSONObject, fullCollectionName: String) =
+  def transformResponse(document: BSONObject, fullCollectionName: String): BSONObject =
     transformer.transformResponse(document, fullCollectionName)
 
   override def toString = s"""Application($configDir, $name, $mode, ${nodes mkString "," }, $transformer"""

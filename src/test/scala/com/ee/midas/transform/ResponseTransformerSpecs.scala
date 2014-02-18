@@ -8,9 +8,8 @@ import org.specs2.mock.Mockito
 import scala.collection.immutable.TreeMap
 import org.specs2.specification.Scope
 
-//todo: split this based on individual traits: ResponseSpecs
 @RunWith(classOf[JUnitRunner])
-class TransformerSpecs extends Specification with Mockito {
+class ResponseTransformerSpecs extends Specification with Mockito {
   trait Transformations extends Transformer with Scope {
     def dummyExpansionFunc1: Snippet = (bsonObj: BSONObject) => {
       bsonObj.put("expansion1", "applied")
@@ -38,46 +37,11 @@ class TransformerSpecs extends Specification with Mockito {
     var responseExpansions : Map[String, VersionedSnippets] = Map("validCollectionForExpansion" -> dummyVersionExpansion)
     var responseContractions : Map[String, VersionedSnippets] = Map("validCollectionForContraction" -> dummyVersionContraction)
 
-    var requestExpansions: Map[ChangeSetCollectionKey, Double] = Map(((1L,"validCollection"), 4d))
-    var requestContractions: Map[ChangeSetCollectionKey, Double] = Map(((1L,"validCollection"), 2d))
+    var requestExpansions: Map[ChangeSetCollectionKey, Double] = Map()
+    var requestContractions: Map[ChangeSetCollectionKey, Double] = Map()
   }
 
-  //todo: revisit whether the below are applicable
-  /**
-
-  "transform document in EXPANSION mode" in {
-    //Given
-
-    val fullCollectionName : String = "name"
-    val document = new BasicBSONObject("name","testCollection")
-    val expectedDocument = document.append("new", "value")
-    //      transforms.transformResponse(document, fullCollectionName) returns expectedDocument
-
-    //When
-    //      val transformer = new Transformer
-
-    //Then
-    //      transformer.transformResponse(document, fullCollectionName)  mustEqual  expectedDocument
-  }
-
-  "transforms document in CONTRACTION mode" in {
-    //Given
-    val fullCollectionName : String = "name"
-    val document = new BasicBSONObject("name","testCollection")
-    val expectedDocument = document.append("new","value")
-    //      transforms.transformResponse(document, fullCollectionName) returns expectedDocument
-
-    //When
-    //      val transformer = new Transformer
-
-    //Then
-    //      transformer.transformResponse(document, fullCollectionName)  mustEqual  expectedDocument
-  }
-
-  */
-
-
-  "Response transforms" should {
+  "Response transformer" should {
     "apply expansion snippets for document with valid Collection name" in new Transformations {
       //given
       var transformType = TransformType.EXPANSION
@@ -171,74 +135,4 @@ class TransformerSpecs extends Specification with Mockito {
     }
 
   }
-
-  "Request transforms" should {
-    "add expansion version in EXPANSION mode" in new Transformations {
-      //given
-      override var transformType = TransformType.EXPANSION
-      val document = new BasicBSONObject("name", "dummy")
-
-      //when
-      val transformedDocument = transformRequest(document, 1, "validCollection")
-
-      //then
-      transformedDocument.get("_expansionVersion") mustEqual 4d
-    }
-
-    "Do not override expansion version if already exists in EXPANSION mode" in new Transformations {
-      //given
-      override var transformType = TransformType.EXPANSION
-      val document = new BasicBSONObject("name", "dummy")
-      document.put(TransformType.EXPANSION.versionFieldName, 3d)
-
-      //when
-      val transformedDocument = transformRequest(document, 1, "validCollection")
-
-      //then
-      transformedDocument.get("_expansionVersion") mustEqual 3d
-    }
-
-    "add contraction and expansion version for CONTRACTION mode" in new Transformations {
-      //given
-      val document = new BasicBSONObject("name", "dummy")
-      override var transformType = TransformType.CONTRACTION
-
-      //when
-      val transformedDocument = transformRequest(document, 1, "validCollection")
-
-      //then
-      transformedDocument.get("_expansionVersion") mustEqual 4d
-      transformedDocument.get("_contractionVersion") mustEqual 2d
-    }
-
-    "Do not override contraction version if already exists in CONTRACTION mode" in new Transformations {
-      //given
-      override var transformType = TransformType.CONTRACTION
-      val document = new BasicBSONObject("name", "dummy")
-      document.put("_contractionVersion", 1d)
-
-      //when
-      val transformedDocument = transformRequest(document, 1, "validCollection")
-
-      //then
-      transformedDocument.get("_expansionVersion") mustEqual 4d
-      transformedDocument.get("_contractionVersion") mustEqual 1d
-    }
-
-
-    "Do not override expansion version if already exists in CONTRACTION mode" in new Transformations {
-      //given
-      override var transformType = TransformType.CONTRACTION
-      val document = new BasicBSONObject("name", "dummy")
-      document.put("_expansionVersion", 3d)
-
-      //when
-      val transformedDocument = transformRequest(document, 1, "validCollection")
-
-      //then
-      transformedDocument.get("_expansionVersion") mustEqual 3d
-      transformedDocument.get("_contractionVersion") mustEqual 2d
-    }
-  }
-
 }

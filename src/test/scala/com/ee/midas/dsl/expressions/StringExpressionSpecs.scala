@@ -118,6 +118,18 @@ class StringExpressionSpecs extends Specification {
       result mustEqual "test"
     }
 
+    "Gives empty string if the field value does not exit" in {
+      //Given
+      val toLower = ToLower(Field("naem"))
+      val document = new BasicBSONObject().append("name", "test")
+
+      //When
+      val result = toLower.evaluate(document).value
+
+      //Then
+      result mustEqual ""
+    }
+
     "Treat literals with null values as empty string" in {
       //Given
       val toLower = ToLower(Literal(null))
@@ -144,7 +156,7 @@ class StringExpressionSpecs extends Specification {
       result mustEqual ""
     }
 
-    "convert string literal to uppper case" in {
+    "convert string literal to upper case" in {
       //Given
       val toUpper = ToUpper(Literal("Hello"))
       val document = new BasicBSONObject()
@@ -178,6 +190,18 @@ class StringExpressionSpecs extends Specification {
 
       //Then
       result mustEqual "TEST"
+    }
+
+    "Gives empty string if the field value does not exit" in {
+      //Given
+      val toUpper = ToUpper(Field("naem"))
+      val document = new BasicBSONObject().append("name", "test")
+
+      //When
+      val result = toUpper.evaluate(document).value
+
+      //Then
+      result mustEqual ""
     }
 
     "Treat literals with null values as empty string" in {

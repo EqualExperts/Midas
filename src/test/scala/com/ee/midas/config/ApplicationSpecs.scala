@@ -74,11 +74,6 @@ class ApplicationSpecs extends Specification {
       application.hasNode(ip) mustEqual false
     }
 
-    "be created with empty transforms" in {
-      //When-Then
-      application.transformer mustEqual Transformer.empty
-    }
-
     "Do not transform Request document for invalid IP" in {
        //Given
        val newTransformer = new Transformer {

@@ -67,6 +67,7 @@ class ConfigurationSpecs extends Specification {
   val application = Application(appConfigDir.toURI.toURL, appName, TransformType.EXPANSION, nodes)
   val configuration = Configuration(deltasDir.toURI.toURL, List(appName, nonExistentAppName))
 
+  sequential
   "Configuration" should {
 
     "Affirm presence of the Application with given IP" in {

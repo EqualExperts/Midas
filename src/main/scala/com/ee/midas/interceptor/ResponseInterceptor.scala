@@ -5,14 +5,15 @@ import org.bson.BSONObject
 import com.ee.midas.transform.DocumentOperations._
 import com.ee.midas.utils.Loggable
 import com.ee.midas.config.{ApplicationListener, Application}
+import java.net.InetAddress
 
 //todo: Design changes for later
 // Request really needs to be composed of MongoHeader and Transformer
 // Current scenario is like anemic domain model where we have header and transformer
 // both outside. RequestInterceptor, the client, co-ordinates header, sucks out info from
 // request, transforms it, and puts it back in the response.
-class ResponseInterceptor (tracker: MessageTracker, application: Application)
-  extends MidasInterceptable with Loggable with ApplicationListener {
+class ResponseInterceptor (tracker: MessageTracker, application: Application, ip: InetAddress)
+  extends MidasInterceptable(application, ip) {
 
   def readHeader(response: InputStream): BaseMongoHeader = {
     val header = MongoHeader(response)
@@ -29,7 +30,7 @@ class ResponseInterceptor (tracker: MessageTracker, application: Application)
   
   private def modify(response: InputStream, fullCollectionName: String, header: MongoHeader): Array[Byte] = {
     val documents = extractDocumentsFrom(response, header)
-    val transformedDocuments = documents map (document => application.transformResponse(document, fullCollectionName))
+    val transformedDocuments = documents map (document => getApplication.transformResponse(document, fullCollectionName))
     val newPayloadBytes = transformedDocuments flatMap (_.toBytes)
     header.updateLength(newPayloadBytes.length)
     newPayloadBytes.toArray
@@ -71,5 +72,5 @@ class ResponseInterceptor (tracker: MessageTracker, application: Application)
     documents.toList
   }
 
-  def onUpdate(application: Application): Unit = ???
+  override def toString = s"${getClass.getName}($getApplication)"
 }

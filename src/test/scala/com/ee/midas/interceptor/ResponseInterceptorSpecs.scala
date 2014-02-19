@@ -9,6 +9,7 @@ import org.specs2.specification.Scope
 import com.mongodb.BasicDBObject
 import org.bson.BasicBSONEncoder
 import com.ee.midas.config.Application
+import java.net.InetAddress
 
 @RunWith(classOf[JUnitRunner])
 class ResponseInterceptorSpecs extends Specification with Mockito {
@@ -111,8 +112,9 @@ class ResponseInterceptorSpecs extends Specification with Mockito {
 
     header.bytes returns bytes
     val mockApplication = mock[Application]
+    val ignoreIp : InetAddress = null
 
-    val resInterceptor = new ResponseInterceptor(tracker, mockApplication)
+    val resInterceptor = new ResponseInterceptor(tracker, mockApplication, ignoreIp)
     val payloadData = new BasicDBObject("value", 1)
     val encoder = new BasicBSONEncoder()
     val payloadBytes = encoder.encode(payloadData)

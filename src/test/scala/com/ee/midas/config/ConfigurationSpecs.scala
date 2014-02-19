@@ -28,7 +28,7 @@ class ConfigurationSpecs extends Specification {
   val ip1 = "127.0.0.1"
   val (node1Name, node1Ip, changeSet1) = ("node1", InetAddress.getByName(ip1), 1)
 
-  val ip2 = "127.0.0.0"
+  val ip2 = "127.0.0.2"
   val (node2Name, node2Ip, changeSet2) = ("node2", InetAddress.getByName(ip2), 2)
   val appConfigDir = new File(deltasDir + File.separator + appName)
   appConfigDir.mkdirs()
@@ -114,6 +114,24 @@ class ConfigurationSpecs extends Specification {
 
       //Then
       configuration.getApplication(newIP) mustEqual Some(applicationWithNewIP)
+    }
+
+    "Adds a non-existing application when updated" in {
+      //Given
+      val ip = "127.0.0.3"
+      val nodeIp = InetAddress.getByName(ip)
+      val node = Node("newAppNode1", nodeIp, ChangeSet(changeSet1))
+      val newAppName = "newApp"
+      val newAppConfigDir = new File(deltasDir + File.separator + newAppName).toURI.toURL
+
+      val newApplication = Application(newAppConfigDir, newAppName, TransformType.EXPANSION, List(node))
+      configuration.getApplication(nodeIp) mustEqual None
+
+      //When
+      configuration.update(newApplication)
+
+      //Then
+      configuration.getApplication(nodeIp) mustEqual Some(newApplication)
     }
   }
 }

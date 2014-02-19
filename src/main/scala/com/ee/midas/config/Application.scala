@@ -35,11 +35,6 @@ case class Application(configDir: URL, name: String, mode: TransformType, nodes:
   def transformResponse(document: BSONObject, fullCollectionName: String): BSONObject =
     transformer.transformResponse(document, fullCollectionName)
 
-  override def toString = s"""Application($configDir, $name, $mode, ${nodes mkString "," }, $transformer"""
-}
-
-object Application {
-  private val empty = Application(null, "UNCONFIGURED-FOR-MIDAS-USE", TransformType.EXPANSION, Nil)
-  def unconfigured = empty
+  override def toString = s"""Application(configDir = ${configDir.toURI}, name = $name, mode = $mode, nodes = ${nodes mkString "," }, $transformer"""
 }
 

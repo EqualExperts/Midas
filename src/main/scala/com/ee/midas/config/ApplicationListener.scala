@@ -1,5 +1,5 @@
 package com.ee.midas.config
 
 trait ApplicationListener {
-  def onUpdate(application: Application)
+  def onUpdate(updated: Application)
 }

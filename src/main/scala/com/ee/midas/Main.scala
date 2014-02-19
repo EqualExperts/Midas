@@ -46,7 +46,8 @@ object Main extends App with Loggable with ConfigurationParser with DeltasProces
         parse(deltasDir) match {
           case scala.util.Failure(t) => throw new IllegalArgumentException(t)
           case scala.util.Success(config) => {
-            configuration = config        
+            configuration = config
+            logDebug(s"Initial Configuration $configuration")
             config.applications.foreach { application =>
               val processingDeltaFilesMsg = s"Processing Delta Files for Application ${application.name} in mode ${application.mode} from Dir ${application.configDir}"
               println(processingDeltaFilesMsg)
@@ -92,38 +93,38 @@ object Main extends App with Loggable with ConfigurationParser with DeltasProces
           val newConMsg = s"New connection received from Remote IP: ${appInetAddress} Remote Port: ${appSocket.getPort}, Local Port: ${appSocket.getLocalPort}"
           logInfo(newConMsg)
           println(newConMsg)
-          try {
-            val mongoDB = new Socket(cmdConfig.mongoHost, cmdConfig.mongoPort)
-            val tracker = new MessageTracker()
-            val unconfiguredApp = Application.unconfigured
-            val application = if(configuration.hasApplication(appInetAddress)) {
-              configuration.getApplication(appInetAddress) match {
-                case Some(app) => app
-                case None => unconfiguredApp
+
+          configuration.getApplication(appInetAddress) match {
+            case Some(application) =>  {
+              try {
+                val mongoDB = new Socket(cmdConfig.mongoHost, cmdConfig.mongoPort)
+                val tracker = new MessageTracker()
+                val requestInterceptor = new RequestInterceptor(tracker, application, appInetAddress)
+                val responseInterceptor = new ResponseInterceptor(tracker, application, appInetAddress)
+                configuration.addApplicationListener(requestInterceptor, appInetAddress)
+                configuration.addApplicationListener(responseInterceptor, appInetAddress)
+                val duplexPipe = appSocket <|==|> (mongoDB, requestInterceptor, responseInterceptor)
+                duplexPipe.start
+                val pipeReadyMsg = s"Setup All Connections, ready to receive traffic on $duplexPipe"
+                logInfo(pipeReadyMsg)
+                println(pipeReadyMsg)
+                accumulatePipe(duplexPipe)
               }
-            } else {
-              unconfiguredApp
+              catch {
+                case e: ConnectException =>
+                  val errMsg = s"MongoDB on ${cmdConfig.mongoHost}:${cmdConfig.mongoPort} is not available!"
+                  println(errMsg)
+                  logError(errMsg)
+                  appSocket.close()
+              }
             }
-            val requestInterceptor = new RequestInterceptor(tracker, application, appInetAddress)
-            val responseInterceptor = new ResponseInterceptor(tracker, application)
-            configuration.addApplicationListener(requestInterceptor, appInetAddress)
-            configuration.addApplicationListener(responseInterceptor, appInetAddress)
-            val duplexPipe = appSocket <|==|> (mongoDB, requestInterceptor, responseInterceptor)
-            duplexPipe.start
-            val pipeReadyMsg = s"Setup All Connections, ready to receive traffic on $duplexPipe"
-            logInfo(pipeReadyMsg)
-            println(pipeReadyMsg)
-            accumulatePipe(duplexPipe)
-          }
-          catch {
-            case e: ConnectException =>
-              val errMsg = s"MongoDB on ${cmdConfig.mongoHost}:${cmdConfig.mongoPort} is not available!"
-              println(errMsg)
-              logError(errMsg)
+            case None => {
+              logError(s"Client on $appInetAddress Not authorized to connect to Midas!")
               appSocket.close()
+              logError(s"Client Socket Closed.")
+            }
           }
         }
-
       case None =>
     }
   }

@@ -1,13 +1,12 @@
 package com.ee.midas.interceptor
 
-import java.io.{InputStream}
+import java.io.{OutputStream, InputStream}
 import com.ee.midas.utils.Loggable
 import java.net.{InetAddress}
 import com.ee.midas.config.{ApplicationListener, Application}
 
 class RequestInterceptor (tracker: MessageTracker, application: Application, ip: InetAddress)
-  extends MidasInterceptable with Loggable with ApplicationListener {
-
+  extends MidasInterceptable(application: Application, ip: InetAddress) {
   private val CSTRING_TERMINATION_DELIM = 0
 
   private def extractFullCollectionName(bytes: Array[Byte]): String = {
@@ -45,12 +44,12 @@ class RequestInterceptor (tracker: MessageTracker, application: Application, ip:
 
   private def modify(request: Request, fullCollectionName: String, header: BaseMongoHeader): Array[Byte] = {
     val document = request.extractDocument
-    val modifiedDocument = application.transformRequest(document, fullCollectionName, ip)
+    val modifiedDocument = getApplication.transformRequest(document, fullCollectionName, ip)
     val modifiedPayload = request.reassemble(modifiedDocument)
     val newLength = modifiedPayload.length
     header.updateLength(newLength)
     header.bytes ++ modifiedPayload
   }
 
-  def onUpdate(application: Application): Unit = ???
+  override def toString = s"${getClass.getName}($getApplication)"
 }

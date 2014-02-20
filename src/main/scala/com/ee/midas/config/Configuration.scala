@@ -52,6 +52,27 @@ final case class Configuration(deltasDir: URL, private val apps: List[String]) e
     fireAppUpdate(appListeners(appConfigDir), application)
   }
 
+  def update(newConfiguration: Configuration): Unit = {
+    val oldConfig = parsedApps.keySet
+    val newConfig = newConfiguration.parsedApps.keySet
+    val common = oldConfig intersect newConfig
+    val toBeAdded = newConfig diff common
+    logInfo(s"Applications to be Added $toBeAdded")
+    val toBeRemoved = oldConfig diff common
+    logInfo(s"Applications to be Removed $toBeRemoved")
+
+    val newApps = newConfiguration.parsedApps.filter { case (k, v) => toBeAdded.contains(k) }
+    toBeRemoved.foreach { k =>
+      val listeners = appListeners(k)
+      fireAppUpdate(listeners, null)
+      appListeners.remove(k)
+      val removed = parsedApps.remove(k)
+      logInfo(s"Removed $removed")
+    }
+    parsedApps ++= newApps
+    logInfo(s"Total Applications $parsedApps")
+  }
+
   private def fireAppUpdate(listeners: MutableList[ApplicationListener], application: Application): Unit =
     listeners.foreach(l => l.onUpdate(application))
 
@@ -67,4 +88,8 @@ final case class Configuration(deltasDir: URL, private val apps: List[String]) e
   }
 
   override def toString = s"""Configuration(Deltas Dir = $deltasDir, Applications = ${applications mkString "," }"""
+}
+
+object Configuration {
+  val filename = "midas.config"
 }

@@ -20,8 +20,6 @@ import java.io.File
  */
 trait ConfigurationParser extends JavaTokenParsers {
 
-  final val configFilename = "midas.config"
-
   //Eat Java-Style comments like whitespace
   protected override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
@@ -33,7 +31,7 @@ trait ConfigurationParser extends JavaTokenParsers {
       throw new IllegalArgumentException(s"Parsing Failed: $message")
   }
 
-  def parse(deltasDir: URL): Try[Configuration] = Try {
+  def parse(deltasDir: URL, configFilename: String): Try[Configuration] = Try {
     val midasConfig = new URL(deltasDir.toString + configFilename)
     val configText: String = scala.io.Source.fromURL(midasConfig).mkString
     parse(configText, deltasDir)

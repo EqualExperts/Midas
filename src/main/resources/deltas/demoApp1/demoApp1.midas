@@ -4,4 +4,8 @@ demoApp1Ver1_9 {
     ip = 192.168.3.82
     changeSet = 3
   }
+  nodeB {
+    ip = 192.168.3.81
+    changeSet = 3
+  }
 }

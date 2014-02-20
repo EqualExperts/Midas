@@ -139,7 +139,7 @@ class ConfigurationParserSpecs extends Specification {
         """.stripMargin
 
       val deltasDir = new File("/" + System.getProperty("user.dir")).toURI.toURL
-      val midasConfigFile = new File(deltasDir.getPath + "midas.config")
+      val midasConfigFile = new File(deltasDir.getPath + Configuration.filename)
       midasConfigFile.createNewFile()
       midasConfigFile.deleteOnExit()
       val writer = new PrintWriter(midasConfigFile, "utf-8")
@@ -148,7 +148,7 @@ class ConfigurationParserSpecs extends Specification {
       writer.close()
 
       //When
-      val config = parse(deltasDir)
+      val config = parse(deltasDir, Configuration.filename)
 
       //Then
 //      val nodeA = Node("nodeA", InetAddress.getByName("127.0.0.1"), ChangeSet(2))

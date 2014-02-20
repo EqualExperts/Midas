@@ -30,8 +30,14 @@ abstract class MidasInterceptable(private var application: Application, ip: Inet
 
   def onUpdate(application: Application): Unit =
     this.synchronized {
+      if (application == null) {
+        logInfo(s"Application ${application.name} Removed, Sending Termination Signal")
+        selfTerminate = true
+        return
+      }
+
       if (application.hasNode(ip)) {
-        logInfo(s"${toString} found IP, Updating the NEW application received")
+        logInfo(s"${toString} found IP, Updating the NEW ${application.name} received")
         this.application = application
       } else {
         logInfo(s"${toString} did not find IP, Sending Termination Signal")

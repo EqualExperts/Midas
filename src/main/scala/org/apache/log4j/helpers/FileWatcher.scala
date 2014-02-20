@@ -8,6 +8,7 @@ trait FileWatcher {
     val fileName = input.getAbsolutePath
     val watcher = new FileWatchdog(fileName: String) {
       delay = watchUnit.toMillis(watchEvery)
+      setName(s"FileWatcherThread-$fileName")
       this.file = input
 
       LogLog.debug(s"watching file $fileName for any modifications.")

@@ -4,7 +4,7 @@ import java.io.{File}
 import java.net.{URL, URI}
 import com.ee.midas.utils.Loggable
 
-case class MidasCmdConfig (val midasHost:String = "localhost",
+case class CmdConfig (val midasHost:String = "localhost",
                         val midasPort: Int = 27020 ,
                         val mongoHost: String = "localhost",
                         val mongoPort: Int = 27017,
@@ -13,8 +13,8 @@ case class MidasCmdConfig (val midasHost:String = "localhost",
 
 object CLIParser extends Loggable {
 
-  def parse(args:Array[String]): Option[MidasCmdConfig] = {
-    val parser = new scopt.OptionParser[MidasCmdConfig]("midas") {
+  def parse(args:Array[String]): Option[CmdConfig] = {
+    val parser = new scopt.OptionParser[CmdConfig]("midas") {
       opt[String]("host") action { (userSuppliedHost, defaultMidasConfig) =>
         defaultMidasConfig.copy(midasHost = userSuppliedHost)
       } text("OPTIONAL, the host/IP midas will be available on, default is localhost")
@@ -43,7 +43,7 @@ object CLIParser extends Loggable {
     val loader = this.getClass.getClassLoader
     val baseDeltasDir = loader.getResource("deltas").toURI
     logInfo(s"Default Base DeltasDir = $baseDeltasDir")
-    val defaultMidasConfig = MidasCmdConfig(baseDeltasDir = baseDeltasDir)
+    val defaultMidasConfig = CmdConfig(baseDeltasDir = baseDeltasDir)
     parser.parse(args, defaultMidasConfig)
   }
 }

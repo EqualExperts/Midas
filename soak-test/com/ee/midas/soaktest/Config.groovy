@@ -86,7 +86,7 @@ data {
 
             deltas {
 
-                baseDir = "C:\\Users\\Vivek-EE\\Desktop\\Midas-1.0.0.Alpha1\\deltas"
+                baseDir = "midas\\deltas"
                 expansions = [
                         '0001_users_customers.delta' :      """
                                                             use users
@@ -146,35 +146,6 @@ data {
         v3 {
 
         }
-    }
-
-    deltas {
-
-        baseDir = "C:\\Users\\Vivek-EE\\Desktop\\Midas-1.0.0.Alpha1\\deltas"
-        expansions = [
-            '0001_users_customers.delta' :      """
-                                                use users
-                                                db.customers.add('{"age": 0}')
-                                                db.customers.copy("entryNo", "customerID")
-                                                db.customers.mergeInto('fullName', ' ', '["fName", "lName"]')
-                                                """,
-
-            '0002_transactions_orders.delta' :  """
-                                                use transactions
-                                                db.orders.copy("entryNo", "orderID")
-                                                db.orders.transform("orderID", "{\$concat: ['OD', '\$orderID']}")
-                                                """
-        ]
-
-        contractions = [
-            '0001_usersAndTransactions.delta' : """
-                                                use users
-                                                db.customers.remove('["entryNo"]')
-                                                use transactions
-                                                db.orders.remove('["entryNo"]')
-                                                """
-
-        ]
     }
 
 }

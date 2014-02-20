@@ -94,6 +94,7 @@ def checkUntilExpansionComplete(def databaseName, def collectionName, def maxExp
         println("Expansion in progress for $databaseName.$collectionName. $expandedDocuments out of $totalDocuments expanded so far.")
         println("Will check again in 10 secs.")
         Thread.sleep(10000)
+		totalDocuments = collection.count()
         expandedDocuments = collection.count(new BasicDBObject("_expansionVersion" : maxExpansionVersion))
     }
     println("Expansion complete for $databaseName.$collectionName.")

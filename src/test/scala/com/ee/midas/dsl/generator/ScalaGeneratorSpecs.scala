@@ -3,7 +3,6 @@ package com.ee.midas.dsl.generator
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 import org.specs2.mutable.Specification
-import com.ee.midas.dsl.Translator
 import com.ee.midas.transform.{RequestTypes, ResponseTypes, TransformType, Transformer}
 import com.ee.midas.dsl.interpreter.Reader
 import java.io.{PrintWriter, File}
@@ -12,21 +11,19 @@ import org.bson.BSONObject
 import com.mongodb.util.JSON
 import scala.collection.immutable.TreeMap
 import com.ee.midas.transform.DocumentOperations._
-import com.ee.midas.dsl.grammar.Verb
-import com.ee.midas.dsl.interpreter.Parser
-import groovy.lang.Closure
 import java.util.regex.Pattern
-
+import org.specs2.specification.Scope
 
 @RunWith(classOf[JUnitRunner])
 class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestTypes {
 
-  val reader = new Reader
-  val generator = new ScalaGenerator
+  trait Setup extends Scope {
+    val reader = new Reader
+    val generator = new ScalaGenerator
+  }
 
-  sequential
   "Scala Generator" should {
-       "Generates Scala code for Add operation" in {
+       "Generates Scala code for Add operation" in new Setup {
           //Given
           val deltaFile = new File("src/test/scala/com/ee/midas/myDeltas/myApp/001-ChangeSet/expansion/add.delta")
           deltaFile.createNewFile()
@@ -70,7 +67,7 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
          result.requestContractions == requestContractions
        }
 
-      "Generates Scala code for Remove operation" in {
+      "Generates Scala code for Remove operation" in new Setup {
         //Given
         val deltaFile = new File("src/test/scala/com/ee/midas/myDeltas/myApp/001-ChangeSet/contraction/remove.delta")
         deltaFile.createNewFile()
@@ -114,7 +111,7 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
         result.requestContractions == requestContractions
       }
 
-      "Generates Scala code for Copy operation" in {
+      "Generates Scala code for Copy operation" in new Setup {
         //Given
         val deltaFile = new File("src/test/scala/com/ee/midas/myDeltas/myApp/001-ChangeSet/expansion/copy.delta")
         deltaFile.createNewFile()
@@ -160,7 +157,7 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
         result.requestContractions == requestContractions
       }
 
-      "Generates Scala code for split operation" in {
+      "Generates Scala code for split operation" in new Setup {
         //Given
         val deltaFile = new File("src/test/scala/com/ee/midas/myDeltas/myApp/001-ChangeSet/expansion/split.delta")
         deltaFile.createNewFile()
@@ -201,7 +198,7 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
         result.requestContractions == requestContractions
       }
 
-    "Generates Scala code for Merge operation" in {
+    "Generates Scala code for Merge operation" in new Setup {
       //Given
       val deltaFile = new File("src/test/scala/com/ee/midas/myDeltas/myApp/001-ChangeSet/expansion/merge.delta")
       deltaFile.createNewFile()
@@ -245,7 +242,7 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
       result.requestContractions == requestContractions
     }
 
-    "Generates empty Scala expansion response map for expansion delta in contraction mode" in {
+    "Generates empty Scala expansion response map for expansion delta in contraction mode" in new Setup {
       //Given
       val deltaFile = new File("src/test/scala/com/ee/midas/myDeltas/myApp/001-ChangeSet/expansion/add.delta")
       deltaFile.createNewFile()
@@ -283,7 +280,7 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
       result.requestContractions == requestContractions
     }
 
-    "Generates empty Scala maps for contraction delta in expansion mode" in {
+    "Generates empty Scala maps for contraction delta in expansion mode" in new Setup {
       //Given
       val deltaFile = new File("src/test/scala/com/ee/midas/myDeltas/myApp/001-ChangeSet/contraction/remove.delta")
       deltaFile.createNewFile()

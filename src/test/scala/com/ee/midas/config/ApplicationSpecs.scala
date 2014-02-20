@@ -7,10 +7,7 @@ import java.net.{URL, InetAddress}
 import com.ee.midas.transform.{Transformer, TransformType}
 import org.specs2.specification.Scope
 import org.bson.{BSONObject, BasicBSONObject}
-import com.ee.midas.transform.ResponseTypes
-import org.specs2.execute.Snippet
 import scala.collection.immutable.TreeMap
-import com.mongodb.util.JSON
 
 @RunWith(classOf[JUnitRunner])
 class ApplicationSpecs extends Specification {

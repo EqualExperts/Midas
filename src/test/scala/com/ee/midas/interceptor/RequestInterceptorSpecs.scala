@@ -20,7 +20,6 @@ class RequestInterceptorSpecs extends Specification with Mockito {
     val bytes =  new Array[Byte](20)
     val collectionName = "randomCollection"
 
-    //todo: convert this to mock and add specs for transformRequest and transformResponse
     val application: Application = mock[Application]
     val ip: InetAddress = null
     val tracker = mock[MessageTracker]

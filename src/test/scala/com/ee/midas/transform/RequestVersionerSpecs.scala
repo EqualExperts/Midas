@@ -3,7 +3,7 @@ package com.ee.midas.transform
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 import org.specs2.mutable.Specification
-import org.bson.BasicBSONObject
+import org.bson.{BSONObject, BasicBSONObject}
 
 @RunWith(classOf[JUnitRunner])
 class RequestVersionerSpecs extends Specification with RequestVersioner {
@@ -53,6 +53,31 @@ class RequestVersionerSpecs extends Specification with RequestVersioner {
 
       //then
       document.get(TransformType.CONTRACTION.versionFieldName()) mustEqual 2d
+    }
+
+    "add expansion version to a document with update operator set" in {
+      //given
+      val document = new BasicBSONObject("$set", new BasicBSONObject("name", "midas"))
+
+      //when
+      addExpansionVersion(document, 4d)
+
+      //then
+      val setDocument: BSONObject = document.get("$set").asInstanceOf[BSONObject]
+      setDocument.get(TransformType.EXPANSION.versionFieldName()) mustEqual 4d
+      setDocument.get("name") mustEqual "midas"
+    }
+
+    "add expansion version to a document with update operator other than set" in {
+      //given
+      val document = new BasicBSONObject("$inc", new BasicBSONObject("value", 1))
+
+      //when
+      addExpansionVersion(document, 4d)
+
+      //then
+      val setDocument: BSONObject = document.get("$set").asInstanceOf[BSONObject]
+      setDocument.get(TransformType.EXPANSION.versionFieldName()) mustEqual 4d
     }
   }
 }

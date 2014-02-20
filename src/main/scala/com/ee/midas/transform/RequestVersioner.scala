@@ -7,7 +7,6 @@ import com.ee.midas.utils.Loggable
 import scala.util.matching.Regex
 import java.util.Set
 
-
 trait RequestVersioner extends Loggable {
   var operatorPresent: Option[String] = None
 

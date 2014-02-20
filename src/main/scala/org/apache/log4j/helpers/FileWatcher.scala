@@ -1,12 +1,15 @@
-package com.ee.midas.utils
+package org.apache.log4j.helpers
 
-import org.apache.log4j.helpers.{FileWatchdog, LogLog}
-import scala.concurrent.duration.TimeUnit
+import java.io.File
+import scala.concurrent.duration._
 
 trait FileWatcher {
-  def watch(fileName: String, watchEvery: Int, watchUnit: TimeUnit)(actionOnModify: => Any): Unit = {
+  def watch(input: File, watchEvery: Int, watchUnit: TimeUnit)(actionOnModify: => Any): Unit = {
+    val fileName = input.getAbsolutePath
     val watcher = new FileWatchdog(fileName: String) {
       delay = watchUnit.toMillis(watchEvery)
+      this.file = input
+
       LogLog.debug(s"watching file $fileName for any modifications.")
       def doOnChange = {
         LogLog.debug(s"Change detected for $fileName. Performing the specified action.")

@@ -3,11 +3,9 @@ package org.apache.log4j.helpers
 import org.specs2.mutable.Specification
 import java.io.File
 import java.util.concurrent.TimeUnit
-import org.specs2.specification.Scope
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 import org.specs2.mock.Mockito
-import org.apache.log4j.helpers.FileWatcher
 
 @RunWith(classOf[JUnitRunner])
 class FileWatcherSpecs extends Specification with Mockito with FileWatcher {

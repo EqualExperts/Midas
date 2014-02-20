@@ -8,11 +8,9 @@ import scala.util.matching.Regex
 import java.util.Set
 
 trait RequestVersioner extends Loggable {
-  var operatorPresent: Option[String] = None
 
   def addExpansionVersion(document: BSONObject, version: Double): BSONObject = {
     val versionFieldName = EXPANSION.versionFieldName()
-    operatorPresent = None
     val documentToBeVersioned: BSONObject = extractDocumentToBeVersioned(document)
     logDebug("Current Version %s of Document %s".format(document(versionFieldName), documentToBeVersioned))
     documentToBeVersioned + (versionFieldName, version, false)
@@ -22,7 +20,6 @@ trait RequestVersioner extends Loggable {
 
   def addContractionVersion(document: BSONObject, version: Double): BSONObject = {
     val versionFieldName = CONTRACTION.versionFieldName()
-    operatorPresent = None
     val documentToBeVersioned: BSONObject = extractDocumentToBeVersioned(document)
     logDebug("Current Version %s of Document %s".format(document(versionFieldName), documentToBeVersioned))
     documentToBeVersioned + (versionFieldName, version, false)
@@ -31,18 +28,9 @@ trait RequestVersioner extends Loggable {
   }
 
   private def extractDocumentToBeVersioned(document: BSONObject): BSONObject = {
-    val pattern = new Regex("^\\$[a-zA-Z]+")
-    val keySet: Set[String] = document.keySet
-    val iterator = keySet.iterator
-
-    while(iterator.hasNext) {
-      val key = iterator.next
-      operatorPresent = (pattern findFirstIn key)
-    }
-
-    operatorPresent match {
-      case None => document
-      case _:Option[String] => {
+    checkForOperator(document) match {
+      case false => document
+      case true => {
         if(document.containsField("$set"))
           document.get("$set").asInstanceOf[BSONObject]
         else
@@ -52,9 +40,9 @@ trait RequestVersioner extends Loggable {
   }
 
   private def assembleVersionedDocument(document:BSONObject, versionedDocument: BSONObject): BSONObject = {
-    operatorPresent match {
-      case None => versionedDocument
-      case _:Option[String] => {
+    checkForOperator(document) match {
+      case false => versionedDocument
+      case true => {
         if(document.containsField("$set"))
           new BasicBSONObject("$set",versionedDocument)
         else {
@@ -63,6 +51,12 @@ trait RequestVersioner extends Loggable {
         }
       }
     }
+  }
+
+  private def checkForOperator(document: BSONObject): Boolean = {
+    val pattern = new Regex("^\\$[a-zA-Z]+")
+    val keys: Set[String] = document.keySet
+    keys.toArray.exists(key => (pattern findFirstIn key.asInstanceOf[String]) == Option(key))
   }
 
 }

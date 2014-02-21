@@ -22,13 +22,11 @@ class MidasInterceptableSpecs extends Specification with Mockito {
     val ignoreConfigDir: URL = null
     val application = Application(ignoreConfigDir, appName, TransformType.EXPANSION, nodes)
 
-    val midasInterceptable = new MidasInterceptable(application, null) {
+    val midasInterceptable = new MidasInterceptable {
       def read(src: InputStream, header: BaseMongoHeader): Array[Byte] = {
         sourceReadWasInvoked = true
         Array[Byte]()
       }
-
-      def application = getApplication
 
       def readHeader(src: InputStream): BaseMongoHeader = {
         readHeaderWasInvoked = true
@@ -76,38 +74,6 @@ class MidasInterceptableSpecs extends Specification with Mockito {
 
       //then
       there was one(tgt).write(any[Array[Byte]], anyInt, anyInt)
-    }
-
-    "update application by IP" in new Setup {
-      //Given
-      val nonExistentAppName = "nonExistentApp"
-      val ip2 = "127.0.0.0"
-      val (node2Name, node2Ip, changeSet2) = ("node2", InetAddress.getByName(ip2), 2)
-      val node2 = Node(node2Name, node2Ip, ChangeSet(changeSet2))
-      val newNodeList = List(node1, node2)
-      val updateAdpplication = Application(ignoreConfigDir, appName, TransformType.EXPANSION, nodes)
-
-      //When
-      midasInterceptable.onUpdate(updateAdpplication)
-
-      //Then
-      midasInterceptable.application mustEqual updateAdpplication
-    }
-
-    "Do not update application if IP is not present" in new Setup {
-      //Given
-      val nonExistentAppName = "nonExistentApp"
-      val ip2 = "127.0.0.0"
-      val (node2Name, node2Ip, changeSet2) = ("node2", InetAddress.getByName(ip2), 2)
-      val node2 = Node(node2Name, node2Ip, ChangeSet(changeSet2))
-      val newNodeList = List(node2)
-      val updateAdpplication = Application(ignoreConfigDir, appName, TransformType.EXPANSION, nodes)
-
-      //When
-      midasInterceptable.onUpdate(updateAdpplication)
-
-      //Then
-      midasInterceptable.application != updateAdpplication
     }
   }
 

@@ -6,12 +6,13 @@ import org.specs2.mutable.Specification
 import com.ee.midas.dsl.grammar.Verb
 import org.specs2.specification.Scope
 import org.bson.{BasicBSONObject, BSONObject}
+import com.ee.midas.transform.ResponseTypes
 
 @RunWith(classOf[JUnitRunner])
 class SnippetProviderSpecs extends Specification {
 
-  trait Snippet extends SnippetProvider with Scope {
-    def snippet(verb: Verb, args: Array[String]): BSONObject => BSONObject = toSnippet(verb, args)
+  trait Snippet extends SnippetProvider with ResponseTypes with Scope {
+    def snippet(verb: Verb, args: Array[String]): Snippet = toSnippet(verb, args)
   }
 
   "Snippet Provider" should {
@@ -23,7 +24,7 @@ class SnippetProviderSpecs extends Specification {
          val expectedBSONObject = new BasicBSONObject("age", 0)
 
          //When
-         val resultSnippet = snippet(verb,args)
+         val resultSnippet = snippet(verb, args)
 
          //Then
         resultSnippet(document) mustEqual expectedBSONObject
@@ -36,7 +37,7 @@ class SnippetProviderSpecs extends Specification {
         val document: BSONObject = new BasicBSONObject("age", 0)
         val expectedBSONObject = new BasicBSONObject()
         //When
-        val resultSnippet = snippet(verb,args)
+        val resultSnippet = snippet(verb, args)
 
         //Then
         resultSnippet(document) mustEqual expectedBSONObject
@@ -51,7 +52,7 @@ class SnippetProviderSpecs extends Specification {
         expectedBSONObject.put("zip", 0)
 
         //When
-        val resultSnippet = snippet(verb,args)
+        val resultSnippet = snippet(verb, args)
 
         //Then
         resultSnippet(document) mustEqual expectedBSONObject
@@ -68,7 +69,7 @@ class SnippetProviderSpecs extends Specification {
         expectedBSONObject.put("name", "John Kennedy")
 
         //When
-        val resultSnippet = snippet(verb,args)
+        val resultSnippet = snippet(verb, args)
 
         //Then
         (resultSnippet(document)) mustEqual expectedBSONObject
@@ -84,7 +85,7 @@ class SnippetProviderSpecs extends Specification {
         expectedBSONObject.put("lName", "Kennedy")
 
         //When
-        val resultSnippet = snippet(verb,args)
+        val resultSnippet = snippet(verb, args)
 
         //Then
         resultSnippet(document) mustEqual expectedBSONObject
@@ -99,7 +100,7 @@ class SnippetProviderSpecs extends Specification {
       val expectedBSONObject = new BasicBSONObject("age", 11)
 
       //When
-      val resultSnippet = snippet(verb,args)
+      val resultSnippet = snippet(verb, args)
 
       //Then
       resultSnippet(document) mustEqual expectedBSONObject
@@ -114,7 +115,7 @@ class SnippetProviderSpecs extends Specification {
       val expectedBSONObject = new BasicBSONObject("age", 9)
 
       //When
-      val resultSnippet = snippet(verb,args)
+      val resultSnippet = snippet(verb, args)
 
       //Then
       resultSnippet(document) mustEqual expectedBSONObject
@@ -129,7 +130,7 @@ class SnippetProviderSpecs extends Specification {
       val expectedBSONObject = new BasicBSONObject("age", 20)
 
       //When
-      val resultSnippet = snippet(verb,args)
+      val resultSnippet = snippet(verb, args)
 
       //Then
       resultSnippet(document) mustEqual expectedBSONObject
@@ -144,7 +145,7 @@ class SnippetProviderSpecs extends Specification {
       val expectedBSONObject = new BasicBSONObject("age", 5)
 
       //When
-      val resultSnippet = snippet(verb,args)
+      val resultSnippet = snippet(verb, args)
 
       //Then
       resultSnippet(document) mustEqual expectedBSONObject
@@ -159,7 +160,7 @@ class SnippetProviderSpecs extends Specification {
       val expectedBSONObject = new BasicBSONObject("age", 0)
 
       //When
-      val resultSnippet = snippet(verb,args)
+      val resultSnippet = snippet(verb, args)
 
       //Then
       resultSnippet(document) mustEqual expectedBSONObject
@@ -174,7 +175,7 @@ class SnippetProviderSpecs extends Specification {
       val expectedBSONObject = new BasicBSONObject("name", "midas-")
 
       //When
-      val resultSnippet = snippet(verb,args)
+      val resultSnippet = snippet(verb, args)
 
       //Then
       resultSnippet(document) mustEqual expectedBSONObject

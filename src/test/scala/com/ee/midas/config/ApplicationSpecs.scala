@@ -73,6 +73,7 @@ class ApplicationSpecs extends Specification {
       application.hasNode(ip) mustEqual false
     }
 
+    /*
     "be created with empty transforms" in new Setup {
       //When-Then
       application.transformer mustEqual Transformer.empty
@@ -145,5 +146,6 @@ class ApplicationSpecs extends Specification {
       //Then
       transformedDocument.get("newField") mustEqual "newValue"
     }
+    */
   }
 }

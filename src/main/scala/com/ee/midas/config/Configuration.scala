@@ -3,40 +3,21 @@ package com.ee.midas.config
 import java.net.{URI, InetAddress, URL}
 import com.ee.midas.utils.Loggable
 import java.io.File
-import scala.util.{Failure, Success}
-import scala.collection.mutable.Map
-import scala.collection.mutable.MutableList
 
-
-final case class Configuration(deltasDir: URL, private val apps: List[String]) extends Loggable {
-
-  private val appParsers = new ApplicationParsers {}
-
-  private val appListeners = Map[URI, MutableList[ApplicationListener]]().withDefaultValue(MutableList())
-
-  private def parseApplications: List[(URI, Application)] = {
-    val allApps: List[Any] = apps map { app =>
-      val absoluteAppConfigDir: URL = new File(deltasDir.getPath + app).toURI.toURL
-      logInfo(s"Looking for Application Config in $absoluteAppConfigDir")
-      appParsers.parse(absoluteAppConfigDir) match {
-        case Success(app) => {
-          logInfo(s"Parsed Application Config in ${app.configDir}")
-          app
-        }
-        case Failure(t)   => logWarn(s"Could Not Parse Application $app: ${t.getMessage}")
-      }
-    }
-
-    val parsed: List[(URI, Application)] = allApps.collect {
-      case app: Application => {
-        (app.configDir.toURI, app)
-      }
-    }
-    logDebug(s"Parsed Applications ${parsed mkString ","}")
-    parsed
-  }
+final case class Configuration(deltasDir: URL, private val apps: List[String]) extends Loggable with ApplicationParsers {
 
   private val parsedApps = scala.collection.mutable.Map(parseApplications: _*)
+
+  private def parseApplications: List[(URI, Application)] =
+    apps map { app =>
+      val absoluteAppConfigDir: URL = new File(deltasDir.getPath + app).toURI.toURL
+      parse(absoluteAppConfigDir) match {
+        case scala.util.Success(app) => (app.configDir.toURI, app)
+        case scala.util.Failure(t)   => logError(s"Failed to parse Application ${app} because ${t.getMessage}")
+      }
+    } collect { case (uri: URI, app: Application) =>
+      (uri, app)
+    }
 
   def applications: List[Application] = parsedApps.map { case(k, v) => v }.toList
 
@@ -49,7 +30,6 @@ final case class Configuration(deltasDir: URL, private val apps: List[String]) e
   def update(application: Application): Unit = {
     val appConfigDir = application.configDir.toURI
     parsedApps(appConfigDir) = application
-    fireAppUpdate(appListeners(appConfigDir), application)
   }
 
   def update(newConfiguration: Configuration): Unit = {
@@ -63,9 +43,8 @@ final case class Configuration(deltasDir: URL, private val apps: List[String]) e
 
     val newApps = newConfiguration.parsedApps.filter { case (k, v) => toBeAdded.contains(k) }
     toBeRemoved.foreach { k =>
-      val listeners = appListeners(k)
-      fireAppUpdate(listeners, null)
-      appListeners.remove(k)
+      val app = parsedApps(k)
+      app.stop
       val removed = parsedApps.remove(k)
       logInfo(s"Removed $removed")
     }
@@ -73,19 +52,9 @@ final case class Configuration(deltasDir: URL, private val apps: List[String]) e
     logInfo(s"Total Applications $parsedApps")
   }
 
-  private def fireAppUpdate(listeners: MutableList[ApplicationListener], application: Application): Unit =
-    listeners.foreach(l => l.onUpdate(application))
+  def stopApplications = parsedApps foreach { case(_, v) => v.stop }
 
-  def addApplicationListener(listener: ApplicationListener, appInetAddress: InetAddress) = {
-    getApplication(appInetAddress) match {
-      case Some(application) => {
-        val listeners = appListeners(application.configDir.toURI)
-        listeners += listener
-        logInfo(s"Added Listener $listener")
-      }
-      case None => logError(s"Could Not add Listener $listener")
-    }
-  }
+  def startApplications = parsedApps foreach { case(_, v) => v.start }
 
   override def toString = s"""Configuration(Deltas Dir = $deltasDir, Applications = ${applications mkString "," }"""
 }

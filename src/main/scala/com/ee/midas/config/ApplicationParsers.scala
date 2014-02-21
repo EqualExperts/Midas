@@ -69,12 +69,12 @@ trait ApplicationParsers extends JavaTokenParsers {
 
   final val appConfigFileExtn = ".midas"
 
-  def parse(absoluteAppConfigDir: URL): Try[Application] = Try {
-    val dir = new File(absoluteAppConfigDir.getFile)
-    val appConfigFilename = s"${dir.getName}$appConfigFileExtn"
-    val appConfigFile: URL = new URL(s"${absoluteAppConfigDir}${File.separator}${appConfigFilename}")
-    val configText = scala.io.Source.fromURL(appConfigFile).mkString
-    parse(configText, absoluteAppConfigDir)
+  def parse(configDir: URL): Try[Application] = Try {
+    val dir = new File(configDir.getFile)
+    val configFilename = s"${dir.getName}$appConfigFileExtn"
+    val configFile: URL = new URL(s"${configDir}${File.separator}${configFilename}")
+    val configText = scala.io.Source.fromURL(configFile).mkString
+    parse(configText, configDir)
   }
 }
 

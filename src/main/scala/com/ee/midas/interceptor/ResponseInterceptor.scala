@@ -13,7 +13,7 @@ import java.net.InetAddress
 // both outside. RequestInterceptor, the client, co-ordinates header, sucks out info from
 // request, transforms it, and puts it back in the response.
 class ResponseInterceptor (tracker: MessageTracker, application: Application, ip: InetAddress)
-  extends MidasInterceptable(application, ip) {
+  extends MidasInterceptable {
 
   def readHeader(response: InputStream): BaseMongoHeader = {
     val header = MongoHeader(response)
@@ -30,7 +30,7 @@ class ResponseInterceptor (tracker: MessageTracker, application: Application, ip
   
   private def modify(response: InputStream, fullCollectionName: String, header: MongoHeader): Array[Byte] = {
     val documents = extractDocumentsFrom(response, header)
-    val transformedDocuments = documents map (document => getApplication.transformResponse(document, fullCollectionName))
+    val transformedDocuments = documents map (document => application.transformResponse(document, fullCollectionName))
     val newPayloadBytes = transformedDocuments flatMap (_.toBytes)
     header.updateLength(newPayloadBytes.length)
     newPayloadBytes.toArray
@@ -72,5 +72,5 @@ class ResponseInterceptor (tracker: MessageTracker, application: Application, ip
     documents.toList
   }
 
-  override def toString = s"${getClass.getName}($getApplication)"
+  override def toString = s"${getClass.getName}($application)"
 }

@@ -137,39 +137,5 @@ class ConfigurationSpecs extends Specification with Mockito {
       //Then
       configuration.getApplication(nodeIp) mustEqual Some(newApplication)
     }
-
-    "add application listener by IP" in new Setup {
-      //Given
-      val nodeIp = InetAddress.getByName("127.0.0.3")
-      val newNode = Node("newAppNode1", nodeIp, ChangeSet(changeSet1))
-      val updatedApplication = Application(appConfigDir.toURI.toURL, appName, TransformType.EXPANSION, List(newNode, node1, node2))
-
-      val ip = InetAddress.getByName("127.0.0.1")
-      val appListener = mock[ApplicationListener]
-
-      //When
-      configuration.addApplicationListener(appListener, ip)
-      configuration.update(updatedApplication)
-
-      //Then
-      there was one(appListener).onUpdate(updatedApplication)
-    }
-
-    "Do not add application listener if IP not present" in new Setup {
-      //Given
-      val nodeIp = InetAddress.getByName("127.0.0.3")
-      val newNode = Node("newAppNode1", nodeIp, ChangeSet(changeSet1))
-      val updatedApplication = Application(appConfigDir.toURI.toURL, appName, TransformType.EXPANSION, List(newNode, node1, node2))
-
-      val ip = InetAddress.getByName("127.0.0.9")
-      val appListener = mock[ApplicationListener]
-
-      //When
-      configuration.addApplicationListener(appListener, ip)
-      configuration.update(updatedApplication)
-
-      //Then
-      there was no(appListener).onUpdate(updatedApplication)
-    }
   }
 }

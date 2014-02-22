@@ -8,12 +8,13 @@ import com.ee.midas.transform.{Transformer, TransformType}
 import org.specs2.specification.Scope
 import org.bson.{BSONObject, BasicBSONObject}
 import scala.collection.immutable.TreeMap
+import java.io.{PrintWriter, File}
 
 @RunWith(classOf[JUnitRunner])
 class ApplicationSpecs extends Specification {
 
   trait Setup extends Scope {
-    val appName = "testApp"
+    val appName = "myApp"
     val nonExistentAppName = "nonExistentApp"
 
     val ip1 = "127.0.0.1"
@@ -25,8 +26,17 @@ class ApplicationSpecs extends Specification {
     val node1 = Node(node1Name, node1Ip, ChangeSet(changeSet1))
     val node2 = Node(node2Name, node2Ip, ChangeSet(changeSet2))
     val nodes = List(node1, node2)
-    val ignoreConfigDir: URL = null
-    val application = Application(ignoreConfigDir, appName, TransformType.EXPANSION, nodes)
+    val configDir: URL = new File("src/test/scala/com/ee/midas/myDeltas/myApp").toURI.toURL
+    val deltaFile = new File("src/test/scala/com/ee/midas/myDeltas/myApp/001-ChangeSet/expansion/01_add.delta")
+    deltaFile.createNewFile()
+    val expansionDelta = new PrintWriter(deltaFile)
+
+    expansionDelta.write("use someDatabase\n")
+    expansionDelta.write("db.collectionName.add(\'{\"newField\": \"newValue\"}\')")
+    expansionDelta.flush()
+    expansionDelta.close()
+    deltaFile.deleteOnExit()
+    val application = Application(configDir, appName, TransformType.EXPANSION, nodes)
   }
 
   "Application" should {
@@ -73,79 +83,49 @@ class ApplicationSpecs extends Specification {
       application.hasNode(ip) mustEqual false
     }
 
-    /*
-    "be created with empty transforms" in new Setup {
-      //When-Then
-      application.transformer mustEqual Transformer.empty
-    }
-
     "Do not transform Request document for invalid IP" in new Setup {
        //Given
-       val newTransformer = new Transformer {
-          var transformType = TransformType.EXPANSION
-          var responseExpansions : Map[String, VersionedSnippets] = Map()
-          var responseContractions : Map[String, VersionedSnippets] = Map()
-
-          var requestExpansions: Map[ChangeSetCollectionKey, Double] = Map(((1L,"validCollection"), 4d))
-          var requestContractions: Map[ChangeSetCollectionKey, Double] = Map(((1L,"validCollection"), 2d))
-       }
        val ip = InetAddress.getByName("127.0.0.6")
        val document = new BasicBSONObject("name", "midas")
 
        //When
-       application.transformer = newTransformer
        val transformedDocument: BSONObject = application.transformRequest(document, "validCollection", ip)
 
        //Then
        transformedDocument mustEqual document
     }
 
-    "transform Request document for valid IP" in new Setup {
+   /* "transform Request document for valid IP" in new Setup {
       //Given
-      val newTransformer = new Transformer {
-        var transformType = TransformType.EXPANSION
-        var responseExpansions : Map[String, VersionedSnippets] = Map()
-        var responseContractions : Map[String, VersionedSnippets] = Map()
-
-        var requestExpansions: Map[ChangeSetCollectionKey, Double] = Map(((1L,"validCollection"), 4d))
-        var requestContractions: Map[ChangeSetCollectionKey, Double] = Map(((1L,"validCollection"), 2d))
-      }
-      val ip = InetAddress.getByName("127.0.0.1")
       val document = new BasicBSONObject("name", "midas")
 
       //When
-      application.transformer = newTransformer
-      val transformedDocument: BSONObject = application.transformRequest(document, "validCollection", ip)
+      val transformedDocument: BSONObject = application.transformRequest(document, "collectionName", node1Ip)
 
       //Then
-      transformedDocument.get("_expansionVersion") mustEqual 4d
+      transformedDocument.get("_expansionVersion") mustEqual 1d
     }
 
-    "Do not transform Response document" in new Setup {
+     "transform Response document for valid Collection Name" in new Setup {
       //Given
-      val newTransformer = new Transformer {
-        var transformType = TransformType.EXPANSION
-        var responseExpansions : Map[String, VersionedSnippets] =
-          Map(("validCollection", TreeMap(1d ->
-            ((document: BSONObject) => {
-              document.put("newField", "newValue")
-              document
-            }))
-          ))
-        var responseContractions : Map[String, VersionedSnippets] = Map()
-
-        var requestExpansions: Map[ChangeSetCollectionKey, Double] = Map()
-        var requestContractions: Map[ChangeSetCollectionKey, Double] = Map()
-      }
       val document = new BasicBSONObject("name", "midas")
 
       //When
-      application.transformer = newTransformer
-      val transformedDocument: BSONObject = application.transformResponse(document, "validCollection")
+      val transformedDocument: BSONObject = application.transformResponse(document, "collectionName")
 
       //Then
       transformedDocument.get("newField") mustEqual "newValue"
     }
-    */
+*/
+    "Do not transform Response document for invalid Collection Name" in new Setup {
+      //Given
+      val document = new BasicBSONObject("name", "midas")
+
+      //When
+      val transformedDocument: BSONObject = application.transformResponse(document, "invalidCollection")
+
+      //Then
+      transformedDocument mustEqual document
+    }
   }
 }

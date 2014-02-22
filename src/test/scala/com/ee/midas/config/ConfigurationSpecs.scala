@@ -126,9 +126,11 @@ class ConfigurationSpecs extends Specification with Mockito {
       val nodeIp = InetAddress.getByName(ip)
       val node = Node("newAppNode1", nodeIp, ChangeSet(changeSet1))
       val newAppName = "newApp"
-      val newAppConfigDir = new File(deltasDir + File.separator + newAppName).toURI.toURL
+      val newAppConfigDir = new File(deltasDir + File.separator + newAppName)
 
-      val newApplication = Application(newAppConfigDir, newAppName, TransformType.EXPANSION, List(node))
+      newAppConfigDir.mkdirs()
+      newAppConfigDir.deleteOnExit()
+      val newApplication = Application(newAppConfigDir.toURI.toURL, newAppName, TransformType.EXPANSION, List(node))
       configuration.getApplication(nodeIp) mustEqual None
 
       //When
@@ -137,5 +139,6 @@ class ConfigurationSpecs extends Specification with Mockito {
       //Then
       configuration.getApplication(nodeIp) mustEqual Some(newApplication)
     }
+
   }
 }

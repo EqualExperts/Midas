@@ -14,14 +14,6 @@ import java.net.{URL, InetAddress}
 class MidasInterceptableSpecs extends Specification with Mockito {
 
   trait Setup extends Scope {
-    val appName = "testApp"
-    val ip1 = "127.0.0.1"
-    val (node1Name, node1Ip, changeSet1) = ("node1", InetAddress.getByName(ip1), 1)
-    val node1 = Node(node1Name, node1Ip, ChangeSet(changeSet1))
-    val nodes = List(node1)
-    val ignoreConfigDir: URL = null
-    val application = Application(ignoreConfigDir, appName, TransformType.EXPANSION, nodes)
-
     val midasInterceptable = new MidasInterceptable {
       def read(src: InputStream, header: BaseMongoHeader): Array[Byte] = {
         sourceReadWasInvoked = true

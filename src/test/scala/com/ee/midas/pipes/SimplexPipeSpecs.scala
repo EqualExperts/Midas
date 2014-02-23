@@ -43,6 +43,7 @@ class SimplexPipeSpecs extends JUnitMustMatchers with Mockito {
     //then
     there was one(mockInputStream).close()
     there was one(mockOutputStream).close()
+    pipe.isActive must beFalse
   }
 
   @Test

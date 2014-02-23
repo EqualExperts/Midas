@@ -1,12 +1,13 @@
 package com.ee.midas
 
 import com.ee.midas.config.{ConfigurationParser, Configuration}
-import java.net.{BindException, InetAddress, ServerSocket}
+import java.net.{Socket, BindException, InetAddress, ServerSocket}
 import com.ee.midas.utils.{Loggable}
 import java.io.File
 import java.util.concurrent.TimeUnit
 
 import org.apache.log4j.helpers.FileWatcher
+import scala.util.Try
 
 class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParser with FileWatcher {
 
@@ -57,6 +58,11 @@ class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParse
     println(shutdownMsg)
   }
 
+  def createMongoSocket(mongoHost: String, mongoPort: Int): Try[Socket] =
+    Try {
+      new Socket(mongoHost, mongoPort)
+    }
+
   def start = {
     val startingMsg = s"Starting Midas on ${cmdConfig.midasHost}, port ${cmdConfig.midasPort}..."
     logInfo(startingMsg)
@@ -67,7 +73,17 @@ class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParse
       val midasSocket = new ServerSocket(cmdConfig.midasPort, maxClientConnections, InetAddress.getByName(cmdConfig.midasHost))
       while (true) {
         val appSocket = waitForNewConnectionOn(midasSocket)
-        configuration.processNewConnection(appSocket, cmdConfig.mongoHost, cmdConfig.mongoPort)
+        val appIp = appSocket.getInetAddress
+        val (mongoHost, mongoPort) = (cmdConfig.mongoHost, cmdConfig.mongoPort)
+        createMongoSocket(mongoHost, mongoPort) match {
+          case scala.util.Success(mongoSocket) =>
+            configuration.processNewConnection(appSocket, mongoSocket)
+          case scala.util.Failure(t) =>
+            val errMsg = s"MongoDB on ${mongoHost}:${mongoPort} is not available!  Terminating connection from ${appIp}, Please retry later."
+            println(errMsg)
+            logError(errMsg)
+            appSocket.close()
+        }
       }
     } catch {
       case e: BindException =>

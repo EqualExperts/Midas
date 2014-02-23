@@ -52,14 +52,14 @@ final case class Configuration(deltasDir: URL, private val apps: List[String]) e
 
   def start = parsedApps foreach { case (_, application) => application.start }
 
-  def processNewConnection(appSocket: Socket, mongoHost: String, mongoPort: Int) = {
+  def processNewConnection(appSocket: Socket, mongoSocket: Socket) = {
     val appInetAddress = appSocket.getInetAddress
     val newConMsg = s"New connection received from Remote IP: ${appInetAddress} Remote Port: ${appSocket.getPort}, Local Port: ${appSocket.getLocalPort}"
     logInfo(newConMsg)
     println(newConMsg)
 
     getApplication(appInetAddress) match {
-      case Some(application) => application.acceptAuthorized(appSocket, mongoHost, mongoPort)
+      case Some(application) => application.acceptAuthorized(appSocket, mongoSocket)
       case None => rejectUnauthorized(appSocket)
     }
   }

@@ -32,6 +32,7 @@ class SimplexPipe(val name: String, val src: InputStream,
     logInfo("[" + threadName + "] " + toString + ": Closing Streams...")
     src.close()
     tgt.close()
+    isRunning = false
     logInfo("[" + threadName + "] " + toString + ": Closing Streams Done")
   }
 

@@ -1,15 +1,17 @@
 package com.ee.midas.utils
 
-object Accumulator {
-  def apply[T](initial: List[T]): T => List[T]= {
-    var acc = initial
 
-    (x: T) =>  x match {
-      case Nil => acc
-      case null => acc
-      case _ => { acc = x :: acc
-        acc
-      }
+class Accumulator[T] private (private var seq: Seq[T]) {
+  def apply(elem: T): Seq[T] = elem match {
+    case elem : Seq[_] => seq
+    case null => seq
+    case _ => {
+      seq = seq.+:(elem)
+      seq
     }
   }
+}
+
+object Accumulator {
+  def apply[T] = new Accumulator[T](Seq[T]())
 }

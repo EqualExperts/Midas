@@ -5,13 +5,13 @@ import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-object AccumulatorSpecs extends Specification {
+class AccumulatorSpecs extends Specification {
 
     "Accumulator" should {
 
       "accumulate values " in {
         //Given
-        val accumulate = Accumulator[Integer](Nil)
+        val accumulate = Accumulator[Integer]
 
         //When
         accumulate(1)
@@ -21,18 +21,9 @@ object AccumulatorSpecs extends Specification {
         accumulate(null) mustEqual(List(2,1))
       }
 
-      "throw a Exception when intialized with null " in {
-        //Given
-        //When
-        val accumulate = Accumulator[Object](null)
-
-        //Then
-        accumulate(new Integer(1)) must throwA[NullPointerException]
-      }
-
       "Ignore Null values" in {
         //Given
-        val accumulate = Accumulator[Integer](Nil)
+        val accumulate = Accumulator[Integer]
 
         //When
         accumulate(null)
@@ -44,7 +35,7 @@ object AccumulatorSpecs extends Specification {
 
       "Ignore Nil values" in {
         //Given
-        val accumulate = Accumulator[Object](Nil)
+        val accumulate = Accumulator[Object]
 
         //When
         accumulate(Nil)

@@ -1,10 +1,10 @@
 package com.ee.midas.interceptor
 
 import java.io.{InputStream}
-import java.net.{InetAddress}
-import com.ee.midas.config.{Application}
+import com.ee.midas.transform.RequestTransformer
+import com.ee.midas.config.ChangeSet
 
-class RequestInterceptor (tracker: MessageTracker, application: Application, ip: InetAddress)
+class RequestInterceptor (tracker: MessageTracker, transformer: RequestTransformer, changeSet: ChangeSet)
   extends MidasInterceptable {
   private val CSTRING_TERMINATION_DELIM = 0
 
@@ -43,12 +43,12 @@ class RequestInterceptor (tracker: MessageTracker, application: Application, ip:
 
   private def modify(request: Request, fullCollectionName: String, header: BaseMongoHeader): Array[Byte] = {
     val document = request.extractDocument
-    val modifiedDocument = application.transformRequest(document, fullCollectionName, ip)
+    val modifiedDocument = transformer.transformRequest(document, changeSet.number, fullCollectionName)
     val modifiedPayload = request.reassemble(modifiedDocument)
     val newLength = modifiedPayload.length
     header.updateLength(newLength)
     header.bytes ++ modifiedPayload
   }
 
-  override def toString = s"${getClass.getName}($application)"
+  override def toString = s"${getClass.getName}($transformer)"
 }

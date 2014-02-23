@@ -7,9 +7,10 @@ import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 import org.specs2.specification.Scope
 import java.net.InetAddress
-import com.ee.midas.config.Application
+import com.ee.midas.config.{ChangeSet, Application}
 import org.bson.{BSONObject, BasicBSONObject}
 import com.ee.midas.transform.DocumentOperations._
+import com.ee.midas.transform.Transformer
 
 @RunWith(classOf[JUnitRunner])
 class RequestInterceptorSpecs extends Specification with Mockito {
@@ -20,13 +21,11 @@ class RequestInterceptorSpecs extends Specification with Mockito {
     val bytes =  new Array[Byte](20)
     val collectionName = "randomCollection"
 
-    val application: Application = mock[Application]
-    val ip: InetAddress = null
+    val transformer: Transformer = mock[Transformer]
     val tracker = mock[MessageTracker]
-
     val mockSrc = mock[InputStream]
-
     val header = mock[BaseMongoHeader]
+    val changeSet = ChangeSet(2)
     header.hasPayload returns true
     header.opCode returns BaseMongoHeader.OpCode.OP_QUERY
     header.requestID returns requestID
@@ -39,7 +38,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
 
      "read request from source" in new setup {
        //given
-       val reqInterceptor = new RequestInterceptor(tracker, application, ip)
+       val reqInterceptor = new RequestInterceptor(tracker, transformer, changeSet)
 
        //when
        reqInterceptor.read(mockSrc, header)
@@ -55,7 +54,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
        header.opCode returns BaseMongoHeader.OpCode.OP_DELETE
        val src = new ByteArrayInputStream(collectionBytes)
        header.payloadSize returns collectionBytes.size
-       val reqInterceptor = new RequestInterceptor(tracker, application, ip)
+       val reqInterceptor = new RequestInterceptor(tracker, transformer, changeSet)
 
        //when
        reqInterceptor.read(src, header)
@@ -71,7 +70,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
        val src = new ByteArrayInputStream(collectionBytes)
        header.payloadSize returns collectionBytes.size
        header.opCode returns BaseMongoHeader.OpCode.OP_GET_MORE
-       val reqInterceptor = new RequestInterceptor(tracker, application, ip)
+       val reqInterceptor = new RequestInterceptor(tracker, transformer, changeSet)
 
        //when
        reqInterceptor.read(src, header)
@@ -86,7 +85,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
        val src = new ByteArrayInputStream(collectionBytes)
        header.payloadSize returns collectionBytes.size
        header.opCode returns BaseMongoHeader.OpCode.OP_QUERY
-       val reqInterceptor = new RequestInterceptor(tracker, application, ip)
+       val reqInterceptor = new RequestInterceptor(tracker, transformer, changeSet)
 
        //when
        reqInterceptor.read(src, header)
@@ -100,7 +99,7 @@ class RequestInterceptorSpecs extends Specification with Mockito {
        val tgt = mock[OutputStream]
        val data = "request data".getBytes()
 
-       val reqInterceptor = new RequestInterceptor(tracker, application, ip)
+       val reqInterceptor = new RequestInterceptor(tracker, transformer, changeSet)
 
        //when
        reqInterceptor.write(data, tgt)
@@ -126,14 +125,14 @@ class RequestInterceptorSpecs extends Specification with Mockito {
        header.opCode returns BaseMongoHeader.OpCode.OP_UPDATE
        override val collectionName = "mydb.myCollection"
        val document: BasicBSONObject = new BasicBSONObject("name", "midas")
-       application.transformRequest(document, collectionName, ip) returns document
-       val reqInterceptor = new RequestInterceptor(tracker, application, ip)
+       transformer.transformRequest(document, changeSet.number, collectionName) returns document
+       val reqInterceptor = new RequestInterceptor(tracker, transformer, changeSet)
 
        //when
        reqInterceptor.read(src, header)
 
        //then
-       there was one(application).transformRequest(document, collectionName, ip)
+       there was one(transformer).transformRequest(document, changeSet.number, collectionName)
 
      }
 
@@ -154,25 +153,25 @@ class RequestInterceptorSpecs extends Specification with Mockito {
         override val collectionName = "mydb.myCollection"
         val insertRequest = Insert(insertPayload)
         val document = insertRequest.extractDocument
-        application.transformRequest(document, collectionName, ip) returns document
-        val reqInterceptor = new RequestInterceptor(tracker, application, ip)
+       transformer.transformRequest(document, changeSet.number, collectionName) returns document
+        val reqInterceptor = new RequestInterceptor(tracker, transformer, changeSet)
 
         //when
         reqInterceptor.read(src, header)
 
         //then
-        there was one(application).transformRequest(document, collectionName, ip)
+        there was one(transformer).transformRequest(document, changeSet.number, collectionName)
      }
      "Read header" in {
        //given
-       val application: Application = null
+       val transformer: Transformer = null
        val ip: InetAddress = null
        val headerBytes: Array[Byte] = Array(0x45.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x1d.toByte, 0x00.toByte,
          0x00.toByte, 0x00.toByte, 0x21.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x01.toByte, 0x00.toByte, 0x00.toByte,
          0x00.toByte, 0x08.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte)
        val inputStream: InputStream = new ByteArrayInputStream(headerBytes)
        val tracker = mock[MessageTracker]
-       val reqInterceptor = new RequestInterceptor(tracker, application, ip)
+       val reqInterceptor = new RequestInterceptor(tracker, transformer, ChangeSet())
 
        //when
        val header = reqInterceptor.readHeader(inputStream)

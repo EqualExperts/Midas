@@ -10,6 +10,7 @@ import com.ee.midas.dsl.generator.{ScalaGenerator}
 import java.io.{PrintWriter, File}
 import org.specs2.mock.Mockito
 import com.ee.midas.transform.TransformType._
+import scala.util.Success
 
 @RunWith(classOf[JUnitRunner])
 class DeltasProcessorSpecs extends Specification with Mockito with DeltasProcessor {
@@ -54,15 +55,15 @@ class DeltasProcessorSpecs extends Specification with Mockito with DeltasProcess
            val translator = new Translator[Transformer](new Reader, new ScalaGenerator)
 
            //When
-           val transforms = processDeltas(translator, EXPANSION, deltasDirURL)
+           val transformer = processDeltas(translator, EXPANSION, deltasDirURL).get
 
            //Then
-           val expansions = transforms.responseExpansions
+           val expansions = transformer.responseExpansions
            expansions must haveLength(1)
            expansions must haveKey("someDatabase.collection")
 
            //And
-           val contractions = transforms.responseContractions
+           val contractions = transformer.responseContractions
            contractions must be empty
          }
 
@@ -71,15 +72,15 @@ class DeltasProcessorSpecs extends Specification with Mockito with DeltasProcess
            val translator = new Translator[Transformer](new Reader, new ScalaGenerator)
 
            //When
-           val transforms = processDeltas(translator, CONTRACTION, deltasDirURL)
+           val transformer = processDeltas(translator, CONTRACTION, deltasDirURL).get
 
            //Then
-           val contractions = transforms.responseContractions
+           val contractions = transformer.responseContractions
            contractions must haveLength(1)
            contractions must haveKey("someDatabase.collection")
 
            //And
-           val expansions = transforms.responseExpansions
+           val expansions = transformer.responseExpansions
            expansions must be empty
          }
 
@@ -88,15 +89,15 @@ class DeltasProcessorSpecs extends Specification with Mockito with DeltasProcess
            val translator = new Translator[Transformer](new Reader, new ScalaGenerator)
 
            //When
-           val transforms = processDeltas(translator, EXPANSION, deltasDirURL)
+           val transformer = processDeltas(translator, EXPANSION, deltasDirURL).get
 
            //Then
-           val expansions = transforms.requestExpansions
+           val expansions = transformer.requestExpansions
            expansions must haveLength(1)
            expansions must haveKey((1, "someDatabase.collection"))
 
            //And
-           val contractions = transforms.requestContractions
+           val contractions = transformer.requestContractions
            contractions must be empty
          }
 
@@ -105,17 +106,27 @@ class DeltasProcessorSpecs extends Specification with Mockito with DeltasProcess
            val translator = new Translator[Transformer](new Reader, new ScalaGenerator)
 
            //When
-           val transforms = processDeltas(translator, CONTRACTION, deltasDirURL)
+           val transformer = processDeltas(translator, CONTRACTION, deltasDirURL).get
 
            //Then
-           val contractions = transforms.requestContractions
+           val contractions = transformer.requestContractions
            contractions must haveLength(1)
            contractions must haveKey((1, "someDatabase.collection"))
 
            //And
-           val expansions = transforms.requestExpansions
+           val expansions = transformer.requestExpansions
            expansions must haveLength(1)
            expansions must haveKey((1, "someDatabase.collection"))
          }
+
+       //todo:
+//         "Fails when the configDir url does not exist" in {
+//
+//         }
+//
+//         "Fails when the configDir url is empty" in {
+//         }
+//
+//         "Fails when it cannot parse delta files" in { }
      }
 }

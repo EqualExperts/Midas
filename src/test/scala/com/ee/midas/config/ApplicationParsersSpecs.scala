@@ -173,7 +173,7 @@ class ApplicationParsersSpecs extends Specification {
         val aNode = parseAll(node, input).get
 
         //Then
-        aNode mustEqual Node(nodeName, InetAddress.getByName(localhost), ChangeSet(cs))
+        aNode mustEqual (new Node(nodeName, InetAddress.getByName(localhost), ChangeSet(cs)))
       }
       
       "yet another valid node configuration" in {
@@ -194,7 +194,7 @@ class ApplicationParsersSpecs extends Specification {
         val aNode = parseAll(node, input).get
 
         //Then
-        aNode mustEqual Node(nodeName, InetAddress.getByName(localhost), ChangeSet(cs))
+        aNode mustEqual new Node(nodeName, InetAddress.getByName(localhost), ChangeSet(cs))
       }
     }
   }
@@ -220,11 +220,13 @@ class ApplicationParsersSpecs extends Specification {
         val ignoreConfig: URL = null
 
         //When
-        val appNode = parseAll(app(ignoreConfig), input).get
+        val application = parseAll(app(ignoreConfig), input).get
 
         //Then
-        appNode mustEqual Application(ignoreConfig, appName, CONTRACTION,
-          List(Node(nodeName, InetAddress.getByName(localhost), ChangeSet(cs))))
+        val expected = new Application(ignoreConfig, appName, CONTRACTION,
+          Set(new Node(nodeName, InetAddress.getByName(localhost), ChangeSet(cs))))
+
+        application mustEqual expected
       }
 
      "valid application configuration with multiple nodes" in {
@@ -253,14 +255,16 @@ class ApplicationParsersSpecs extends Specification {
 
 
        //When
-       val appNode = parseAll(app(ignoreConfig), input).get
+       val application = parseAll(app(ignoreConfig), input).get
 
        //Then
-       appNode mustEqual Application(ignoreConfig, appName, EXPANSION,
-         List(
-           Node(node1, InetAddress.getByName(ip1), ChangeSet(cs)),
-           Node(node2, InetAddress.getByName(ip2), ChangeSet(cs))
+       val expected = new Application(ignoreConfig, appName, EXPANSION,
+         Set(
+           new Node(node1, InetAddress.getByName(ip1), ChangeSet(cs)),
+           new Node(node2, InetAddress.getByName(ip2), ChangeSet(cs))
          ))
+
+       application mustEqual expected
      }
    }
 
@@ -320,8 +324,8 @@ class ApplicationParsersSpecs extends Specification {
         val application = parse(configText, ignoreConfig)
 
         //Then
-        val nodeA = Node("nodeA", InetAddress.getByName(nodeIp), ChangeSet(nodeChangeSet))
-        application mustEqual Application(ignoreConfig, appName, EXPANSION, List(nodeA))
+        val nodeA = new Node("nodeA", InetAddress.getByName(nodeIp), ChangeSet(nodeChangeSet))
+        application mustEqual (new Application(ignoreConfig, appName, EXPANSION, Set(nodeA)))
       }
 
       "defined by URL" in {
@@ -330,8 +334,8 @@ class ApplicationParsersSpecs extends Specification {
         val application = parse(appConfig).get
 
         //Then
-        val nodeA = Node("nodeA", InetAddress.getByName(nodeIp), ChangeSet(nodeChangeSet))
-        application mustEqual Application(appConfig, appName, EXPANSION, List(nodeA))
+        val nodeA = new Node("nodeA", InetAddress.getByName(nodeIp), ChangeSet(nodeChangeSet))
+        application mustEqual (new Application(appConfig, appName, EXPANSION, Set(nodeA)))
       }
     }
   }
@@ -341,7 +345,7 @@ class ApplicationParsersSpecs extends Specification {
     val nodeName = "nodeA"
     val nodeIp = "127.0.0.1"
     val cs = 1
-    val nodeA = Node(nodeName, InetAddress.getByName(nodeIp), ChangeSet(cs))
+    val nodeA = new Node(nodeName, InetAddress.getByName(nodeIp), ChangeSet(cs))
 
     "configuration containing single line comments" in {
       //Given
@@ -363,7 +367,7 @@ class ApplicationParsersSpecs extends Specification {
       val application = parseAll(app(ignoreConfig), input).get
 
       //Then
-      application mustEqual Application(ignoreConfig, appName, EXPANSION, List(nodeA))
+      application mustEqual (new Application(ignoreConfig, appName, EXPANSION, Set(nodeA)))
     }
 
     "configuration containing multi line comments" in {
@@ -390,7 +394,7 @@ class ApplicationParsersSpecs extends Specification {
       val application = parseAll(app(ignoreConfig), input).get
 
       //Then
-      application mustEqual Application(ignoreConfig, appName, EXPANSION, List(nodeA))
+      application mustEqual (new Application(ignoreConfig, appName, EXPANSION, Set(nodeA)))
     }
   }
 

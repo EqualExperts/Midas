@@ -23,10 +23,11 @@ class ApplicationSpecs extends Specification {
     val ip2 = "127.0.0.0"
     val (node2Name, node2Ip, changeSet2) = ("node2", InetAddress.getByName(ip2), 2)
 
-    val node1 = Node(node1Name, node1Ip, ChangeSet(changeSet1))
-    val node2 = Node(node2Name, node2Ip, ChangeSet(changeSet2))
-    val nodes = List(node1, node2)
-    val configDir: URL = new File("src/test/scala/com/ee/midas/myDeltas/myApp").toURI.toURL
+    val node1 = new Node(node1Name, node1Ip, ChangeSet(changeSet1))
+    val node2 = new Node(node2Name, node2Ip, ChangeSet(changeSet2))
+    val nodes = Set(node1, node2)
+//    val configDir: URL = new File("src/test/scala/com/ee/midas/myDeltas/myApp").toURI.toURL
+    val configDir: URL = null
     val deltaFile = new File("src/test/scala/com/ee/midas/myDeltas/myApp/001-ChangeSet/expansion/01_add.delta")
     deltaFile.createNewFile()
     val expansionDelta = new PrintWriter(deltaFile)
@@ -36,7 +37,7 @@ class ApplicationSpecs extends Specification {
     expansionDelta.flush()
     expansionDelta.close()
     deltaFile.deleteOnExit()
-    val application = Application(configDir, appName, TransformType.EXPANSION, nodes)
+    val application = new Application(configDir, appName, TransformType.EXPANSION, nodes)
   }
 
   "Application" should {
@@ -54,22 +55,6 @@ class ApplicationSpecs extends Specification {
       application.getNode(ip) mustEqual None
     }
 
-    "Get Change Set by IP" in new Setup {
-      //When
-      val actualChangeSet = application.changeSet(node1Ip)
-
-      //Then
-      actualChangeSet mustEqual Some(ChangeSet(changeSet1))
-    }
-
-    "Give no result if Change Set for the IP is not present" in new Setup {
-      //Given
-      val ip = InetAddress.getByName("127.0.0.10")
-
-      //When-Then
-      application.changeSet(ip) mustEqual None
-    }
-
     "Affirm Node's presence in the application by IP" in new Setup {
       //When-Then
       application.hasNode(node2Ip) mustEqual true
@@ -81,51 +66,6 @@ class ApplicationSpecs extends Specification {
 
       //When-Then
       application.hasNode(ip) mustEqual false
-    }
-
-    "Do not transform Request document for invalid IP" in new Setup {
-       //Given
-       val ip = InetAddress.getByName("127.0.0.6")
-       val document = new BasicBSONObject("name", "midas")
-
-       //When
-       val transformedDocument: BSONObject = application.transformRequest(document, "validCollection", ip)
-
-       //Then
-       transformedDocument mustEqual document
-    }
-
-   /* "transform Request document for valid IP" in new Setup {
-      //Given
-      val document = new BasicBSONObject("name", "midas")
-
-      //When
-      val transformedDocument: BSONObject = application.transformRequest(document, "collectionName", node1Ip)
-
-      //Then
-      transformedDocument.get("_expansionVersion") mustEqual 1d
-    }
-
-     "transform Response document for valid Collection Name" in new Setup {
-      //Given
-      val document = new BasicBSONObject("name", "midas")
-
-      //When
-      val transformedDocument: BSONObject = application.transformResponse(document, "collectionName")
-
-      //Then
-      transformedDocument.get("newField") mustEqual "newValue"
-    }
-*/
-    "Do not transform Response document for invalid Collection Name" in new Setup {
-      //Given
-      val document = new BasicBSONObject("name", "midas")
-
-      //When
-      val transformedDocument: BSONObject = application.transformResponse(document, "invalidCollection")
-
-      //Then
-      transformedDocument mustEqual document
     }
   }
 }

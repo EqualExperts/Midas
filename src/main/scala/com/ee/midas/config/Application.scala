@@ -3,24 +3,18 @@ package com.ee.midas.config
 import java.net.{Socket, InetAddress, URL}
 import com.ee.midas.transform.{Transformer, TransformType}
 import com.ee.midas.utils.{DirectoryWatcher, Loggable}
-import com.ee.midas.{CmdConfig, DeltasProcessor}
+import com.ee.midas.DeltasProcessor
 import java.nio.file.StandardWatchEventKinds._
 import scala.{None, Some}
-import org.bson.BSONObject
 import com.ee.midas.dsl.Translator
 import com.ee.midas.dsl.interpreter.Reader
 import com.ee.midas.dsl.generator.ScalaGenerator
-import scala.util.{Try}
-import com.ee.midas.pipes.{SocketConnector, DuplexPipe}
-import com.ee.midas.interceptor.{ResponseInterceptor, RequestInterceptor, MessageTracker}
-import SocketConnector._
 
-case class Application(configDir: URL, private var name: String, private var transformType: TransformType, private var nodes: List[Node])
+class Application(val configDir: URL, private var name: String, private var transformType: TransformType, private var nodes: Set[Node])
   extends Loggable with DeltasProcessor with ApplicationParsers {
   private val translator = new Translator[Transformer](new Reader, new ScalaGenerator)
   private var transformer = processDeltaFiles
-  private val watcher = setupDirectoryWatcher
-  private val connections = scala.collection.mutable.Map[InetAddress, List[DuplexPipe]]()
+  private lazy val watcher = setupDirectoryWatcher
 
   private def setupDirectoryWatcher: DirectoryWatcher = {
     val waitBeforeProcessing = 100
@@ -34,23 +28,41 @@ case class Application(configDir: URL, private var name: String, private var tra
       }
 
       parse(configDir) match {
-        case scala.util.Success(updatedApp) => {
-          //update self
-          name = updatedApp.name
-          transformType = updatedApp.transformType
-          if(updatedApp.transformer != Transformer.empty) {
-            transformer = updatedApp.transformer
-          }
-          nodes = updatedApp.nodes
-          updatedApp.stop
-          cleanStaleConnections
-          logError(s"Updated Configuration for ${name}")
-        }
+        case scala.util.Success(updatedApp) => update(updatedApp)
         case scala.util.Failure(t) =>
           logError(s"Failed to parse Application ${name} because ${t.getMessage}")
-          logError(s" Will Continue To Use Old Application Config")
+          logError(s"Will Continue To Use Old Application Config")
       }
     })
+  }
+
+  private def update(newApplication: Application) = {
+    name = newApplication.name
+    transformType = newApplication.transformType
+    if(newApplication.transformer != Transformer.empty) {
+      transformer = newApplication.transformer
+    }
+    //todo: work this out same as how configuration works out for nodes
+    val newNodes = newApplication.nodes
+    nodes.filter(n => newNodes.contains(n)).foreach { node =>
+      newNodes.find(nn => node == nn) match {
+        case Some(newNode) => node.updateFrom(newNode)
+        case None =>
+      }
+    }
+
+    val common = nodes intersect newNodes
+    val toBeAdded = newNodes diff common
+    logInfo(s"Nodes to be Added $toBeAdded")
+    nodes ++= toBeAdded
+
+    val toBeRemoved = nodes diff common
+    logInfo(s"Stopping Nodes to be Removed $toBeRemoved")
+    toBeRemoved.foreach(node => node.stop)
+    //todo: do something to remove old nodes here
+
+    logInfo(s"Total Nodes $nodes")
+    logError(s"Updated Nodes for Application ${name}")
   }
 
   private def processDeltaFiles: Transformer = {
@@ -58,86 +70,33 @@ case class Application(configDir: URL, private var name: String, private var tra
       s"Processing Delta Files for Application ${name} in mode ${transformType} from Dir ${configDir}"
     println(processingDeltaFilesMsg)
     logInfo(processingDeltaFilesMsg)
-    try {
-      processDeltas(translator, transformType, configDir)
-    } catch {
-      case e: Throwable => Transformer.empty
+    processDeltas(translator, transformType, configDir) match {
+      case scala.util.Success(transformer) =>
+        transformer
+
+      case scala.util.Failure(t) =>
+        logError(s"Failed to Process Delta Files for Application ${name} in mode ${transformType} from Dir ${configDir}")
+        logError(s"Error => ${t.getMessage}")
+        Transformer.empty
     }
   }
 
-  private def cleanStaleConnections = {
-    val connectionsToTerminate = connections.filter { case (ip, _) => !hasNode(ip) }
-    stopActivePipes(connectionsToTerminate)
-    connectionsToTerminate foreach { case (ip, _) => connections.remove(ip) }
-  }
-  
-  private def stopActivePipes(connections: scala.collection.mutable.Map[InetAddress, List[DuplexPipe]]) = {
-    for {
-      (ip, pipes) <- connections
-      pipe <- pipes if pipe.isActive
-    } yield pipe.forceStop
-  }
+  def hasNode(ip: InetAddress): Boolean = nodes.exists(node => node.ip == ip)
 
-  def hasNode(ip: InetAddress): Boolean =
-    nodes.exists(node => node.ip == ip)
+  def getNode(ip: InetAddress): Option[Node] = nodes.find(node => node.ip == ip)
 
-  def getNode(ip: InetAddress): Option[Node] =
-    nodes.find(node => node.ip == ip)
-
-  def changeSet(ip: InetAddress): Option[ChangeSet] = getNode(ip) match {
-    case None => None
-    case Some(Node(_, _, cs)) => Some(cs)
-  }
-
-  def transformRequest(document: BSONObject, fullCollectionName: String, ip: InetAddress): BSONObject =
-    changeSet(ip) match {
-      case Some(ChangeSet(cs)) => transformer.transformRequest(document, cs, fullCollectionName)
-      case None => document
-    }
-
-  def transformResponse(document: BSONObject, fullCollectionName: String): BSONObject =
-    transformer.transformResponse(document, fullCollectionName)
-  
   def start = watcher.start
-  
+
   def stop = {
     watcher.stopWatching
-    stopActivePipes(connections)
+    nodes foreach { node => node.stop }
   }
 
-  def startDuplexPipe(appSocket: Socket, cmdConfig: CmdConfig): Unit = {
-    val mongoHost = cmdConfig.mongoHost
-    val mongoPort = cmdConfig.mongoPort
+  def acceptAuthorized(appSocket: Socket, mongoHost: String, mongoPort: Int): Unit = {
     val appIp = appSocket.getInetAddress
-    setupDuplexPipe(appSocket, mongoHost, mongoPort) match {
-      case scala.util.Success(duplexPipe) =>
-        if(connections.isDefinedAt(appIp)) {
-          val pipes = connections(appIp)
-          connections(appIp) = duplexPipe :: pipes
-        } else {
-          connections(appIp) = duplexPipe :: Nil
-        }
-        duplexPipe.start
-        val pipeReadyMsg = s"Setup Pipes for New Connection, ready to receive traffic on $duplexPipe"
-        logInfo(pipeReadyMsg)
-        println(pipeReadyMsg)
-      case scala.util.Failure(t) =>
-        val errMsg = s"MongoDB on ${mongoHost}:${mongoPort} is not available!  Terminating connection from ${appIp}, Please retry later."
-        println(errMsg)
-        logError(errMsg)
-        appSocket.close()
-    }
-  }
-
-  private def setupDuplexPipe(appSocket: Socket, mongoHost: String, mongoPort: Int) = {
-    //todo: remove inactive duplex pipes here  (proactive cleaning)
-    val appInetAddress = appSocket.getInetAddress
-    Try {
-      val mongoSocket = new Socket(mongoHost, mongoPort)
-      val tracker = new MessageTracker()
-      val requestInterceptor = new RequestInterceptor(tracker, this, appInetAddress)
-      val responseInterceptor = new ResponseInterceptor(tracker, this, appInetAddress)
-      appSocket <|==|> (mongoSocket, requestInterceptor, responseInterceptor)
+    getNode(appIp) match {
+      case Some(node) => node.startDuplexPipe(appSocket, mongoHost, mongoPort, transformer)
+      case None => logError(s"Node with IP Address $appIp does not exist for Application: $name in Config Dir $configDir")
     }
   }
 

@@ -10,6 +10,7 @@ import com.mongodb.BasicDBObject
 import org.bson.BasicBSONEncoder
 import com.ee.midas.config.Application
 import java.net.InetAddress
+import com.ee.midas.transform.Transformer
 
 @RunWith(classOf[JUnitRunner])
 class ResponseInterceptorSpecs extends Specification with Mockito {
@@ -44,14 +45,14 @@ class ResponseInterceptorSpecs extends Specification with Mockito {
         header.payloadSize returns payloadBytes.length
         tracker.fullCollectionName(responseID) returns Option(collectionName)
 
-        mockApplication.transformResponse(payloadData, collectionName) returns transformedPayload
+        transformer.transformResponse(payloadData, collectionName) returns transformedPayload
 
         //when:
         val readData = resInterceptor.read(src, header)
 
         //then
         readData mustEqual (header.bytes ++ encoder.encode(transformedPayload))
-        there was one(mockApplication).transformResponse(payloadData, collectionName)
+        there was one(transformer).transformResponse(payloadData, collectionName)
       }
 
       "write response to target" in new setup {
@@ -111,10 +112,10 @@ class ResponseInterceptorSpecs extends Specification with Mockito {
     header.requestID returns requestID
 
     header.bytes returns bytes
-    val mockApplication = mock[Application]
+    val transformer = mock[Transformer]
     val ignoreIp : InetAddress = null
 
-    val resInterceptor = new ResponseInterceptor(tracker, mockApplication, ignoreIp)
+    val resInterceptor = new ResponseInterceptor(tracker, transformer)
     val payloadData = new BasicDBObject("value", 1)
     val encoder = new BasicBSONEncoder()
     val payloadBytes = encoder.encode(payloadData)

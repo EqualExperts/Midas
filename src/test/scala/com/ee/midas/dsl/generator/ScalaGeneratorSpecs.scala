@@ -5,7 +5,7 @@ import org.specs2.runner.JUnitRunner
 import org.specs2.mutable.Specification
 import com.ee.midas.transform.{RequestTypes, ResponseTypes, TransformType, Transformer}
 import com.ee.midas.dsl.interpreter.Reader
-import java.io.{PrintWriter, File}
+import java.io.{StringWriter, FileWriter, PrintWriter, File}
 import java.util.ArrayList
 import org.bson.BSONObject
 import com.mongodb.util.JSON
@@ -17,20 +17,26 @@ import org.specs2.specification.Scope
 @RunWith(classOf[JUnitRunner])
 class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestTypes {
 
+  val NEW_LINE = System.getProperty("line.separator")
+
   trait Setup extends Scope {
     val reader = new Reader
     val generator = new ScalaGenerator
   }
 
+  sequential
   "Scala Generator" should {
        "Generates Scala code for Add operation" in new Setup {
           //Given
           val deltaFile = new File("src/test/scala/com/ee/midas/myDeltas/myApp/001-ChangeSet/expansion/add.delta")
           deltaFile.createNewFile()
-          val expansionDelta = new PrintWriter(deltaFile)
+          val expansionDelta = new FileWriter(deltaFile)
 
-          expansionDelta.write("use someDatabase\n")
-          expansionDelta.write("db.collection.add(\'{\"newField\": \"newValue\"}\')\n")
+
+          expansionDelta.write("use someDatabase")
+          expansionDelta.write(NEW_LINE)
+          expansionDelta.write(s"""db.collection.add('{"newField": "newValue"}')""")
+          expansionDelta.write(NEW_LINE)
           expansionDelta.flush()
           expansionDelta.close()
           val listDeltas = new ArrayList[File]()
@@ -39,11 +45,11 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
           val tree = reader.read(listDeltas)
 
 
-         //when
-         val result = generator.generate(TransformType.EXPANSION, tree)
+          //when
+          val result = generator.generate(TransformType.EXPANSION, tree)
 
-         //then
-         var responseExpansions: Map[String, VersionedSnippets] =
+          //then
+          var responseExpansions: Map[String, VersionedSnippets] =
              Map("someDatabase.collection" ->
            TreeMap(1.0d ->
              ((document: BSONObject) => {
@@ -157,14 +163,16 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
         result.requestContractions == requestContractions
       }
 
-      "Generates Scala code for split operation" in new Setup {
+      "Generate Scala code for split operation" in new Setup {
         //Given
         val deltaFile = new File("src/test/scala/com/ee/midas/myDeltas/myApp/001-ChangeSet/expansion/split.delta")
         deltaFile.createNewFile()
         val expansionDelta = new PrintWriter(deltaFile)
 
-        expansionDelta.write("use someDatabase\n")
-        expansionDelta.write("db.collectionName.split(\"sourceField\", \"some regex\", \"{ \\\"token1\\\": \\\"\\$1\\\", \\\"token2\\\": \\\"\\$2\\\"}\")")
+        expansionDelta.write("use someDatabase")
+        expansionDelta.write(NEW_LINE)
+        expansionDelta.write("""db.collectionName.split("sourceField", "some regex", "{ 'token1' : '\$1', token2: '\$2'}")""")
+        expansionDelta.write(NEW_LINE)
         expansionDelta.flush()
         expansionDelta.close()
         val listDeltas = new ArrayList[File]()
@@ -180,7 +188,7 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
         var responseExpansions: Map[String, VersionedSnippets] =
         Map("someDatabase.collectionName" ->
         TreeMap(1.0d ->
-          ((document: BSONObject) => document <~> ("sourceField", Pattern.compile("someregex"), "{\"token1\": \"$1\", \"token2\": \"$2\" }"))
+          ((document: BSONObject) => document <~> ("sourceField", Pattern.compile("some regex"), "{\"token1\": \"$1\", \"token2\": \"$2\" }"))
         ))
 
         var responseContractions: Map[String, VersionedSnippets] =
@@ -198,14 +206,15 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
         result.requestContractions == requestContractions
       }
 
-    "Generates Scala code for Merge operation" in new Setup {
+    "Generate Scala code for Merge operation" in new Setup {
       //Given
       val deltaFile = new File("src/test/scala/com/ee/midas/myDeltas/myApp/001-ChangeSet/expansion/merge.delta")
       deltaFile.createNewFile()
       val expansionDelta = new PrintWriter(deltaFile)
 
-      expansionDelta.write("use someDatabase\n")
-      expansionDelta.write("db.collectionName.merge(\"[\\\"field1\\\",\\\"field2\\\"]\", \"separator\", \"targetField\")")
+      expansionDelta.write("use someDatabase")
+      expansionDelta.write(NEW_LINE)
+      expansionDelta.write("db.collectionName.merge('[\"field1\",\"field2\"]', \"separator\", \"targetField\")")
       expansionDelta.flush()
       expansionDelta.close()
       val listDeltas = new ArrayList[File]()
@@ -244,12 +253,13 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
 
     "Generates empty Scala expansion response map for expansion delta in contraction mode" in new Setup {
       //Given
-      val deltaFile = new File("src/test/scala/com/ee/midas/myDeltas/myApp/001-ChangeSet/expansion/add.delta")
+      val deltaFile = new File("src/test/scala/com/ee/midas/myDeltas/myApp/001-ChangeSet/expansion/add2.delta")
       deltaFile.createNewFile()
       val expansionDelta = new PrintWriter(deltaFile)
 
-      expansionDelta.write("use someDatabase\n")
-      expansionDelta.write("db.collectionName.add(\"{\\\"field1\\\": \\\"value1\\\",\\\"field2\\\": \\\"value2\\\"}\")")
+      expansionDelta.write("use someDatabase")
+      expansionDelta.write(NEW_LINE)
+      expansionDelta.write("db.collectionName.add('{\"field1\": \"value1\",\"field2\": \"value2\"}')")
       expansionDelta.flush()
       expansionDelta.close()
       val listDeltas = new ArrayList[File]()
@@ -282,12 +292,13 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
 
     "Generates empty Scala maps for contraction delta in expansion mode" in new Setup {
       //Given
-      val deltaFile = new File("src/test/scala/com/ee/midas/myDeltas/myApp/001-ChangeSet/contraction/remove.delta")
+      val deltaFile = new File("src/test/scala/com/ee/midas/myDeltas/myApp/001-ChangeSet/contraction/remove2.delta")
       deltaFile.createNewFile()
       val expansionDelta = new PrintWriter(deltaFile)
 
-      expansionDelta.write("use someDatabase\n")
-      expansionDelta.write("db.collectionName.remove(\"[\\\"field1\\\",\\\"field2\\\"]\")")
+      expansionDelta.write("use someDatabase")
+      expansionDelta.write(NEW_LINE)
+      expansionDelta.write("db.collectionName.remove('[\"field1\",\"field2\"]')")
       expansionDelta.flush()
       expansionDelta.close()
       val listDeltas = new ArrayList[File]()

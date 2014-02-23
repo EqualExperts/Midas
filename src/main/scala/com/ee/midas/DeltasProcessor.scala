@@ -8,9 +8,10 @@ import java.nio.file.Paths
 import java.util.regex.Pattern
 import java.io.File
 import scala.collection.JavaConverters._
+import scala.util.Try
 
 trait DeltasProcessor extends Loggable {
-  def processDeltas(translator: Translator[Transformer], transformType: TransformType, deltasDir: URL): Transformer = {
+  def processDeltas(translator: Translator[Transformer], transformType: TransformType, deltasDir: URL): Try[Transformer] = Try {
     logDebug(s"Translating Delta Files...in ${deltasDir} for $transformType TransformType")
     val startDir = Paths.get(deltasDir.toURI)
     val deltaFiles = new FileVisitor (startDir, Pattern.compile(".*\\.delta$")).visit.map(new File(_))

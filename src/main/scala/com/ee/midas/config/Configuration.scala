@@ -1,6 +1,6 @@
 package com.ee.midas.config
 
-import java.net.{URI, InetAddress, URL}
+import java.net.{Socket, URI, InetAddress, URL}
 import com.ee.midas.utils.Loggable
 import java.io.File
 
@@ -19,13 +19,9 @@ final case class Configuration(deltasDir: URL, private val apps: List[String]) e
       (uri, app)
     }
 
-  def applications: List[Application] = parsedApps.map { case(k, v) => v }.toList
+  def applications: List[Application] = parsedApps.map { case (_, application) => application }.toList
 
-  def hasApplication(ip: InetAddress): Boolean =
-    applications.exists(app => app.hasNode(ip))
-
-  def getApplication(ip: InetAddress): Option[Application] =
-    applications.find(app => app.hasNode(ip))
+  def getApplication(ip: InetAddress): Option[Application] = applications.find(app => app.hasNode(ip))
 
   def update(application: Application): Unit = {
     val appConfigDir = application.configDir.toURI
@@ -52,9 +48,27 @@ final case class Configuration(deltasDir: URL, private val apps: List[String]) e
     logInfo(s"Total Applications $parsedApps")
   }
 
-  def stopApplications = parsedApps foreach { case(_, v) => v.stop }
+  def stop = parsedApps foreach { case (_, application) => application.stop }
 
-  def startApplications = parsedApps foreach { case(_, v) => v.start }
+  def start = parsedApps foreach { case (_, application) => application.start }
+
+  def processNewConnection(appSocket: Socket, mongoHost: String, mongoPort: Int) = {
+    val appInetAddress = appSocket.getInetAddress
+    val newConMsg = s"New connection received from Remote IP: ${appInetAddress} Remote Port: ${appSocket.getPort}, Local Port: ${appSocket.getLocalPort}"
+    logInfo(newConMsg)
+    println(newConMsg)
+
+    getApplication(appInetAddress) match {
+      case Some(application) => application.acceptAuthorized(appSocket, mongoHost, mongoPort)
+      case None => rejectUnauthorized(appSocket)
+    }
+  }
+
+  private def rejectUnauthorized(appSocket: Socket) = {
+    logError(s"Client on ${appSocket.getInetAddress} Not Authorized to connect to Midas!")
+    appSocket.close()
+    logError(s"Unauthorized Client Connection Terminated.")
+  }
 
   override def toString = s"""Configuration(Deltas Dir = $deltasDir, Applications = ${applications mkString "," }"""
 }

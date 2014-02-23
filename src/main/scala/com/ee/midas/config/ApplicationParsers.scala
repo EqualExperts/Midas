@@ -47,9 +47,9 @@ trait ApplicationParsers extends JavaTokenParsers {
   //Eat Java-Style comments like whitespace
   protected override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
-  def app(configDir: URL): Parser[Application] = ident ~ "{" ~ mode ~  rep1(node) ~ "}" ^^ { case name~"{"~mode~nodes~"}" => Application(configDir, name, mode, nodes) }
+  def app(configDir: URL): Parser[Application] = ident ~ "{" ~ mode ~  rep1(node) ~ "}" ^^ { case name~"{"~mode~nodes~"}" => new Application(configDir, name, mode, nodes.toSet) }
 
-  def node: Parser[Node] = ident ~ "{" ~ ip ~ changeSet ~ "}" ^^ { case name~"{"~addr~cs~"}" => Node(name, addr, cs) }
+  def node: Parser[Node] = ident ~ "{" ~ ip ~ changeSet ~ "}" ^^ { case name~"{"~addr~cs~"}" => new Node(name, addr, cs) }
 
   def ip: Parser[InetAddress] = "ip" ~ "=" ~> (ipv4 | ipv6Full) ^^ (InetAddress.getByName(_))
 

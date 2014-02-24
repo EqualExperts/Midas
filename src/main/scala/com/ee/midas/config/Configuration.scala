@@ -6,9 +6,9 @@ import java.io.File
 
 final case class Configuration(deltasDir: URL, private val apps: List[String]) extends Loggable with ApplicationParsers {
 
-  private val parsedApps = scala.collection.mutable.Map(parseApplications: _*)
+  private val parsedApps = scala.collection.mutable.Map[URI, (Application, ApplicationWatcher)](parseApplications: _*)
 
-  private def parseApplications: List[(URI, Application)] =
+  private def parseApplications: List[(URI, (Application, ApplicationWatcher))] =
     apps map { app =>
       val absoluteAppConfigDir: URL = new File(deltasDir.getPath + app).toURI.toURL
       parse(absoluteAppConfigDir) match {
@@ -16,16 +16,17 @@ final case class Configuration(deltasDir: URL, private val apps: List[String]) e
         case scala.util.Failure(t)   => logError(s"Failed to parse Application ${app} because ${t.getMessage}")
       }
     } collect { case (uri: URI, app: Application) =>
-      (uri, app)
+      val appWatcher = new ApplicationWatcher(app)
+      uri -> (app, appWatcher)
     }
 
-  def applications: List[Application] = parsedApps.map { case (_, application) => application }.toList
+  def applications: List[Application] = parsedApps.values.map { case (app, _) => app }.toList
 
   def getApplication(ip: InetAddress): Option[Application] = applications.find(app => app.hasNode(ip))
 
   def update(application: Application): Unit = {
     val appConfigDir = application.configDir.toURI
-    parsedApps(appConfigDir) = application
+    parsedApps(appConfigDir) = (application, new ApplicationWatcher(application))
   }
 
   def update(newConfiguration: Configuration): Unit = {
@@ -39,8 +40,9 @@ final case class Configuration(deltasDir: URL, private val apps: List[String]) e
 
     val newApps = newConfiguration.parsedApps.filter { case (k, v) => toBeAdded.contains(k) }
     toBeRemoved.foreach { k =>
-      val app = parsedApps(k)
+      val (app, appWatcher) = parsedApps(k)
       app.stop
+      appWatcher.stopWatching
       val removed = parsedApps.remove(k)
       logInfo(s"Removed $removed")
     }
@@ -48,9 +50,9 @@ final case class Configuration(deltasDir: URL, private val apps: List[String]) e
     logInfo(s"Total Applications $parsedApps")
   }
 
-  def stop = parsedApps foreach { case (_, application) => application.stop }
+  def stop = parsedApps.values.foreach { case (_, watcher) => watcher.stopWatching }
 
-  def start = parsedApps foreach { case (_, application) => application.start }
+  def start = parsedApps.values.foreach { case (_, watcher) => watcher.startWatching }
 
   def processNewConnection(appSocket: Socket, mongoSocket: Socket) = {
     val appInetAddress = appSocket.getInetAddress

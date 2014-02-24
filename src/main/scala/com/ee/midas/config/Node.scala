@@ -8,11 +8,11 @@ import com.ee.midas.utils.Loggable
 import com.ee.midas.transform.Transformer
 import scala.collection.mutable.Set
 
-final class Node(private var name: String, val ip: InetAddress, private var changeSet: ChangeSet) extends Loggable {
+class Node(private var name: String, val ip: InetAddress, private var changeSet: ChangeSet) extends Loggable {
 
-  private val pipes: Set[DuplexPipe] = Set()
+  private val pipes = Set[DuplexPipe]()
 
-  def startDuplexPipe(appSocket: Socket, mongoSocket: Socket, transformer: Transformer) = {
+  final def startDuplexPipe(appSocket: Socket, mongoSocket: Socket, transformer: Transformer) = {
     clean
     val tracker = new MessageTracker()
     val requestInterceptor = new RequestInterceptor(tracker, transformer, changeSet)

@@ -1,12 +1,10 @@
 package com.ee.midas.config
 
-import org.specs2.mutable.Specification
 import java.net.{Socket, InetAddress}
-import com.ee.midas.utils.Accumulator
 import org.specs2.mock.Mockito
-import com.ee.midas.pipes.{PipesMonitorComponent, DuplexPipe}
+import com.ee.midas.pipes.DuplexPipe
 import com.ee.midas.transform.Transformer
-import java.io.{OutputStream, InputStream, ByteArrayInputStream}
+import java.io.{OutputStream, InputStream}
 import org.junit.runner.RunWith
 import org.mockito.runners.MockitoJUnitRunner
 import org.specs2.matcher.JUnitMustMatchers
@@ -24,7 +22,7 @@ import org.junit.Test
  * is not compatible with JUnit style test cases written here.
  */
 @RunWith(classOf[MockitoJUnitRunner])
-class DuplexPipeSpecs extends JUnitMustMatchers with Mockito {
+class NodeSpecs extends JUnitMustMatchers with Mockito {
 
     val name = "test-node"
     val ipAddress = InetAddress.getByName("127.0.0.3")

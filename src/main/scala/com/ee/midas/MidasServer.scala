@@ -1,6 +1,6 @@
 package com.ee.midas
 
-import com.ee.midas.config.{ConfigurationParser, Configuration}
+import com.ee.midas.config.{ConfigurationWatcher, ConfigurationParser, Configuration}
 import java.net.{Socket, BindException, InetAddress, ServerSocket}
 import com.ee.midas.utils.{Loggable}
 import java.io.File
@@ -9,15 +9,13 @@ import java.util.concurrent.TimeUnit
 import org.apache.log4j.helpers.FileWatcher
 import scala.util.Try
 
-class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParser with FileWatcher {
+class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParser {
 
-  val maxClientConnections = 50
+  val deltasDir = new File(cmdConfig.baseDeltasDir.getPath).toURI.toURL
   val configuration: Configuration = parseConfiguration(cmdConfig)
   setupShutdownHook
 
-
-  private def parseConfiguration(cmdConfig: CmdConfig): Configuration = {
-    val deltasDir = new File(cmdConfig.baseDeltasDir.getPath).toURI.toURL
+  private def parseConfiguration(cmdConfig: CmdConfig): Configuration =
     parse(deltasDir, Configuration.filename) match {
       case scala.util.Failure(t) => throw new IllegalArgumentException(t)
       case scala.util.Success(configuration) => {
@@ -25,27 +23,12 @@ class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParse
         configuration
       }
     }
-  }
-
 
   private def waitForNewConnectionOn(serverSocket: ServerSocket) = {
     val listeningMsg = s"Midas Ready! Listening on IP: ${serverSocket.getInetAddress}, Port ${serverSocket.getLocalPort()} for new connections..."
     logInfo(listeningMsg)
     println(listeningMsg)
     serverSocket.accept()
-  }
-
-
-  private def setupConfigurationWatcher(cmdConfig: CmdConfig, configuration: Configuration) = {
-    val midasConfigFile = new File(cmdConfig.baseDeltasDir.getPath + File.separator + Configuration.filename)
-    watch(midasConfigFile, 2, TimeUnit.SECONDS) {
-      val deltasDir = new File(cmdConfig.baseDeltasDir.getPath).toURI.toURL
-      parse(deltasDir, Configuration.filename) match {
-        case scala.util.Failure(t) => throw new IllegalArgumentException(t)
-          //todo: revisit this
-        case scala.util.Success(newConfiguration) => configuration.update(newConfiguration)
-      }
-    }
   }
 
   private def setupShutdownHook = sys.ShutdownHookThread {
@@ -64,10 +47,11 @@ class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParse
     }
 
   def start = {
+    val maxClientConnections = 50
     val startingMsg = s"Starting Midas on ${cmdConfig.midasHost}, port ${cmdConfig.midasPort}..."
     logInfo(startingMsg)
     println(startingMsg)
-    setupConfigurationWatcher(cmdConfig, configuration)
+    new ConfigurationWatcher(configuration, cmdConfig.baseDeltasDir)
     configuration.start
     try {
       val midasSocket = new ServerSocket(cmdConfig.midasPort, maxClientConnections, InetAddress.getByName(cmdConfig.midasHost))

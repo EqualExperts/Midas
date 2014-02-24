@@ -4,7 +4,7 @@ import java.io.File
 import scala.concurrent.duration._
 
 trait FileWatcher {
-  def watch(input: File, watchEvery: Int, watchUnit: TimeUnit)(actionOnModify: => Any): Unit = {
+  def watch(input: File, watchEvery: Int, watchUnit: TimeUnit)(actionOnModify: => Any): FileWatchdog = {
     val fileName = input.getAbsolutePath
     val watcher = new FileWatchdog(fileName: String) {
       delay = watchUnit.toMillis(watchEvery)
@@ -19,5 +19,6 @@ trait FileWatcher {
       }
     }
     watcher.start()
+    watcher
   }
 }

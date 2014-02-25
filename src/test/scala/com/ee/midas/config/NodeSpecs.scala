@@ -23,76 +23,76 @@ import java.util.concurrent.TimeUnit
 @RunWith(classOf[MockitoJUnitRunner])
 class NodeSpecs extends JUnitMustMatchers with Mockito {
 
+  val name = "test-node"
+  val ipAddress = InetAddress.getByName("127.0.0.3")
+  val changeSet = ChangeSet()
+  val host = "localhost"
+
+  @Test
+  def nodeStartInactive() {
+    //Given
     val name = "test-node"
     val ipAddress = InetAddress.getByName("127.0.0.3")
     val changeSet = ChangeSet()
-    val host = "localhost"
 
-    @Test
-    def nodeStartInactive() {
-      //Given
-      val name = "test-node"
-      val ipAddress = InetAddress.getByName("127.0.0.3")
-      val changeSet = ChangeSet()
+    //When
+    val node = new Node(name, ipAddress, changeSet)
 
-      //When
-      val node = new Node(name, ipAddress, changeSet)
+    //Then
+    node.isActive mustEqual false
+  }
 
-      //Then
-      node.isActive mustEqual false
-    }
+  @Test
+  def nodeMustBeIdentifiedByIP() {
+    //Given (2 nodes with same IP, but different name and changeSet)
+    val node1 = new Node(name = "node1", ipAddress, ChangeSet(1))
+    val node2 = new Node(name = "node2", ipAddress, ChangeSet(2))
 
-     @Test
-     def nodeMustBeIdentifiedByIP() {
-       //Given (2 nodes with same IP, but different name and changeSet)
-       val node1 = new Node(name = "node1", ipAddress, ChangeSet(1))
-       val node2 = new Node(name = "node2", ipAddress, ChangeSet(2))
+    //Then: both nodes are same
+    node1 == node2
+  }
 
-       //Then: both nodes are same
-       node1 == node2
-     }
+  @Test
+  def nodeBecomesActiveWhenADuplexPipeIsStarted() {
+    //given
+    val node = new Node(name, ipAddress, changeSet)
+    val clientSocket = new Socket(host, ServerSetup.appServerPort)
+    val mongoSocket = new Socket(host, ServerSetup.mongoServerPort)
+    val mockTransformer = mock[Transformer]
 
-    @Test
-    def nodeBecomesActiveWhenADuplexPipeIsStarted() {
-      //given
-      val node = new Node(name, ipAddress, changeSet)
-      val clientSocket = new Socket(host, ServerSetup.appServerPort)
-      val mongoSocket = new Socket(host, ServerSetup.mongoServerPort)
-      val mockTransformer = mock[Transformer]
+    //when
+    node.startDuplexPipe(clientSocket, mongoSocket, mockTransformer)
+    waitForDuplexPipe(1, TimeUnit.SECONDS)
 
-      //when
-      node.startDuplexPipe(clientSocket, mongoSocket, mockTransformer)
-      waitForDuplexPipe(1, TimeUnit.SECONDS)
+    //then
+    node.isActive must beTrue
+  }
 
-      //then
-      node.isActive must beTrue
-    }
+  def waitForDuplexPipe(time: Long, unit: TimeUnit) = {
+    unit.sleep(time)
+  }
 
-    def waitForDuplexPipe(time: Long, unit: TimeUnit) = {
-        unit.sleep(time)
-    }
+  @Test
+  def nodeCleanDeadPipes() {
+    //given
+    val node = new Node(name, ipAddress, changeSet)
+    val clientSocket = new Socket(host, ServerSetup.appServerPort)
+    val mongoSocket = new Socket(host, ServerSetup.mongoServerPort)
+    val mockTransformer = mock[Transformer]
 
-    @Test
-    def nodeCleanDeadPipes() {
-      //given
-      val node = new Node(name, ipAddress, changeSet)
-      val clientSocket = new Socket(host, ServerSetup.appServerPort)
-      val mongoSocket = new Socket(host, ServerSetup.mongoServerPort)
-      val mockTransformer = mock[Transformer]
+    //and given
+    val duplexPipe = node.startDuplexPipe(clientSocket, mongoSocket, mockTransformer)
+    waitForDuplexPipe(1, TimeUnit.SECONDS)
 
-      //and given
-      val duplexPipe = node.startDuplexPipe(clientSocket, mongoSocket, mockTransformer)
-      waitForDuplexPipe(1, TimeUnit.SECONDS)
+    duplexPipe.forceStop
+    waitForDuplexPipe(1, TimeUnit.SECONDS)
 
-      duplexPipe.forceStop
-      waitForDuplexPipe(1, TimeUnit.SECONDS)
+    //when
+    node.clean
 
-      //when
-      node.clean
-
-      //then
-      node.isActive must beFalse
-    }
+    //then
+    node.isActive must beFalse
+  }
 
 }
 

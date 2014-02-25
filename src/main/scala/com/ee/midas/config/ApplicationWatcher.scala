@@ -30,4 +30,6 @@ with ApplicationParsers {
   def startWatching = watcher.start
 
   def stopWatching = watcher.stopWatching
+
+  def isActive = watcher.isActive
 }

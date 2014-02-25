@@ -12,6 +12,7 @@ class DirectoryWatcher(dirURL: String, events: Seq[WatchEvent.Kind[_]], waitBefo
   private val dirWatcherThread = new Thread(this, getClass.getSimpleName + "-Thread-" + dirURL)
   private val fileSystem = FileSystems.getDefault
   private val watcher = fileSystem.newWatchService()
+  private var isWatchServiceRunning = true
   private val os = System.getProperty("os.name")
 
   val dirWatchMsg = s"Dir to Watch = $dirURL, OS = ${os}"
@@ -32,13 +33,14 @@ class DirectoryWatcher(dirURL: String, events: Seq[WatchEvent.Kind[_]], waitBefo
     val stopWatchMsg = s"Stopping Watch on ${dirURL}"
     println(stopWatchMsg)
     logInfo(stopWatchMsg)
-    watcher.close()
     isRunning = false
   }
 
   def start : Unit = {
      dirWatcherThread.start()
   }
+
+  def isActive: Boolean = isRunning || isWatchServiceRunning
 
   def forMoreEvents(waitTime: Long) = {
     Thread.sleep(waitTime)
@@ -59,12 +61,14 @@ class DirectoryWatcher(dirURL: String, events: Seq[WatchEvent.Kind[_]], waitBefo
         valid = watchKey.reset()
       } catch {
         case e: Exception =>
-          logError(s"Closing it due to ${e.getMessage}")
+          logError(s"Closing it due to ${e.getMessage}. ${e.getStackTraceString}")
           if(stopWatchingOnException)
              stopWatching
       }
     }
     stopWatching
+    watcher.close()
+    isWatchServiceRunning = false
     logInfo(s"Completed Watch on ${dirURL}")
   }
 }

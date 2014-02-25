@@ -1,14 +1,12 @@
 package com.ee.midas.config
 
-import java.net.{Socket, InetAddress}
+import java.net.{ServerSocket, Socket, InetAddress}
 import org.specs2.mock.Mockito
-import com.ee.midas.pipes.DuplexPipe
 import com.ee.midas.transform.Transformer
-import java.io.{OutputStream, InputStream}
 import org.junit.runner.RunWith
 import org.mockito.runners.MockitoJUnitRunner
 import org.specs2.matcher.JUnitMustMatchers
-import org.junit.Test
+import org.junit._
 
 /**
  * IMPORTANT NOTE:
@@ -27,6 +25,7 @@ class NodeSpecs extends JUnitMustMatchers with Mockito {
     val name = "test-node"
     val ipAddress = InetAddress.getByName("127.0.0.3")
     val changeSet = ChangeSet()
+    val host = "localhost"
 
     @Test
     def nodeStartInactive() {
@@ -46,31 +45,24 @@ class NodeSpecs extends JUnitMustMatchers with Mockito {
        //Given (2 nodes with same IP, but different name and changeSet)
      }*/
 
-    @org.junit.Ignore
     @Test
     def nodeBecomesActiveWhenADuplexPipeIsStarted() {
       //given
       val node = new Node(name, ipAddress, changeSet)
-      val clientSocket = mock[Socket]
-      val mongoSocket = mock[Socket]
-      val mockInputStream = mock[InputStream]
-      mockInputStream.read(Array()) returns 20
-      clientSocket.getInputStream returns mockInputStream
-      clientSocket.getOutputStream returns mock[OutputStream]
-      mongoSocket.getInputStream returns mockInputStream
-      mongoSocket.getOutputStream returns mock[OutputStream]
+      val clientSocket = new Socket(host, ServerSetup.appServerPort)
+      val mongoSocket = new Socket(host, ServerSetup.mongoServerPort)
 
       val mockTransformer = mock[Transformer]
 
       //when
       val duplexPipe = node.startDuplexPipe(clientSocket, mongoSocket, mockTransformer)
-      waitForDuplexPipeToStart(duplexPipe)
+      while(!duplexPipe.isActive)
 
-       //then
+      //then
       node.isActive must beTrue
     }
 
-    def waitForDuplexPipeToStop(pipe: DuplexPipe) = {
+    /*def waitForDuplexPipeToStop(pipe: DuplexPipe) = {
       while(pipe.isActive) {
         Thread.sleep(1000)
       }
@@ -80,25 +72,22 @@ class NodeSpecs extends JUnitMustMatchers with Mockito {
       while(!pipe.isActive) {
         Thread.sleep(1000)
       }
-    }
+    }*/
 
     @Test
     def nodeCleanDeadPipes() {
       //given
       val node = new Node(name, ipAddress, changeSet)
-      val clientSocket = mock[Socket]
-      val mongoSocket = mock[Socket]
-      clientSocket.getInputStream returns mock[InputStream]
-      clientSocket.getOutputStream returns mock[OutputStream]
-      mongoSocket.getInputStream returns mock[InputStream]
-      mongoSocket.getOutputStream returns mock[OutputStream]
+
+      val clientSocket = new Socket(host, ServerSetup.appServerPort)
+      val mongoSocket = new Socket(host, ServerSetup.mongoServerPort)
       val mockTransformer = mock[Transformer]
 
       //and given
       val duplexPipe = node.startDuplexPipe(clientSocket, mongoSocket, mockTransformer)
       Thread.sleep(1000)
       duplexPipe.forceStop
-      waitForDuplexPipeToStop(duplexPipe)
+      while(duplexPipe.isActive)
 
       //when
       node.clean
@@ -106,4 +95,48 @@ class NodeSpecs extends JUnitMustMatchers with Mockito {
       //then
       node.isActive must beFalse
     }
+
+}
+
+object NodeSpecs {
+  @BeforeClass
+  def setup() {
+    ServerSetup.setUpSockets()
+  }
+
+  @AfterClass
+  def cleanup() {
+    ServerSetup.shutdownSockets()
+  }
+}
+
+object ServerSetup {
+  val appServerPort = 27020
+  val mongoServerPort = 27017
+  var appServer: ServerSocket = null
+  var mongoServer: ServerSocket = null
+
+  def setUpSockets() {
+    appServer = new ServerSocket(appServerPort)
+    mongoServer = new ServerSocket(mongoServerPort)
+    new Thread(new Runnable {
+      def run() = {
+        while(!appServer.isClosed) {
+          appServer.accept()
+        }
+      }
+    }).start()
+    new Thread(new Runnable {
+      def run() = {
+        while(!mongoServer.isClosed) {
+          mongoServer.accept()
+        }
+      }
+    }).start()
+  }
+
+  def shutdownSockets() {
+    appServer.close()
+    mongoServer.close()
+  }
 }

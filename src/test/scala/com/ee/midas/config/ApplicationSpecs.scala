@@ -2,14 +2,15 @@ package com.ee.midas.config
 
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
-import org.specs2.mutable.{Specification}
+import org.specs2.mutable.Specification
 import java.net.{Socket, URL, InetAddress}
 import com.ee.midas.transform.{Transformer, TransformType}
 import org.specs2.specification.Scope
-import org.bson.{BSONObject, BasicBSONObject}
-import scala.collection.immutable.TreeMap
-import java.io.{PrintWriter, File}
+import java.io.{ByteArrayOutputStream, ByteArrayInputStream, PrintWriter, File}
 import org.specs2.mock.Mockito
+import com.ee.midas.dsl.Translator
+import scala.util.Try
+
 
 @RunWith(classOf[JUnitRunner])
 class ApplicationSpecs extends Specification with Mockito {
@@ -29,6 +30,7 @@ class ApplicationSpecs extends Specification with Mockito {
     val nodes = Set(node1, node2)
   }
 
+  isolated
   "Application" should {
 
     "Manage Nodes" in new Setup {
@@ -77,47 +79,59 @@ class ApplicationSpecs extends Specification with Mockito {
       }
     }
 
-//    "Accepts Connection for a node available in configuration" in new Setup {
-//      //Given
-//      val configDir: URL = null
-//      val n1 = mock[Node]
-//      n1.ip returns node1Ip
-//
-//      val n2 = mock[Node]
-//      n2.ip returns node2Ip
-//
-//      val client = mock[Socket]
-//      client.getInetAddress returns node1Ip
-//
-//      val mongo = mock[Socket]
-//      val application = new Application(configDir, appName, TransformType.EXPANSION, Set(n1, n2))
-//
-//
-//      //When
-//      application.acceptAuthorized(client, mongo)
-//
-//      //Then
-//      there was one(n1).startDuplexPipe(client, mongo, Transformer.empty)
-//      there was no(n2).startDuplexPipe(client, mongo, Transformer.empty)
-//    }
+    "Accepts Connection for a node available in configuration" in new Setup {
+      //Given
+      val client = mock[Socket]
+      client.getInetAddress returns node1Ip
+      val mongo = mock[Socket]
+      val configDir: URL = null
+      val application = new Application(configDir, appName, TransformType.EXPANSION, nodes)
+      val data: Array[Byte] = Array(1.toByte)
+      client.getInputStream returns new ByteArrayInputStream(data)
+      client.getOutputStream returns new ByteArrayOutputStream
+      mongo.getInputStream returns new ByteArrayInputStream(data)
+      mongo.getOutputStream returns new ByteArrayOutputStream
 
+      //When
+      application.acceptAuthorized(client, mongo)
 
-    "Parse Deltas" in new Setup {
-      val configDir: URL = new File("src/test/scala/com/ee/midas/myDeltas/myApp").toURI.toURL
-      val deltaFile = new File("src/test/scala/com/ee/midas/myDeltas/myApp/001-ChangeSet/expansion/01_add.delta")
-      deltaFile.createNewFile()
-      val expansionDelta = new PrintWriter(deltaFile)
-
-      expansionDelta.write("use someDatabase\n")
-      expansionDelta.write("db.collectionName.add(\'{\"newField\": \"newValue\"}\')")
-      expansionDelta.flush()
-      expansionDelta.close()
-      deltaFile.deleteOnExit()
-
-//      "" in {
-//
-//      }
+      //Then
+      node1.isActive mustEqual true
+      node2.isActive mustEqual false
     }
 
+    "Ignores if connection comes from node not available in configuration" in new Setup {
+      //Given
+      val client = mock[Socket]
+      client.getInetAddress returns InetAddress.getByName("127.0.0.18")
+      val mongo = mock[Socket]
+      val configDir: URL = null
+      val application = new Application(configDir, appName, TransformType.EXPANSION, nodes)
+
+      //When
+      application.acceptAuthorized(client, mongo)
+
+      //Then
+      node1.isActive mustEqual false
+      node2.isActive mustEqual false
+    }
+
+
+    "Parse Deltas when application is created" in new Setup {
+      //Given
+      var processDeltaCalled = 0
+      val configDir: URL = new File("/src/test/scala/myDeltas/myApp").toURI.toURL
+
+      //When
+      val application = new Application(configDir, appName, TransformType.EXPANSION, nodes) {
+       override def processDeltas(translator: Translator[Transformer], transformType: TransformType, configDir: URL): Try[Transformer] = Try {
+          processDeltaCalled = 1
+          (Transformer.empty)
+       }
+      }
+
+      //Then
+      processDeltaCalled mustEqual 1
+    }
   }
 }

@@ -1,14 +1,15 @@
 package com.ee.midas.config
 
-import java.net.InetAddress
+import java.net.{Socket, InetAddress}
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 import org.specs2.mutable.{Specification}
 import com.ee.midas.transform.TransformType
-import java.io.{PrintWriter, File}
+import java.io.{ByteArrayOutputStream, ByteArrayInputStream, PrintWriter, File}
 import org.specs2.mock.Mockito
 import org.specs2.specification.Scope
 
+//todo: revisit
 @RunWith(classOf[JUnitRunner])
 class ConfigurationSpecs extends Specification with Mockito {
 
@@ -72,62 +73,120 @@ class ConfigurationSpecs extends Specification with Mockito {
     val configuration = Configuration(deltasDir.toURI.toURL, List(appName, nonExistentAppName))
   }
 
+  isolated
   "Configuration" should {
 
     //todo: revisit
-//    "Get Application by IP" in new Setup {
-//      //When-Then
-//      configuration.getApplication(node1Ip) mustEqual Some(application)
-//    }
+    "Manage Applications" in {
+      "By allowing a Application to be retrieved by IP" in new Setup {
+        //When-Then
+        configuration.getApplication(node1Ip) == Some(application)
+      }
 
-    "Give no result when Application with that IP is not present" in new Setup {
-      //Given
-      val ip = InetAddress.getByName("127.0.0.9")
+      "By giving no result when Application with that IP is not present" in new Setup {
+        //Given
+        val ip = InetAddress.getByName("127.0.0.9")
 
-      //When
-      val app = configuration.getApplication(ip)
+        //When
+        val app = configuration.getApplication(ip)
 
-      //Then
-      app mustEqual None
+        //Then
+        app mustEqual None
+      }
+
+      "By Adding a non-existing application when updated" in new Setup {
+        //Given
+        val ip = "127.0.0.3"
+        val nodeIp = InetAddress.getByName(ip)
+        val node = new Node("newAppNode1", nodeIp, ChangeSet(changeSet1))
+        val newAppName = "newApp"
+        val newAppConfigDir = new File(deltasDir + File.separator + newAppName)
+
+        newAppConfigDir.mkdirs()
+        newAppConfigDir.deleteOnExit()
+        val newApplication = new Application(newAppConfigDir.toURI.toURL, newAppName, TransformType.EXPANSION, Set(node))
+        configuration.getApplication(nodeIp) mustEqual None
+
+        //When
+        configuration.update(newApplication)
+
+        //Then
+        configuration.getApplication(nodeIp) == Some(newApplication)
+      }
+
+      "By Updating an existing application" in new Setup {
+        //Given
+        configuration.getApplication(node2Ip) == Some(application)
+
+        //When
+        val newIP = InetAddress.getByName("192.2.1.27")
+        val newChangeSet = ChangeSet(3)
+        val node2WithNewIPAndChangeSet = new Node(node2Name, newIP, newChangeSet)
+
+        val newNodes = Set(node1, node2WithNewIPAndChangeSet)
+        val applicationWithNewIP = new Application(appConfigDir.toURI.toURL, appName, TransformType.EXPANSION, newNodes)
+        configuration.update(applicationWithNewIP)
+
+        //Then
+        configuration.getApplication(newIP) == Some(applicationWithNewIP)
+      }
+
     }
 
-    //todo: revisit
-//    "Update application" in new Setup {
-//      //Given
-//      configuration.getApplication(node2Ip) mustEqual Some(application)
-//
-//      //When
-//      val newIP = InetAddress.getByName("192.2.1.27")
-//      val newChangeSet = ChangeSet(3)
-//      val node2WithNewIPAndChangeSet = new Node(node2Name, newIP, newChangeSet)
-//
-//      val newNodes = Set(node1, node2WithNewIPAndChangeSet)
-//      val applicationWithNewIP = new Application(appConfigDir.toURI.toURL, appName, TransformType.EXPANSION, newNodes)
-//      configuration.update(applicationWithNewIP)
-//
-//      //Then
-//      configuration.getApplication(newIP) mustEqual Some(applicationWithNewIP)
-//    }
+    "Give all applications" in new Setup {
+      //When-Then
+      configuration.applications == List(application)
+    }
 
-    "Adds a non-existing application when updated" in new Setup {
+    "update itself from new configuration" in new Setup {
       //Given
       val ip = "127.0.0.3"
       val nodeIp = InetAddress.getByName(ip)
       val node = new Node("newAppNode1", nodeIp, ChangeSet(changeSet1))
-      val newAppName = "newApp"
+      val newAppName = "App1"
       val newAppConfigDir = new File(deltasDir + File.separator + newAppName)
 
       newAppConfigDir.mkdirs()
       newAppConfigDir.deleteOnExit()
       val newApplication = new Application(newAppConfigDir.toURI.toURL, newAppName, TransformType.EXPANSION, Set(node))
-      configuration.getApplication(nodeIp) mustEqual None
+      val newConfiguration = Configuration(deltasDir.toURI.toURL, List(newAppName))
 
       //When
-      configuration.update(newApplication)
+      configuration.update(newConfiguration)
 
       //Then
-      configuration.getApplication(nodeIp) mustEqual Some(newApplication)
+      configuration.applications == List(newApplication)
     }
 
+    "accept new authorized connection" in new Setup {
+      //Given
+      val appSocket = mock[Socket]
+      val mongoSocket = mock[Socket]
+      appSocket.getInetAddress returns InetAddress.getByName("127.0.0.1")
+      val data: Array[Byte] = Array(0.toByte)
+      mongoSocket.getInputStream returns new ByteArrayInputStream(data)
+      mongoSocket.getOutputStream returns new ByteArrayOutputStream
+      appSocket.getInputStream returns new ByteArrayInputStream(data)
+      appSocket.getOutputStream returns new ByteArrayOutputStream
+
+      //When
+      configuration.processNewConnection(appSocket, mongoSocket)
+
+      //Then
+      there was no(appSocket).close()
+    }
+
+    "reject unauthorized connection" in new Setup {
+      //Given
+      val appSocket = mock[Socket]
+      val mongoSocket = mock[Socket]
+      appSocket.getInetAddress returns InetAddress.getByName("127.0.0.9")
+
+      //When
+      configuration.processNewConnection(appSocket, mongoSocket)
+
+      //Then
+      there was one(appSocket).close
+    }
   }
 }

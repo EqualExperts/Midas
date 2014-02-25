@@ -48,12 +48,13 @@ class Application(val configDir: URL, private var name: String, private var tran
     val common = nodes intersect newNodes
     val toBeAdded = newNodes diff common
     logInfo(s"Nodes to be Added $toBeAdded")
-    nodes ++= toBeAdded
 
     val toBeRemoved = nodes diff common
     logInfo(s"Stopping Nodes to be Removed $toBeRemoved")
     toBeRemoved.foreach(node => node.stop)
+    nodes ++= toBeAdded
     //todo: do something to remove old nodes here
+    nodes --= toBeRemoved
 
     logInfo(s"Total Nodes $nodes")
     logError(s"Updated Nodes for Application ${name}")

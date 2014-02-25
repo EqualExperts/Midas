@@ -7,6 +7,7 @@ import org.junit.runner.RunWith
 import org.mockito.runners.MockitoJUnitRunner
 import org.specs2.matcher.JUnitMustMatchers
 import org.junit._
+import java.util.concurrent.TimeUnit
 
 /**
  * IMPORTANT NOTE:
@@ -41,9 +42,15 @@ class NodeSpecs extends JUnitMustMatchers with Mockito {
       node.isActive mustEqual false
     }
 
-     /*"be identified by it's IP" in {
+     @Test
+     def nodeMustBeIdentifiedByIP() {
        //Given (2 nodes with same IP, but different name and changeSet)
-     }*/
+       val node1 = new Node(name = "node1", ipAddress, ChangeSet(1))
+       val node2 = new Node(name = "node2", ipAddress, ChangeSet(2))
+
+       //Then: both nodes are same
+       node1 == node2
+     }
 
     @Test
     def nodeBecomesActiveWhenADuplexPipeIsStarted() {
@@ -51,44 +58,34 @@ class NodeSpecs extends JUnitMustMatchers with Mockito {
       val node = new Node(name, ipAddress, changeSet)
       val clientSocket = new Socket(host, ServerSetup.appServerPort)
       val mongoSocket = new Socket(host, ServerSetup.mongoServerPort)
-
       val mockTransformer = mock[Transformer]
 
       //when
-      val duplexPipe = node.startDuplexPipe(clientSocket, mongoSocket, mockTransformer)
-//      while(!duplexPipe.isActive)
-      Thread.sleep(2000)
+      node.startDuplexPipe(clientSocket, mongoSocket, mockTransformer)
+      waitForDuplexPipe(1, TimeUnit.SECONDS)
 
       //then
       node.isActive must beTrue
     }
 
-    /*def waitForDuplexPipeToStop(pipe: DuplexPipe) = {
-      while(pipe.isActive) {
-        Thread.sleep(1000)
-      }
+    def waitForDuplexPipe(time: Long, unit: TimeUnit) = {
+        unit.sleep(time)
     }
-
-    def waitForDuplexPipeToStart(pipe: DuplexPipe) = {
-      while(!pipe.isActive) {
-        Thread.sleep(1000)
-      }
-    }*/
 
     @Test
     def nodeCleanDeadPipes() {
       //given
       val node = new Node(name, ipAddress, changeSet)
-
       val clientSocket = new Socket(host, ServerSetup.appServerPort)
       val mongoSocket = new Socket(host, ServerSetup.mongoServerPort)
       val mockTransformer = mock[Transformer]
 
       //and given
       val duplexPipe = node.startDuplexPipe(clientSocket, mongoSocket, mockTransformer)
-      Thread.sleep(1000)
+      waitForDuplexPipe(1, TimeUnit.SECONDS)
+
       duplexPipe.forceStop
-      while(duplexPipe.isActive)
+      waitForDuplexPipe(1, TimeUnit.SECONDS)
 
       //when
       node.clean

@@ -56,7 +56,8 @@ class NodeSpecs extends JUnitMustMatchers with Mockito {
 
       //when
       val duplexPipe = node.startDuplexPipe(clientSocket, mongoSocket, mockTransformer)
-      while(!duplexPipe.isActive)
+//      while(!duplexPipe.isActive)
+      Thread.sleep(2000)
 
       //then
       node.isActive must beTrue
@@ -111,14 +112,16 @@ object NodeSpecs {
 }
 
 object ServerSetup {
-  val appServerPort = 27020
-  val mongoServerPort = 27017
+  var appServerPort = 27020
+  var mongoServerPort = 27017
   var appServer: ServerSocket = null
   var mongoServer: ServerSocket = null
 
   def setUpSockets() {
-    appServer = new ServerSocket(appServerPort)
-    mongoServer = new ServerSocket(mongoServerPort)
+    appServer = new ServerSocket(0)
+    appServerPort = appServer.getLocalPort
+    mongoServer = new ServerSocket(0)
+    mongoServerPort = mongoServer.getLocalPort
     new Thread(new Runnable {
       def run() = {
         while(!appServer.isClosed) {

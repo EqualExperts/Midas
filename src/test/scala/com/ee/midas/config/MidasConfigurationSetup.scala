@@ -4,7 +4,7 @@ import java.net.URL
 import java.io.{FileWriter, File}
 import org.specs2.mutable.BeforeAfter
 
-trait ConfigSetup extends BeforeAfter {
+trait MidasConfigurationSetup extends BeforeAfter {
 
   /* deltas dir */
   val deltasDir = new File("src/test/scala/com/ee/midas/myDeltas")

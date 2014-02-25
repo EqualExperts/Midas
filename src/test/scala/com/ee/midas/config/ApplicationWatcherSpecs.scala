@@ -6,7 +6,7 @@ import org.specs2.mock.Mockito
 class ApplicationWatcherSpecs extends Specification with Mockito {
 
   "Application Watcher" should {
-    "start watching the deltas of given application" in new ConfigSetup {
+    "start watching the deltas of given application" in new MidasConfigurationSetup {
       val application = mock[Application]
       val appConfigText = s"""
             |demoApp {

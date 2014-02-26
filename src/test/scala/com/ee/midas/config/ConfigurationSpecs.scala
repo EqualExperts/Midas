@@ -71,7 +71,7 @@ class ConfigurationSpecs extends Specification with Mockito {
     val node2 = new Node(node2Name, node2Ip, ChangeSet(changeSet2))
     val nodes = Set(node1, node2)
     val application = new Application(appConfigDir.toURI.toURL, appName, TransformType.EXPANSION, nodes)
-    val configuration = Configuration(deltasDir.toURI.toURL, List(appName, nonExistentAppName))
+    val configuration = new Configuration(deltasDir.toURI.toURL, List(appName, nonExistentAppName))
   }
 
   "Configuration" should {
@@ -93,44 +93,6 @@ class ConfigurationSpecs extends Specification with Mockito {
         //Then
         app mustEqual None
       }
-
-      "By Adding a non-existing application when updated" in new Setup {
-        //Given
-        val ip = "127.0.0.3"
-        val nodeIp = InetAddress.getByName(ip)
-        val node = new Node("newAppNode1", nodeIp, ChangeSet(changeSet1))
-        val newAppName = "newApp"
-        val newAppConfigDir = new File(deltasDir + File.separator + newAppName)
-
-        newAppConfigDir.mkdirs()
-        newAppConfigDir.deleteOnExit()
-        val newApplication = new Application(newAppConfigDir.toURI.toURL, newAppName, TransformType.EXPANSION, Set(node))
-        configuration.getApplication(nodeIp) mustEqual None
-
-        //When
-        configuration.update(newApplication)
-
-        //Then
-        configuration.getApplication(nodeIp) mustEqual Some(newApplication)
-      }
-
-      "By Updating an existing application" in new Setup {
-        //Given
-        configuration.getApplication(node2Ip) mustEqual Some(application)
-
-        //When
-        val newIP = InetAddress.getByName("192.2.1.27")
-        val newChangeSet = ChangeSet(3)
-        val node2WithNewIPAndChangeSet = new Node(node2Name, newIP, newChangeSet)
-
-        val newNodes = Set(node1, node2WithNewIPAndChangeSet)
-        val applicationWithNewIP = new Application(appConfigDir.toURI.toURL, appName, TransformType.EXPANSION, newNodes)
-        configuration.update(applicationWithNewIP)
-
-        //Then
-        configuration.getApplication(newIP) mustEqual Some(applicationWithNewIP)
-      }
-
     }
 
     "Give all applications" in new Setup {
@@ -201,7 +163,7 @@ class ConfigurationSpecs extends Specification with Mockito {
                              """.stripMargin
       write(newAppConfigText, newAppConfigFile)
       println(s"${newAppConfigDir.getAbsolutePath} exists: " + newAppConfigDir.exists())
-      val newConfiguration = Configuration(deltasDir.toURI.toURL, List("App1"))
+      val newConfiguration = new Configuration(deltasDir.toURI.toURL, List("App1"))
       println("new config is: " + newConfiguration)
 
       //When

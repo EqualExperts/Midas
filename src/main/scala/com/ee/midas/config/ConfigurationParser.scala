@@ -23,7 +23,7 @@ trait ConfigurationParser extends JavaTokenParsers {
   //Eat Java-Style comments like whitespace
   protected override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
-  def configuration(deltasDir: URL): Parser[Configuration] = "apps" ~ "{" ~> rep(ident) <~ "}" ^^ { case appNames => Configuration(deltasDir, appNames) }
+  def configuration(deltasDir: URL): Parser[Configuration] = "apps" ~ "{" ~> rep(ident) <~ "}" ^^ { case appNames => new Configuration(deltasDir, appNames) }
 
   def parse(input: String, deltasDir: URL): Configuration = parseAll(configuration(deltasDir), input) match {
     case Success(value, _) => value

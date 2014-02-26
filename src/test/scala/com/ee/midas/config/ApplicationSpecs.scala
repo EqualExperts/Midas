@@ -78,17 +78,18 @@ class ApplicationSpecs extends JUnitMustMatchers with Mockito {
   @Test
   def stopNodes() {
     //Given
-    val node1 = mock[Node]
-    val node2 = mock[Node]
+//    val node1 = mock[Node]
+//    node1.isActive returns true
+//
+//    val node2 = mock[Node]
+//    node2.isActive returns true
     val application = new Application(configDir, appName, TransformType.EXPANSION, Set(node1, node2))
-
 
     //When
     application.stop
 
     //Then
-    there was one(node1).stop
-    there was one(node2).stop
+    application.isActive mustEqual false
   }
 
   @Test

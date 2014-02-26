@@ -13,7 +13,7 @@ class Node(private var name: String, val ip: InetAddress, private var changeSet:
   private val pipes = ArrayBuffer[DuplexPipe]()
 
   final def startDuplexPipe(appSocket: Socket, mongoSocket: Socket, transformer: Transformer) = {
-    clean
+    cleanDeadPipes
     val tracker = new MessageTracker()
     val requestInterceptor = new RequestInterceptor(tracker, transformer, changeSet)
     val responseInterceptor = new ResponseInterceptor(tracker, transformer)
@@ -26,28 +26,26 @@ class Node(private var name: String, val ip: InetAddress, private var changeSet:
     duplexPipe
   }
 
-  private def activePipes = pipes filter (_.isActive)
+  final def stop = pipes filter (_.isActive) foreach (_.forceStop)
 
-  def stop = activePipes foreach (_.forceStop)
-
-  def clean = {
+  final def cleanDeadPipes = {
     val deadPipes = pipes filterNot (_.isActive)
     pipes --= deadPipes
   }
 
-  def isActive = activePipes.size > 0
+  final def isActive = pipes exists(pipe => pipe.isActive)
 
-  def updateFrom(from: Node) = {
+  final def updateFrom(from: Node) = {
     name = from.name
     changeSet = from.changeSet
   }
 
-  override def equals(other: Any): Boolean = other match {
+  final override def equals(other: Any): Boolean = other match {
     case that: Node => this.ip == that.ip
     case _ => false
   }
 
-  override val hashCode: Int = 17 * (17 + ip.hashCode)
+  final override val hashCode: Int = 17 * (17 + ip.hashCode)
 
-  override def toString = s"Node($name, $ip, $changeSet, $isActive)"
+  final override def toString = s"Node($name, $ip, $changeSet, $isActive)"
 }

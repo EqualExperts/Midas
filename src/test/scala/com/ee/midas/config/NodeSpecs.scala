@@ -81,7 +81,7 @@ class NodeSpecs extends JUnitMustMatchers with Mockito {
       duplexPipe.forceStop
 
       //when
-      node.clean
+      node.cleanDeadPipes
 
       //then
       node.isActive must beFalse

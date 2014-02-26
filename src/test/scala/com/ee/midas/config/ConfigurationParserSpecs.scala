@@ -30,7 +30,7 @@ class ConfigurationParserSpecs extends Specification {
         val config = parseAll(configuration(ignore), input).get
 
         //Then
-        config mustEqual Configuration(ignore, Nil)
+        config mustEqual (new Configuration(ignore, Nil))
       }
 
 //      "in configuration with single application" in new ConfigParser {
@@ -152,7 +152,7 @@ class ConfigurationParserSpecs extends Specification {
 
       //Then
 //      val nodeA = Node("nodeA", InetAddress.getByName("127.0.0.1"), ChangeSet(2))
-      config mustEqual Configuration(deltasDir, List("app1"))
+      config mustEqual (new Configuration(deltasDir, List("app1")))
     }
   }
 
@@ -171,7 +171,7 @@ class ConfigurationParserSpecs extends Specification {
       val config = parseAll(configuration(ignore), input).get
 
       //Then
-      config mustEqual Configuration(ignore, Nil)
+      config mustEqual (new Configuration(ignore, Nil))
     }
 
     "configuration containing multi line comments" in {
@@ -192,7 +192,7 @@ class ConfigurationParserSpecs extends Specification {
       val config = parseAll(configuration(ignore), input).get
 
       //Then
-      config mustEqual Configuration(ignore, Nil)
+      config mustEqual (new Configuration(ignore, Nil))
     }
   }
 

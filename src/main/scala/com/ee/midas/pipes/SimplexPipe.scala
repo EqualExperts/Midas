@@ -11,8 +11,8 @@ class SimplexPipe(val name: String, val src: InputStream,
   private var isRunning = false
 
   def start: Unit = {
-    logInfo("Starting " +  toString)
     isRunning = true
+    logInfo("Starting " +  toString)
   }
 
   override def run: Unit = {

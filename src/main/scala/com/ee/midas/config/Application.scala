@@ -31,7 +31,7 @@ class Application(val configDir: URL, private var name: String, private var tran
     }
   }
 
-  def update(newApplication: Application) = {
+  final def update(newApplication: Application) = {
     val name = newApplication.name
     if(newApplication.transformer != Transformer.empty) {
       transformer = newApplication.transformer
@@ -60,13 +60,15 @@ class Application(val configDir: URL, private var name: String, private var tran
     logError(s"Updated Nodes for Application ${name}")
   }
 
-  def hasNode(ip: InetAddress): Boolean = nodes.exists(node => node.ip == ip)
+  final def hasNode(ip: InetAddress): Boolean = nodes.exists(node => node.ip == ip)
 
-  def getNode(ip: InetAddress): Option[Node] = nodes.find(node => node.ip == ip)
+  final def getNode(ip: InetAddress): Option[Node] = nodes.find(node => node.ip == ip)
 
-  def stop = nodes foreach { node => node.stop }
+  final def isActive = nodes.exists(node => node.isActive)
 
-  def acceptAuthorized(appSocket: Socket, mongoSocket: Socket): Unit = {
+  final def stop = nodes foreach { node => node.stop }
+
+  final def acceptAuthorized(appSocket: Socket, mongoSocket: Socket): Unit = {
     val appIp = appSocket.getInetAddress
     getNode(appIp) match {
       case Some(node) => node.startDuplexPipe(appSocket, mongoSocket, transformer)
@@ -74,12 +76,12 @@ class Application(val configDir: URL, private var name: String, private var tran
     }
   }
 
-  override def equals(other: Any): Boolean = other match {
+  final override def equals(other: Any): Boolean = other match {
     case that: Application => this.configDir.toURI == that.configDir.toURI
     case _ => false
   }
 
-  override val hashCode: Int = 17 * (17 + configDir.toURI.hashCode)
+  final override val hashCode: Int = 17 * (17 + configDir.toURI.hashCode)
 
-  override def toString = s"""Application(configDir = ${configDir.toURI}, name = $name, mode = $transformType, nodes = ${nodes mkString "," }, $transformer"""
+  final override def toString = s"""Application(configDir = ${configDir.toURI}, name = $name, mode = $transformType, nodes = ${nodes mkString "," }, $transformer"""
 }

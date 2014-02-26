@@ -42,6 +42,7 @@ trait PipesMonitorComponent extends Startable with Stoppable with Loggable {
       while (keepRunning) {
         try {
           pipe.inspect
+          Thread.sleep(checkEveryMillis)
           if (!pipe.isActive) {
             val threadName = Thread.currentThread().getName()
             logError("[" + threadName + "] Detected Broken Pipe...Initiating Pipe Closure")
@@ -49,7 +50,6 @@ trait PipesMonitorComponent extends Startable with Stoppable with Loggable {
             keepRunning = false
             logError("[" + threadName + "] Shutting down Monitor")
           }
-          Thread.sleep(checkEveryMillis)
         } catch {
           case e: InterruptedException => logError("Status Thread Interrupted")
             keepRunning = false

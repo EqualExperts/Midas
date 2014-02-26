@@ -3,11 +3,12 @@ package com.ee.midas.config
 import java.net.{Socket, InetAddress}
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
-import org.specs2.mutable.{Specification}
+import org.specs2.mutable.Specification
 import com.ee.midas.transform.TransformType
-import java.io.{ByteArrayOutputStream, ByteArrayInputStream, PrintWriter, File}
+import java.io._
 import org.specs2.mock.Mockito
 import org.specs2.specification.Scope
+import scala.Some
 
 //todo: revisit
 @RunWith(classOf[JUnitRunner])
@@ -59,7 +60,7 @@ class ConfigurationSpecs extends Specification with Mockito {
     write(appConfigText, appConfigFile)
 
 
-    private def write(text: String, toFile: File) = {
+    def write(text: String, toFile: File) = {
       val writer = new PrintWriter(toFile, "utf-8")
       writer.write(text)
       writer.flush()
@@ -73,14 +74,13 @@ class ConfigurationSpecs extends Specification with Mockito {
     val configuration = Configuration(deltasDir.toURI.toURL, List(appName, nonExistentAppName))
   }
 
-  isolated
   "Configuration" should {
 
     //todo: revisit
     "Manage Applications" in {
       "By allowing a Application to be retrieved by IP" in new Setup {
         //When-Then
-        configuration.getApplication(node1Ip) == Some(application)
+        configuration.getApplication(node1Ip) mustEqual Some(application)
       }
 
       "By giving no result when Application with that IP is not present" in new Setup {
@@ -111,12 +111,12 @@ class ConfigurationSpecs extends Specification with Mockito {
         configuration.update(newApplication)
 
         //Then
-        configuration.getApplication(nodeIp) == Some(newApplication)
+        configuration.getApplication(nodeIp) mustEqual Some(newApplication)
       }
 
       "By Updating an existing application" in new Setup {
         //Given
-        configuration.getApplication(node2Ip) == Some(application)
+        configuration.getApplication(node2Ip) mustEqual Some(application)
 
         //When
         val newIP = InetAddress.getByName("192.2.1.27")
@@ -128,35 +128,16 @@ class ConfigurationSpecs extends Specification with Mockito {
         configuration.update(applicationWithNewIP)
 
         //Then
-        configuration.getApplication(newIP) == Some(applicationWithNewIP)
+        configuration.getApplication(newIP) mustEqual Some(applicationWithNewIP)
       }
 
     }
 
     "Give all applications" in new Setup {
       //When-Then
-      configuration.applications == List(application)
+      configuration.applications mustEqual List(application)
     }
 
-    "update itself from new configuration" in new Setup {
-      //Given
-      val ip = "127.0.0.3"
-      val nodeIp = InetAddress.getByName(ip)
-      val node = new Node("newAppNode1", nodeIp, ChangeSet(changeSet1))
-      val newAppName = "App1"
-      val newAppConfigDir = new File(deltasDir + File.separator + newAppName)
-
-      newAppConfigDir.mkdirs()
-      newAppConfigDir.deleteOnExit()
-      val newApplication = new Application(newAppConfigDir.toURI.toURL, newAppName, TransformType.EXPANSION, Set(node))
-      val newConfiguration = Configuration(deltasDir.toURI.toURL, List(newAppName))
-
-      //When
-      configuration.update(newConfiguration)
-
-      //Then
-      configuration.applications == List(newApplication)
-    }
 
     "accept new authorized connection" in new Setup {
       //Given
@@ -187,6 +168,49 @@ class ConfigurationSpecs extends Specification with Mockito {
 
       //Then
       there was one(appSocket).close
+    }
+
+    "update itself from a new configuration" in new Setup {
+      //Given: A configuration from setup
+      val updatedMidasConfigText =  s"""
+                                      |apps {
+                                      |  App1
+                                      |}
+                                     """.stripMargin
+      write(updatedMidasConfigText, midasConfigFile)
+      val newAppName = "App1"
+      val newAppNode = "newAppNode1"
+      val newAppConfigDir = new File(deltasDir + File.separator + newAppName)
+      newAppConfigDir.mkdirs()
+      newAppConfigDir.deleteOnExit()
+      val newAppConfigFile = new File(deltasDir + File.separator + newAppName + File.separator + s"$newAppName.midas")
+      newAppConfigFile.createNewFile()
+      newAppConfigFile.deleteOnExit()
+      val newNodeIp = "127.0.0.3"
+      val newNodeInetAddress = InetAddress.getByName(newNodeIp)
+      val newChangeSetNo = 2
+      val newChangeSet = ChangeSet(2)
+      val newAppConfigText = s"""
+                              |$newAppName {
+                              |  mode = expansion
+                              |  $newAppNode {
+                              |    ip = $newNodeIp
+                              |    changeSet = $newChangeSetNo
+                              |  }
+                              |}
+                             """.stripMargin
+      write(newAppConfigText, newAppConfigFile)
+      println(s"${newAppConfigDir.getAbsolutePath} exists: " + newAppConfigDir.exists())
+      val newConfiguration = Configuration(deltasDir.toURI.toURL, List("App1"))
+      println("new config is: " + newConfiguration)
+
+      //When
+      configuration.update(newConfiguration)
+
+      //Then
+      val node = new Node(newAppName, newNodeInetAddress, newChangeSet)
+      val expectedApplication = new Application(newAppConfigDir.toURI.toURL, newAppName, TransformType.EXPANSION, Set(node))
+      configuration.applications mustEqual List(expectedApplication)
     }
   }
 }

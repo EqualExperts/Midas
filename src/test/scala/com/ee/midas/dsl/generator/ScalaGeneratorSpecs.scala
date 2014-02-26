@@ -3,9 +3,9 @@ package com.ee.midas.dsl.generator
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 import org.specs2.mutable.Specification
-import com.ee.midas.transform.{RequestTypes, ResponseTypes, TransformType, Transformer}
+import com.ee.midas.transform.{RequestTypes, ResponseTypes, TransformType}
 import com.ee.midas.dsl.interpreter.Reader
-import java.io.{StringWriter, FileWriter, PrintWriter, File}
+import java.io.{FileWriter, PrintWriter, File}
 import java.util.ArrayList
 import org.bson.BSONObject
 import com.mongodb.util.JSON
@@ -51,7 +51,7 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
           //then
           var responseExpansions: Map[String, VersionedSnippets] =
              Map("someDatabase.collection" ->
-           TreeMap(1.0d ->
+           TreeMap(1.0 ->
              ((document: BSONObject) => {
                val json = "{\"newField\" : \"newValue\"}"
                val fields = JSON.parse(json).asInstanceOf[BSONObject]
@@ -62,15 +62,15 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
              Map()
 
          var requestExpansions: Map[ChangeSetCollectionKey, Double] =
-             Map((1L, "someDatabase.collection") -> 1.0d)
+             Map((1L, "someDatabase.collection") -> 1.0)
 
          var requestContractions: Map[ChangeSetCollectionKey, Double] =
              Map()
 
-         result.responseExpansions == responseExpansions
-         result.responseContractions == responseContractions
-         result.requestExpansions == requestExpansions
-         result.requestContractions == requestContractions
+         result.responseExpansions.toString mustEqual responseExpansions.toString
+         result.responseContractions mustEqual responseContractions
+         result.requestExpansions mustEqual requestExpansions
+         result.requestContractions mustEqual requestContractions
        }
 
       "Generates Scala code for Remove operation" in new Setup {
@@ -111,10 +111,10 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
         var requestContractions: Map[ChangeSetCollectionKey, Double] =
           Map((1L, "someDatabase.collectionName") -> 1.0d)
 
-        result.responseExpansions == responseExpansions
-        result.responseContractions == responseContractions
-        result.requestExpansions == requestExpansions
-        result.requestContractions == requestContractions
+        result.responseExpansions mustEqual responseExpansions
+        result.responseContractions.toString mustEqual responseContractions.toString
+        result.requestExpansions mustEqual requestExpansions
+        result.requestContractions mustEqual requestContractions
       }
 
       "Generates Scala code for Copy operation" in new Setup {
@@ -157,10 +157,10 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
         var requestContractions: Map[ChangeSetCollectionKey, Double] =
           Map()
 
-        result.responseExpansions == responseExpansions
-        result.responseContractions == responseContractions
-        result.requestExpansions == requestExpansions
-        result.requestContractions == requestContractions
+        result.responseExpansions.toString mustEqual responseExpansions.toString
+        result.responseContractions mustEqual responseContractions
+        result.requestExpansions mustEqual requestExpansions
+        result.requestContractions mustEqual requestContractions
       }
 
       "Generate Scala code for split operation" in new Setup {
@@ -200,10 +200,10 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
         var requestContractions: Map[ChangeSetCollectionKey, Double] =
           Map()
 
-        result.responseExpansions == responseExpansions
-        result.responseContractions == responseContractions
-        result.requestExpansions == requestExpansions
-        result.requestContractions == requestContractions
+        result.responseExpansions.toString mustEqual responseExpansions.toString
+        result.responseContractions mustEqual responseContractions
+        result.requestExpansions mustEqual requestExpansions
+        result.requestContractions mustEqual requestContractions
       }
 
     "Generate Scala code for Merge operation" in new Setup {
@@ -245,10 +245,10 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
       var requestContractions: Map[ChangeSetCollectionKey, Double] =
         Map()
 
-      result.responseExpansions == responseExpansions
-      result.responseContractions == responseContractions
-      result.requestExpansions == requestExpansions
-      result.requestContractions == requestContractions
+      result.responseExpansions.toString mustEqual responseExpansions.toString
+      result.responseContractions mustEqual responseContractions
+      result.requestExpansions mustEqual requestExpansions
+      result.requestContractions mustEqual requestContractions
     }
 
     "Generates empty Scala expansion response map for expansion delta in contraction mode" in new Setup {
@@ -276,18 +276,18 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
         Map()
 
       var responseContractions: Map[String, VersionedSnippets] =
-        Map()
+        Map("someDatabase.collectionName" -> TreeMap[Double, Snippet]())
 
       var requestExpansions: Map[ChangeSetCollectionKey, Double] =
-        Map()
+        Map((1L, "someDatabase.collectionName") -> 1.0)
 
       var requestContractions: Map[ChangeSetCollectionKey, Double] =
         Map()
 
-      result.responseExpansions == responseExpansions
-      result.responseContractions == responseContractions
-      result.requestExpansions == requestExpansions
-      result.requestContractions == requestContractions
+      result.responseExpansions mustEqual responseExpansions
+      result.responseContractions mustEqual responseContractions
+      result.requestExpansions mustEqual requestExpansions
+      result.requestContractions mustEqual requestContractions
     }
 
     "Generates empty Scala maps for contraction delta in expansion mode" in new Setup {
@@ -312,7 +312,7 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
 
       //then
       var responseExpansions: Map[String, VersionedSnippets] =
-        Map()
+        Map("someDatabase.collectionName" -> TreeMap[Double, Snippet]())
 
       var responseContractions: Map[String, VersionedSnippets] =
         Map()
@@ -323,10 +323,10 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
       var requestContractions: Map[ChangeSetCollectionKey, Double] =
         Map()
 
-      result.responseExpansions == responseExpansions
-      result.responseContractions == responseContractions
-      result.requestExpansions == requestExpansions
-      result.requestContractions == requestContractions
+      result.responseExpansions mustEqual responseExpansions
+      result.responseContractions mustEqual responseContractions
+      result.requestExpansions mustEqual requestExpansions
+      result.requestContractions mustEqual requestContractions
     }
   }
 

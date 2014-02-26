@@ -1,13 +1,12 @@
 package com.ee.midas.config
 
-import java.net.{ServerSocket, Socket, InetAddress}
+import java.net.{Socket, InetAddress}
 import org.specs2.mock.Mockito
 import com.ee.midas.transform.Transformer
 import org.junit.runner.RunWith
 import org.mockito.runners.MockitoJUnitRunner
 import org.specs2.matcher.JUnitMustMatchers
 import org.junit._
-import java.util.concurrent.TimeUnit
 
 /**
  * IMPORTANT NOTE:
@@ -23,120 +22,128 @@ import java.util.concurrent.TimeUnit
 @RunWith(classOf[MockitoJUnitRunner])
 class NodeSpecs extends JUnitMustMatchers with Mockito {
 
-  val name = "test-node"
-  val ipAddress = InetAddress.getByName("127.0.0.3")
-  val changeSet = ChangeSet()
-  val host = "localhost"
-
-  @Test
-  def nodeIsInactiveWhenCreated() {
-    //Given
     val name = "test-node"
-    val ipAddress = InetAddress.getByName("127.0.0.3")
     val changeSet = ChangeSet()
+    val host = "localhost"
 
-    //When
-    val node = new Node(name, ipAddress, changeSet)
+    @Test
+    def nodeIsInactiveWhenCreated() {
+      //Given
+      val name = "test-node"
+      val ipAddress = InetAddress.getByName("127.0.0.3")
+      val changeSet = ChangeSet()
 
-    //Then
-    node.isActive mustEqual false
-  }
+      //When
+      val node = new Node(name, ipAddress, changeSet)
+
+      //Then
+      node.isActive mustEqual false
+    }
+
+    @Test
+    def nodeMustBeIdentifiedByIP() {
+      //Given (2 nodes with same IP, but different name and changeSet)
+      val ipAddress = InetAddress.getByName("127.0.0.4")
+      val node1 = new Node("node1", ipAddress, ChangeSet(1))
+      val node2 = new Node("node2", ipAddress, ChangeSet(2))
+
+      //Then: both nodes are same
+      node1 mustEqual node2
+    }
+
+    @Test
+    def nodeBecomesActiveWhenADuplexPipeIsStarted() {
+      //given
+      val ipAddress = InetAddress.getByName("127.0.0.5")
+      val node = new Node(name, ipAddress, changeSet)
+      val clientSocket = new Socket(host, NodeSpecs.servers.midasServerPort)
+      val mongoSocket = new Socket(host, NodeSpecs.servers.mongoServerPort)
+      val mockTransformer = mock[Transformer]
+
+      //when
+      node.startDuplexPipe(clientSocket, mongoSocket, mockTransformer)
+
+      //then
+      node.isActive must beTrue
+    }
+
+    @Test
+    def nodeCleansDeadPipes() {
+      //given
+      val ipAddress = InetAddress.getByName("127.0.0.6")
+      val node = new Node(name, ipAddress, changeSet)
+      val clientSocket = new Socket(host, NodeSpecs.servers.midasServerPort)
+      val mongoSocket = new Socket(host, NodeSpecs.servers.mongoServerPort)
+      val mockTransformer = mock[Transformer]
+
+      //and given
+      val duplexPipe = node.startDuplexPipe(clientSocket, mongoSocket, mockTransformer)
+      duplexPipe.forceStop
+
+      //when
+      node.clean
+
+      //then
+      node.isActive must beFalse
+    }
 
   @Test
-  def nodeMustBeIdentifiedByIP() {
-    //Given (2 nodes with same IP, but different name and changeSet)
-    val node1 = new Node(name = "node1", ipAddress, ChangeSet(1))
-    val node2 = new Node(name = "node2", ipAddress, ChangeSet(2))
-
-    //Then: both nodes are same
-    assert(node1 == node2)
-  }
-
-  @Test
-  def nodeBecomesActiveWhenADuplexPipeIsStarted() {
-    //given
+  def nodeStartsMultiplePipes() {
+    //given: Multiple client and mongo sockets
+    val ipAddress = InetAddress.getByName("127.0.0.7")
     val node = new Node(name, ipAddress, changeSet)
-    val clientSocket = new Socket(host, ServerSetup.appServerPort)
-    val mongoSocket = new Socket(host, ServerSetup.mongoServerPort)
+
+    val clientSocket1 = new Socket(host, NodeSpecs.servers.midasServerPort)
+    val mongoSocket1 = new Socket(host, NodeSpecs.servers.mongoServerPort)
+
+    val clientSocket2 = new Socket(host, NodeSpecs.servers.midasServerPort)
+    val mongoSocket2 = new Socket(host, NodeSpecs.servers.mongoServerPort)
     val mockTransformer = mock[Transformer]
 
-    //when
-    node.startDuplexPipe(clientSocket, mongoSocket, mockTransformer)
-    waitForDuplexPipe(1, TimeUnit.SECONDS)
+    //when: A node starts a duplex pipe for each pair of sockets
+    val duplexPipe1 = node.startDuplexPipe(clientSocket1, mongoSocket1, mockTransformer)
+    val duplexPipe2 = node.startDuplexPipe(clientSocket2, mongoSocket2, mockTransformer)
 
-    //then
-    node.isActive must beTrue
-  }
-
-  def waitForDuplexPipe(time: Long, unit: TimeUnit) = {
-    unit.sleep(time)
+    //then: The duplex pipes were started successfully
+    duplexPipe1.isActive must beTrue
+    duplexPipe2.isActive must beTrue
   }
 
   @Test
-  def nodeCleanDeadPipes() {
-    //given
-    val node = new Node(name, ipAddress, changeSet)
-    val clientSocket = new Socket(host, ServerSetup.appServerPort)
-    val mongoSocket = new Socket(host, ServerSetup.mongoServerPort)
+  def nodeStopsActivePipes() {
+    //given: A node with few active pipes
+    val ipAddress = InetAddress.getByName("127.0.0.8")
+    val node = new Node("stop-node", ipAddress, changeSet)
     val mockTransformer = mock[Transformer]
 
-    //and given
-    val duplexPipe = node.startDuplexPipe(clientSocket, mongoSocket, mockTransformer)
-    waitForDuplexPipe(1, TimeUnit.SECONDS)
+    val clientSocket1 = new Socket(host, NodeSpecs.servers.midasServerPort)
+    val mongoSocket1 = new Socket(host, NodeSpecs.servers.mongoServerPort)
+    val duplexPipe1 = node.startDuplexPipe(clientSocket1, mongoSocket1, mockTransformer)
 
-    duplexPipe.forceStop
-    waitForDuplexPipe(1, TimeUnit.SECONDS)
+    val clientSocket2 = new Socket(host, NodeSpecs.servers.midasServerPort)
+    val mongoSocket2 = new Socket(host, NodeSpecs.servers.mongoServerPort)
+    val duplexPipe2 = node.startDuplexPipe(clientSocket2, mongoSocket2, mockTransformer)
 
-    //when
-    node.clean
+    //when: The node is stopped
+    node.stop
 
-    //then
-    node.isActive must beFalse
+    //then: All the active pipes must be stopped as well
+    duplexPipe1.isActive must beFalse
+    duplexPipe2.isActive must beFalse
   }
 
 }
 
 object NodeSpecs {
+
+  val servers = new ServerSetup()
   @BeforeClass
   def setup() {
-    ServerSetup.setUpSockets()
+    servers.setUpSockets()
   }
 
   @AfterClass
   def cleanup() {
-    ServerSetup.shutdownSockets()
-  }
-}
-
-object ServerSetup {
-  var appServerPort = 27020
-  var mongoServerPort = 27017
-  var appServer: ServerSocket = null
-  var mongoServer: ServerSocket = null
-
-  def setUpSockets() {
-    appServer = new ServerSocket(0)
-    appServerPort = appServer.getLocalPort
-    mongoServer = new ServerSocket(0)
-    mongoServerPort = mongoServer.getLocalPort
-    new Thread(new Runnable {
-      def run() = {
-        while(!appServer.isClosed) {
-          appServer.accept()
-        }
-      }
-    }).start()
-    new Thread(new Runnable {
-      def run() = {
-        while(!mongoServer.isClosed) {
-          mongoServer.accept()
-        }
-      }
-    }).start()
-  }
-
-  def shutdownSockets() {
-    appServer.close()
-    mongoServer.close()
+    servers.shutdownSockets()
   }
 }

@@ -74,5 +74,12 @@ class Application(val configDir: URL, private var name: String, private var tran
     }
   }
 
+  override def equals(other: Any): Boolean = other match {
+    case that: Application => this.configDir.toURI == that.configDir.toURI
+    case _ => false
+  }
+
+  override val hashCode: Int = 17 * (17 + configDir.toURI.hashCode)
+
   override def toString = s"""Application(configDir = ${configDir.toURI}, name = $name, mode = $transformType, nodes = ${nodes mkString "," }, $transformer"""
 }

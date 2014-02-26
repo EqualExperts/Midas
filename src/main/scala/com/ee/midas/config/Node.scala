@@ -6,11 +6,11 @@ import com.ee.midas.pipes.SocketConnector._
 import com.ee.midas.pipes.DuplexPipe
 import com.ee.midas.utils.Loggable
 import com.ee.midas.transform.Transformer
-import scala.collection.mutable.Set
+import scala.collection.mutable.ArrayBuffer
 
 class Node(private var name: String, val ip: InetAddress, private var changeSet: ChangeSet) extends Loggable {
 
-  private val pipes = Set[DuplexPipe]()
+  private val pipes = ArrayBuffer[DuplexPipe]()
 
   final def startDuplexPipe(appSocket: Socket, mongoSocket: Socket, transformer: Transformer) = {
     clean

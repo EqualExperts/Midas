@@ -20,6 +20,8 @@ extends Pipe with Loggable {
   private def threadName(name: String) = duplexGroup.getName + "-" + name + "-Thread"
 
   override def start: Unit = {
+    request.start
+    response.start
     logInfo("Starting " +  toString)
     requestThread.start
     responseThread.start

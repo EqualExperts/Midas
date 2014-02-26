@@ -12,10 +12,10 @@ class SimplexPipe(val name: String, val src: InputStream,
 
   def start: Unit = {
     logInfo("Starting " +  toString)
+    isRunning = true
   }
 
   override def run: Unit = {
-    isRunning = true
     var bytesRead: Int = 0
     do {
       bytesRead = interceptable.intercept(src, tgt)
@@ -29,10 +29,11 @@ class SimplexPipe(val name: String, val src: InputStream,
 
   def forceStop: Unit = {
     val threadName = Thread.currentThread().getName()
+    stop
+    isRunning = false
     logInfo("[" + threadName + "] " + toString + ": Closing Streams...")
     src.close()
     tgt.close()
-    isRunning = false
     logInfo("[" + threadName + "] " + toString + ": Closing Streams Done")
   }
 

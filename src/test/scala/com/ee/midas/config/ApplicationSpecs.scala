@@ -1,7 +1,7 @@
 package com.ee.midas.config
 
 import org.junit.runner.RunWith
-import java.net.{ServerSocket, Socket, URL, InetAddress}
+import java.net.{Socket, URL, InetAddress}
 import com.ee.midas.transform.{Transformer, TransformType}
 import org.specs2.mock.Mockito
 import org.mockito.runners.MockitoJUnitRunner
@@ -38,7 +38,11 @@ class ApplicationSpecs extends JUnitMustMatchers with Mockito {
   val node1 = new Node(node1Name, node1Ip, ChangeSet(changeSet1))
   val node2 = new Node(node2Name, node2Ip, ChangeSet(changeSet2))
   val nodes = Set(node1, node2)
-  val configDir: URL = null
+  val deltasDir = System.getProperty("user.dir")
+  val appDir = new File(s"$deltasDir/$appName")
+  appDir.mkdir()
+  appDir.deleteOnExit()
+  val configDir: URL = appDir.toURI.toURL
   val application = new Application(configDir, appName, TransformType.EXPANSION, nodes)
 
   @Test
@@ -90,9 +94,9 @@ class ApplicationSpecs extends JUnitMustMatchers with Mockito {
   @Test
   def acceptsConnectionForNodeAvailableInConfiguration() {
       //Given
-      val host = "localhost"
-      val clientSocket = new Socket(host, ServerSetup.appServerPort)
-      val mongoSocket = new Socket(host, ServerSetup.mongoServerPort)
+      val host = "127.0.0.1"
+      val clientSocket = new Socket(host, ApplicationSpecs.servers.midasServerPort)
+      val mongoSocket = new Socket(host, ApplicationSpecs.servers.mongoServerPort)
       val application = new Application(configDir, appName, TransformType.EXPANSION, nodes)
 
       //When
@@ -109,7 +113,6 @@ class ApplicationSpecs extends JUnitMustMatchers with Mockito {
     val client = mock[Socket]
     client.getInetAddress returns InetAddress.getByName("127.0.0.18")
     val mongo = mock[Socket]
-    val configDir: URL = null
     val application = new Application(configDir, appName, TransformType.EXPANSION, nodes)
 
     //When
@@ -128,7 +131,7 @@ class ApplicationSpecs extends JUnitMustMatchers with Mockito {
 
     //When
     new Application(configDir, appName, TransformType.EXPANSION, nodes) {
-      override def processDeltas(translator: Translator[Transformer], transformType: TransformType, configDir: URL): Try[Transformer] = Try {
+     override def processDeltas(translator: Translator[Transformer], transformType: TransformType, configDir: URL): Try[Transformer] = Try {
         processDeltaCalled = 1
         (Transformer.empty)
       }
@@ -140,13 +143,14 @@ class ApplicationSpecs extends JUnitMustMatchers with Mockito {
 }
 
 object ApplicationSpecs {
+  val servers: ServerSetup = new ServerSetup()
   @BeforeClass
   def setup() {
-    ServerSetup.setUpSockets()
+    servers.setUpSockets()
   }
 
   @AfterClass
   def cleanup() {
-    ServerSetup.shutdownSockets()
+    servers.shutdownSockets()
   }
 }

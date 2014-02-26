@@ -3,11 +3,12 @@ package com.ee.midas.config
 import java.net.{Socket, URI, InetAddress, URL}
 import com.ee.midas.utils.Loggable
 import java.io.File
+import scala.collection.mutable.Map
 
 case class Configuration(deltasDir: URL, private val apps: List[String]) extends Loggable
 with ApplicationParsers with Watchable[Configuration] {
 
-  private val parsedApps = scala.collection.mutable.Map[URI, (Application, ApplicationWatcher)](parseApplications: _*)
+  private val parsedApps = Map[URI, (Application, ApplicationWatcher)](parseApplications: _*)
 
   private def parseApplications: List[(URI, (Application, ApplicationWatcher))] =
     apps map { app =>

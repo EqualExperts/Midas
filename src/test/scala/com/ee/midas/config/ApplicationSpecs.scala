@@ -127,11 +127,11 @@ class ApplicationSpecs extends JUnitMustMatchers with Mockito {
     val configDir: URL = new File("/src/test/scala/myDeltas/myApp").toURI.toURL
 
     //When
-    val application = new Application(configDir, appName, TransformType.EXPANSION, nodes) {
-     override def processDeltas(translator: Translator[Transformer], transformType: TransformType, configDir: URL): Try[Transformer] = Try {
+    new Application(configDir, appName, TransformType.EXPANSION, nodes) {
+      override def processDeltas(translator: Translator[Transformer], transformType: TransformType, configDir: URL): Try[Transformer] = Try {
         processDeltaCalled = 1
         (Transformer.empty)
-     }
+      }
     }
 
     //Then

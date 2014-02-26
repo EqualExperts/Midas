@@ -29,7 +29,7 @@ class NodeSpecs extends JUnitMustMatchers with Mockito {
   val host = "localhost"
 
   @Test
-  def nodeStartInactive() {
+  def nodeIsInactiveWhenCreated() {
     //Given
     val name = "test-node"
     val ipAddress = InetAddress.getByName("127.0.0.3")
@@ -49,7 +49,7 @@ class NodeSpecs extends JUnitMustMatchers with Mockito {
     val node2 = new Node(name = "node2", ipAddress, ChangeSet(2))
 
     //Then: both nodes are same
-    node1 == node2
+    assert(node1 == node2)
   }
 
   @Test

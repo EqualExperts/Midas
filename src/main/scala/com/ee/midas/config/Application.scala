@@ -9,7 +9,7 @@ import com.ee.midas.dsl.Translator
 import com.ee.midas.dsl.interpreter.Reader
 import com.ee.midas.dsl.generator.ScalaGenerator
 
-class Application(val configDir: URL, private var name: String, private var transformType: TransformType, private var nodes: Set[Node])
+class Application(val configDir: URL, private[Application] var _name: String, private var transformType: TransformType, private var nodes: Set[Node])
   extends Watchable[Application] with DeltasProcessor with Loggable {
 
   private val translator = new Translator[Transformer](new Reader, new ScalaGenerator)
@@ -75,6 +75,8 @@ class Application(val configDir: URL, private var name: String, private var tran
       case None => logError(s"Node with IP Address $appIp does not exist for Application: $name in Config Dir $configDir")
     }
   }
+
+  final def name = _name
 
   final override def equals(other: Any): Boolean = other match {
     case that: Application => this.configDir.toURI == that.configDir.toURI

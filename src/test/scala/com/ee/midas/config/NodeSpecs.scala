@@ -136,14 +136,15 @@ class NodeSpecs extends JUnitMustMatchers with Mockito {
 
 object NodeSpecs {
 
-  val servers = new ServerSetup()
+  val servers = new ServerSetup
+
   @BeforeClass
   def setup() {
-    servers.setUpSockets()
+    servers.start
   }
 
   @AfterClass
   def cleanup() {
-    servers.shutdownSockets()
+    servers.stop
   }
 }

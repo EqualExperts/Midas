@@ -6,7 +6,7 @@ import com.ee.midas.transform.{Transformer, TransformType}
 import org.specs2.mock.Mockito
 import org.mockito.runners.MockitoJUnitRunner
 import org.specs2.matcher.JUnitMustMatchers
-import org.junit.{AfterClass, BeforeClass, Test}
+import org.junit.{Ignore, AfterClass, BeforeClass, Test}
 import com.ee.midas.dsl.Translator
 import java.io.File
 import scala.util.Try
@@ -135,17 +135,32 @@ class ApplicationSpecs extends JUnitMustMatchers with Mockito {
     //Then
     processDeltaCalled mustEqual 1
   }
+
+  @Ignore
+  def updatesApplicationName: Unit = {
+    //Given
+    val newAppName = "newAppName"
+    val newApplication = new Application(configDir, newAppName, TransformType.EXPANSION, nodes)
+
+    //When
+    application.update(newApplication)
+
+    //Then
+    application.name mustEqual newAppName
+  }
 }
 
 object ApplicationSpecs {
-  val servers: ServerSetup = new ServerSetup()
+
+  val servers: ServerSetup = new ServerSetup
+
   @BeforeClass
   def setup() {
-    servers.setUpSockets()
+    servers.start
   }
 
   @AfterClass
   def cleanup() {
-    servers.shutdownSockets()
+    servers.stop
   }
 }

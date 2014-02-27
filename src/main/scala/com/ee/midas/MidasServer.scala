@@ -8,8 +8,9 @@ import scala.util.Try
 
 class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParser {
 
-  val deltasDir = new File(cmdConfig.baseDeltasDir.getPath).toURI.toURL
-  val configuration: Configuration = parseConfiguration(cmdConfig)
+  private val deltasDir = new File(cmdConfig.baseDeltasDir.getPath).toURI.toURL
+  private val configuration: Configuration = parseConfiguration(cmdConfig)
+  private val watcher = new ConfigurationWatcher(configuration, cmdConfig.baseDeltasDir)
   setupShutdownHook
 
   private def parseConfiguration(cmdConfig: CmdConfig): Configuration =
@@ -32,6 +33,7 @@ class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParse
     val forceStopMsg = "User Forced Stop on Midas...Closing Open Connections"
     logInfo(forceStopMsg)
     println(forceStopMsg)
+    watcher.stopWatching
     configuration.stop
     val shutdownMsg = "Midas Shutdown Complete!"
     logInfo(shutdownMsg)
@@ -53,8 +55,9 @@ class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParse
     val startingMsg = s"Starting Midas on ${cmdConfig.midasHost}, port ${cmdConfig.midasPort}..."
     logInfo(startingMsg)
     println(startingMsg)
-    new ConfigurationWatcher(configuration, cmdConfig.baseDeltasDir)
+
     configuration.start
+    watcher.startWatching
     createServerSocket match {
       case scala.util.Failure(t) =>
         val errMsg = s"Cannot Start Midas on IP => ${cmdConfig.midasHost}, Port => ${cmdConfig.midasPort}.  Please Check Your Server IP or Port."

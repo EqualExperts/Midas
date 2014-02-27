@@ -9,12 +9,14 @@ class ServerSetup {
   var midasServer: ServerSocket = null
   var mongoServer: ServerSocket = null
 
-  private def start(serverName: String, server: ServerSocket) = {
+  private def run(serverName: String, server: ServerSocket) = {
     new Thread(new Runnable {
       def run() = {
         while(!server.isClosed) {
           println(s"$serverName open on: ${server.getLocalPort}")
-          Try{ server.accept() } match {
+          Try {
+            server.accept()
+          } match {
             case Success(socket) => println("Connection Accepted")
             case Failure(t) => println(s"${t.getMessage}")
           }
@@ -23,17 +25,17 @@ class ServerSetup {
     }, serverName).start()
   }
 
-  def setUpSockets() {
+  def start = {
     println("BEFORE CLASS INVOKED. STARTING SERVERS")
     midasServer = new ServerSocket(0)
     midasServerPort = midasServer.getLocalPort
     mongoServer = new ServerSocket(0)
     mongoServerPort = mongoServer.getLocalPort
-    start("Midas Server",midasServer)
-    start("Mongo Server", mongoServer)
+    run("Midas Server",midasServer)
+    run("Mongo Server", mongoServer)
   }
 
-  def shutdownSockets() {
+  def stop = {
     println("AFTER CLASS INVOKED. SHUTTING DOWN SERVERS")
     midasServer.close()
     mongoServer.close()

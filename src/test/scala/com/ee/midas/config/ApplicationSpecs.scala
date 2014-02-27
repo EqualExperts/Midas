@@ -10,6 +10,7 @@ import org.junit.{Ignore, AfterClass, BeforeClass, Test}
 import com.ee.midas.dsl.Translator
 import java.io.File
 import scala.util.Try
+import com.ee.midas.utils.SynchronizedHolder
 
 /**
  * IMPORTANT NOTE:
@@ -136,6 +137,26 @@ class ApplicationSpecs extends JUnitMustMatchers with Mockito {
     processDeltaCalled mustEqual 1
   }
 
+
+  @Test
+  def holderHoldsTransformerWhenApplicationIsCreated() {
+    //Given
+    val configDir: URL = new File("/src/test/scala/myDeltas/myApp").toURI.toURL
+    val transformer = mock[Transformer]
+    val holder = mock[SynchronizedHolder[Transformer]]
+
+
+    //When
+    new Application(configDir, appName, TransformType.EXPANSION, nodes, holder) {
+      override def processDeltas(translator: Translator[Transformer], transformType: TransformType, configDir: URL): Try[Transformer] = Try {
+        transformer
+      }
+    }
+
+    //Then
+    there was one(holder).apply(transformer)
+  }
+
   @Test
   def updatesApplicationName: Unit = {
     //Given
@@ -147,6 +168,59 @@ class ApplicationSpecs extends JUnitMustMatchers with Mockito {
 
     //Then
     application.name mustEqual newAppName
+  }
+
+  @Test
+  def updatesTransformerFromNewApplication: Unit = {
+    //Given
+    val holder = SynchronizedHolder(Transformer.empty)
+    val transformer = new Transformer {
+      var responseExpansions: Map[String, VersionedSnippets] = Map()
+      var responseContractions: Map[String, VersionedSnippets] = Map()
+      var transformType: TransformType = TransformType.CONTRACTION
+      var requestExpansions: Map[ChangeSetCollectionKey, Double] = Map()
+      var requestContractions: Map[ChangeSetCollectionKey, Double] = Map()
+    }
+
+    //And
+    val oldApplication = new Application(configDir, appName, TransformType.EXPANSION, nodes, holder)
+
+    val newApplication = new Application(configDir, appName, TransformType.EXPANSION, nodes) {
+      override def processDeltas(translator: Translator[Transformer], transformType: TransformType, configDir: URL): Try[Transformer] = Try {
+        transformer
+      }
+    }
+
+    //When
+    oldApplication.update(newApplication)
+
+    //Then
+    holder.get mustEqual transformer
+  }
+
+  @Test
+  def doesNotUpdateTransformerWhenNewApplicationHasEmptyTransformer: Unit = {
+    //Given
+    val holder = SynchronizedHolder(Transformer.empty)
+    val transformer = mock[Transformer]
+    val oldApplication = new Application(configDir, appName, TransformType.EXPANSION, nodes, holder) {
+      override def processDeltas(translator: Translator[Transformer], transformType: TransformType, configDir: URL): Try[Transformer] = Try {
+        transformer
+      }
+    }
+
+    //And
+    val newApplication = new Application(configDir, appName, TransformType.EXPANSION, nodes) {
+      override def processDeltas(translator: Translator[Transformer], transformType: TransformType, configDir: URL): Try[Transformer] = Try {
+        Transformer.empty
+      }
+    }
+
+    //When
+    oldApplication.update(newApplication)
+
+    //Then
+    holder.get mustEqual transformer
   }
 }
 

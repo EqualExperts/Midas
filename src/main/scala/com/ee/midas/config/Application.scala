@@ -2,18 +2,22 @@ package com.ee.midas.config
 
 import java.net.{Socket, InetAddress, URL}
 import com.ee.midas.transform.{Transformer, TransformType}
-import com.ee.midas.utils.Loggable
+import com.ee.midas.utils.{SynchronizedHolder, Loggable}
 import com.ee.midas.DeltasProcessor
 import scala.{None, Some}
 import com.ee.midas.dsl.Translator
 import com.ee.midas.dsl.interpreter.Reader
 import com.ee.midas.dsl.generator.ScalaGenerator
 
-class Application(val configDir: URL, private[Application] var _name: String, private var transformType: TransformType, private var nodes: Set[Node])
+class Application(val configDir: URL,
+                  private var _name: String,
+                  private var transformType: TransformType,
+                  private var nodes: Set[Node],
+                  private val transformerHolder: SynchronizedHolder[Transformer] = SynchronizedHolder(Transformer.empty))
   extends Watchable[Application] with DeltasProcessor with Loggable {
 
   private val translator = new Translator[Transformer](new Reader, new ScalaGenerator)
-  private var transformer = processDeltaFiles
+  transformerHolder(processDeltaFiles)
 
   private def processDeltaFiles: Transformer = {
     val processingDeltaFilesMsg =
@@ -31,12 +35,16 @@ class Application(val configDir: URL, private[Application] var _name: String, pr
     }
   }
 
+  private def updateTransformerIfSuccessfullyParsed(newApplication: Application) = {
+    val newTransformer = newApplication.transformerHolder.get
+    if(newTransformer != Transformer.empty) {
+      transformerHolder(newApplication.transformerHolder.get)
+    }
+  }
+
   final def update(newApplication: Application) = {
     _name = newApplication.name
-    val newAppTransformer = newApplication.processDeltaFiles
-    if(newAppTransformer != Transformer.empty) {
-      transformer = newApplication.transformer
-    }
+    updateTransformerIfSuccessfullyParsed(newApplication)
     //todo: work this out same as how configuration works out for nodes
     val newNodes = newApplication.nodes
     nodes.filter(n => newNodes.contains(n)).foreach { node =>
@@ -72,7 +80,7 @@ class Application(val configDir: URL, private[Application] var _name: String, pr
   final def acceptAuthorized(appSocket: Socket, mongoSocket: Socket): Unit = {
     val appIp = appSocket.getInetAddress
     getNode(appIp) match {
-      case Some(node) => node.startDuplexPipe(appSocket, mongoSocket, transformer)
+      case Some(node) => node.startDuplexPipe(appSocket, mongoSocket, transformerHolder.get)
       case None => logError(s"Node with IP Address $appIp does not exist for Application: $name in Config Dir $configDir")
     }
   }
@@ -86,5 +94,5 @@ class Application(val configDir: URL, private[Application] var _name: String, pr
 
   final override val hashCode: Int = 17 * (17 + configDir.toURI.hashCode)
 
-  final override def toString = s"""Application(configDir = ${configDir.toURI}, name = $name, mode = $transformType, nodes = ${nodes mkString "," }, $transformer"""
+  final override def toString = s"""Application(configDir = ${configDir.toURI}, name = $name, mode = $transformType, nodes = ${nodes mkString "," }, $transformerHolder.get"""
 }

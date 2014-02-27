@@ -1,11 +1,13 @@
 package com.ee.midas.utils
 
-import java.nio.file.{WatchEvent, FileSystems}
+import java.nio.file._
 import scala.collection.JavaConverters._
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit._
+import java.nio.file.StandardWatchEventKinds._
+import java.io.File
 
-class DirectoryWatcher(dirURL: String, events: Seq[WatchEvent.Kind[_]], waitBeforeProcessing: Long = 1000,
+class DirectoryWatcher(dirURL: String, watchEvents: Seq[WatchEvent.Kind[_]], waitBeforeProcessing: Long = 1000,
                        timeUnit: TimeUnit = MILLISECONDS, stopWatchingOnException: Boolean = true)(onEvents: Seq[WatchEvent[_]] => Unit)
   extends Loggable with Runnable {
 
@@ -24,8 +26,9 @@ class DirectoryWatcher(dirURL: String, events: Seq[WatchEvent.Kind[_]], waitBefo
                      else
                         fileSystem.getPath(dirURL)
 
-  path.register(watcher, events.toArray)
-  logInfo(s"Will Watch dir ${dirURL} for ${events} of Files...")
+  registerAllDirectories(path)
+
+  logInfo(s"Will Watch dir ${dirURL} for ${watchEvents} of Files...")
   
   var isRunning = true
   
@@ -53,12 +56,17 @@ class DirectoryWatcher(dirURL: String, events: Seq[WatchEvent.Kind[_]], waitBefo
         logInfo(s"Watching ${dirURL}...")
         val watchKey = watcher.take()
         forMoreEvents(waitBeforeProcessing)
+
         val events = watchKey.pollEvents().asScala
         events.foreach { e =>
           logInfo(s"Detected ${e.kind()}, Context = ${e.context()}}")
+          registerIfNewDirectoryCreated(e)
         }
-        onEvents(events)
-        valid = watchKey.reset()
+
+        if(isRunning && isWatchServiceRunning) {
+          onEvents(events)
+          valid = watchKey.reset()
+        }
       } catch {
         case e: Exception =>
           logError(s"Closing it due to ${e.getMessage}. ${e.getStackTraceString}")
@@ -69,6 +77,23 @@ class DirectoryWatcher(dirURL: String, events: Seq[WatchEvent.Kind[_]], waitBefo
     stopWatching
     watcher.close()
     isWatchServiceRunning = false
-    logInfo(s"Completed Watch on ${dirURL}")
+    logInfo(s"Closing Watch on ${dirURL}")
   }
+
+  private def registerAllDirectories(dir: Path): Unit = {
+    logInfo(s"Registering $dir with watcher.")
+    dir.register(watcher, watchEvents.toArray)
+    val subFolders = new File(dir.toUri).listFiles().filter(file => file.isDirectory) map { file => file.toPath}
+    subFolders map registerAllDirectories
+  }
+
+  private def registerIfNewDirectoryCreated(event: WatchEvent[_]) = {
+    if(event.kind().equals(ENTRY_CREATE)) {
+      val newBornPath = path.resolve(event.context().asInstanceOf[Path])
+      if(Files.isDirectory(newBornPath, LinkOption.NOFOLLOW_LINKS)) {
+        registerAllDirectories(newBornPath)
+      }
+    }
+  }
+
 }

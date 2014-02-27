@@ -8,9 +8,13 @@ import com.ee.midas.utils.Loggable
 import com.ee.midas.transform.Transformer
 import scala.collection.mutable.ArrayBuffer
 
-class Node(private var name: String, val ip: InetAddress, private var changeSet: ChangeSet) extends Loggable {
+class Node(private var _name: String, val ip: InetAddress, private var _changeSet: ChangeSet) extends Loggable {
 
   private val pipes = ArrayBuffer[DuplexPipe]()
+
+  final def name = _name
+
+  final def changeSet = _changeSet
 
   final def startDuplexPipe(appSocket: Socket, mongoSocket: Socket, transformer: Transformer) = {
     cleanDeadPipes
@@ -36,8 +40,8 @@ class Node(private var name: String, val ip: InetAddress, private var changeSet:
   final def isActive = pipes exists(pipe => pipe.isActive)
 
   final def updateFrom(from: Node) = {
-    name = from.name
-    changeSet = from.changeSet
+    _name = from._name
+    _changeSet = from._changeSet
   }
 
   final override def equals(other: Any): Boolean = other match {

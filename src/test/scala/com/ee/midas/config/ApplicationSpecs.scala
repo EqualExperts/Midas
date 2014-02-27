@@ -222,6 +222,132 @@ class ApplicationSpecs extends JUnitMustMatchers with Mockito {
     //Then
     holder.get mustEqual transformer
   }
+
+  @Test
+  def addsOneNewNodeFromParsedApplication: Unit = {
+    //Given
+    val newIp = "127.0.0.11"
+    val newNodeIp = InetAddress.getByName(newIp)
+    val newNode = new Node("newNode", newNodeIp, ChangeSet(1))
+    val parsedApplication = new Application(configDir, appName, TransformType.EXPANSION, nodes + newNode)
+
+    //When
+    application.update(parsedApplication)
+
+    //Then
+    application.getNode(newNodeIp) mustEqual Some(newNode)
+  }
+
+  @Test
+  def addsTwoOrMoreNewNodesFromParsedApplication: Unit = {
+    //Given
+    val newIp1 = "127.0.0.11"
+    val newIp2 = "127.0.0.12"
+    val newNodeIp1 = InetAddress.getByName(newIp1)
+    val newNodeIp2 = InetAddress.getByName(newIp2)
+    val newNode1 = new Node("newNode1", newNodeIp1, ChangeSet(1))
+    val newNode2 = new Node("newNode2", newNodeIp2, ChangeSet(1))
+    val parsedApplication = new Application(configDir, appName, TransformType.EXPANSION, nodes + newNode1 + newNode2)
+
+    //When
+    application.update(parsedApplication)
+
+    //Then
+    application.getNode(newNodeIp1) mustEqual Some(newNode1)
+    application.getNode(newNodeIp2) mustEqual Some(newNode2)
+  }
+
+  @Test
+  def removesOneOldNodeWhenNewApplicationDoesNotHaveIt: Unit = {
+    //Given
+    val parsedApplication = new Application(configDir, appName, TransformType.EXPANSION, Set(node1))
+
+    //When
+    application.update(parsedApplication)
+
+    //Then
+    application.getNode(node1.ip) mustEqual Some(node1)
+    application.getNode(node2.ip) mustEqual None
+  }
+
+  @Test
+  def removesAllOldNodesWhenApplicationHasNone: Unit = {
+    //Given
+    val parsedApplication = new Application(configDir, appName, TransformType.EXPANSION, Set())
+
+    //When
+    application.update(parsedApplication)
+
+    //Then
+    application.getNode(node1.ip) mustEqual None
+    application.getNode(node2.ip) mustEqual None
+  }
+
+  @Test
+  def addsANewNodeAndRemovesAnOldNodeWhenApplicationUpdates: Unit = {
+    //Given
+    val newIp = "127.0.0.11"
+    val newNodeIp = InetAddress.getByName(newIp)
+    val newNode = new Node("newNode", newNodeIp, ChangeSet(12))
+    val parsedApplication = new Application(configDir, appName, TransformType.EXPANSION, Set(node1, newNode))
+
+    //When
+    application.update(parsedApplication)
+
+    //Then
+    application.getNode(node1.ip) mustEqual Some(node1)
+    application.getNode(node2.ip) mustEqual None
+    application.getNode(newNodeIp) mustEqual Some(newNode)
+  }
+
+
+  @Test
+  def doesNotUpdateApplicationNodesWhenParsedApplicationNodesDidNotChange: Unit = {
+    //Given
+    val parsedApplication = new Application(configDir, appName, TransformType.EXPANSION, nodes)
+
+    //When
+    application.update(parsedApplication)
+
+    //Then
+    application.getNode(node1.ip) mustEqual Some(node1)
+    application.getNode(node2.ip) mustEqual Some(node2)
+  }
+
+  @Test
+  def updatesApplicationNodesWhenParsedApplicationNodeNameChanged: Unit = {
+    //Given
+    val newNode1Name = "newNode1Name"
+    val newNode1 = new Node(newNode1Name, node1Ip, ChangeSet(changeSet1))
+    val parsedApplication = new Application(configDir, appName, TransformType.EXPANSION, Set(newNode1, node2))
+
+    //When
+    application.update(parsedApplication)
+
+    //Then
+    application.getNode(node1.ip) match {
+      case Some(n) => n.name mustEqual newNode1Name
+      case None => failure(s"Should have Node with IP ${node1Ip}")
+    }
+    application.getNode(node2.ip) mustEqual Some(node2)
+  }
+
+  @Test
+  def updatesApplicationNodesWhenParsedApplicationNodeChangeSetChanged: Unit = {
+    //Given
+    val newNode1 = new Node(node1Name, node1Ip, ChangeSet(changeSet2))
+    val parsedApplication = new Application(configDir, appName, TransformType.EXPANSION, Set(newNode1, node2))
+
+    //When
+    application.update(parsedApplication)
+
+    //Then
+    application.getNode(node1.ip) match {
+      case Some(n) => n.changeSet mustEqual ChangeSet(2)
+      case None => failure(s"Should have Node with IP ${node1Ip}")
+    }
+    application.getNode(node2.ip) mustEqual Some(node2)
+  }
 }
 
 object ApplicationSpecs {

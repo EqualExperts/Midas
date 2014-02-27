@@ -34,39 +34,50 @@ class Application(val configDir: URL,
         Transformer.empty
     }
   }
+  
+  private def updateName(from: Application) = _name = from.name
 
-  private def updateTransformerIfSuccessfullyParsed(newApplication: Application) = {
-    val newTransformer = newApplication.transformerHolder.get
+  private def updateTransformerIfSuccessfullyParsed(from: Application) = {
+    val newTransformer = from.transformerHolder.get
     if(newTransformer != Transformer.empty) {
-      transformerHolder(newApplication.transformerHolder.get)
+      transformerHolder(from.transformerHolder.get)
     }
   }
-
-  final def update(newApplication: Application) = {
-    _name = newApplication.name
-    updateTransformerIfSuccessfullyParsed(newApplication)
-    //todo: work this out same as how configuration works out for nodes
-    val newNodes = newApplication.nodes
-    nodes.filter(n => newNodes.contains(n)).foreach { node =>
-      newNodes.find(nn => node == nn) match {
-        case Some(newNode) => node.updateFrom(newNode)
+  
+  private def updateCommonNodes(from: Application) = {
+    val newNodes = from.nodes
+    val commonNodes = nodes.filter(n => newNodes.contains(n)) 
+    commonNodes.foreach { oldNode =>
+      newNodes.find(newNode => oldNode == newNode) match {
+        case Some(newNode) => oldNode.update(newNode)
         case None =>
       }
     }
-
+  }
+  
+  private def diffNodes(from: Application) = {
+    val newNodes = from.nodes
     val common = nodes intersect newNodes
-    val toBeAdded = newNodes diff common
-    logInfo(s"Nodes to be Added $toBeAdded")
+    val add = newNodes diff common
+    logInfo(s"Nodes to be Added $add")
 
-    val toBeRemoved = nodes diff common
-    logInfo(s"Stopping Nodes to be Removed $toBeRemoved")
-    toBeRemoved.foreach(node => node.stop)
-    nodes ++= toBeAdded
-    //todo: do something to remove old nodes here
-    nodes --= toBeRemoved
+    val remove = nodes diff common
+    logInfo(s"Nodes to be Removed $remove")
+    (add, remove)
+  }
 
-    logInfo(s"Total Nodes $nodes")
-    logError(s"Updated Nodes for Application ${name}")
+  final def update(fromApp: Application) = {
+    updateName(fromApp)
+    updateTransformerIfSuccessfullyParsed(fromApp)
+    updateCommonNodes(fromApp)
+    val (addNodes, removeNodes) = diffNodes(fromApp)
+    logInfo(s"Stopping Nodes to be Removed $removeNodes")
+    removeNodes.foreach(node => node.stop)
+    nodes --= removeNodes
+    
+    nodes ++= addNodes
+    logInfo(s"Total Nodes = $nodes")
+    logInfo(s"Completed Updation of All Nodes for Application ${name}")
   }
 
   final def hasNode(ip: InetAddress): Boolean = nodes.exists(node => node.ip == ip)

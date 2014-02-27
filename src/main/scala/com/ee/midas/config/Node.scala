@@ -39,9 +39,9 @@ class Node(private var _name: String, val ip: InetAddress, private var _changeSe
 
   final def isActive = pipes exists(pipe => pipe.isActive)
 
-  final def updateFrom(from: Node) = {
-    _name = from._name
-    _changeSet = from._changeSet
+  final def update(fromNode: Node) = {
+    _name = fromNode._name
+    _changeSet = fromNode._changeSet
   }
 
   final override def equals(other: Any): Boolean = other match {

@@ -4,6 +4,7 @@ import java.net.{Socket, InetAddress, URL}
 import com.ee.midas.utils.Loggable
 import java.io.File
 import scala.collection.mutable.Map
+import scala.collection.mutable.Set
 
 final class Configuration(deltasDir: URL, private val apps: List[String]) extends Loggable
 with ApplicationParsers with Watchable[Configuration] {
@@ -25,29 +26,33 @@ with ApplicationParsers with Watchable[Configuration] {
   def applications: List[Application] = parsedApps.map { case (app, _) => app }.toList
 
   def getApplication(ip: InetAddress): Option[Application] = applications.find(app => app.hasNode(ip))
+  
+  private def diffApps(from: Configuration) = {
+    val oldApps = parsedApps.keySet
+    val newApps = from.parsedApps.keySet
+    val common = oldApps intersect newApps
+    val add = newApps diff common
+    logInfo(s"Applications to be Added $add")
+    val remove = oldApps diff common
+    logInfo(s"Applications to be Removed $remove")
+    (add, remove)
+  }
 
-  def update(newConfiguration: Configuration): Unit = {
-    val oldConfig = parsedApps.keySet
-    val newConfig = newConfiguration.parsedApps.keySet
-    val common = oldConfig intersect newConfig
-    val toBeAdded = newConfig diff common
-    logInfo(s"Applications to be Added $toBeAdded")
-    val toBeRemoved = oldConfig diff common
-    logInfo(s"Applications to be Removed $toBeRemoved")
-
-    val newApps = newConfiguration.parsedApps.filter { case (k, v) => toBeAdded.contains(k) }
-    toBeRemoved.foreach { app =>
+  def update(fromConfig: Configuration): Unit = {
+    val (addApps, removeApps) = diffApps(fromConfig)
+    parsedApps --= removeApps.map { app =>
       parsedApps(app).stopWatching
       app.stop
-      val removed = parsedApps.remove(app)
-      logInfo(s"Removed $removed")
+      app
     }
 
-    newApps.foreach { case (app, watcher) =>
+    parsedApps ++= addApps.map { app =>
+      val watcher = fromConfig.parsedApps(app)
       watcher.startWatching
+      (app -> watcher)
     }
-    parsedApps ++= newApps
-    logInfo(s"Total Applications $parsedApps")
+
+    logInfo(s"Total Applications = $parsedApps")
   }
 
   def stop = parsedApps.foreach { case (app, watcher) =>

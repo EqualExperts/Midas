@@ -14,7 +14,6 @@ class DirectoryWatcher(dirURL: String, watchEvents: Seq[WatchEvent.Kind[_]], wai
   private val dirWatcherThread = new Thread(this, getClass.getSimpleName + "-Thread-" + dirURL)
   private val fileSystem = FileSystems.getDefault
   private val watcher = fileSystem.newWatchService()
-  private var isWatchServiceRunning = true
   private val os = System.getProperty("os.name")
 
   val dirWatchMsg = s"Dir to Watch = $dirURL, OS = ${os}"
@@ -36,6 +35,7 @@ class DirectoryWatcher(dirURL: String, watchEvents: Seq[WatchEvent.Kind[_]], wai
     val stopWatchMsg = s"Stopping Watch on ${dirURL}"
     println(stopWatchMsg)
     logInfo(stopWatchMsg)
+    watcher.close()
     isRunning = false
   }
 
@@ -43,30 +43,32 @@ class DirectoryWatcher(dirURL: String, watchEvents: Seq[WatchEvent.Kind[_]], wai
      dirWatcherThread.start()
   }
 
-  def isActive: Boolean = isRunning || isWatchServiceRunning
+  def isActive: Boolean = isRunning
 
   def forMoreEvents(waitTime: Long) = {
     Thread.sleep(waitTime)
   }
 
   def run: Unit = {
-    var valid = true
-    while(isRunning && valid) {
+    while(isRunning) {
       try {
         logInfo(s"Watching ${dirURL}...")
         val watchKey = watcher.take()
-        forMoreEvents(waitBeforeProcessing)
+        if(isRunning) {
+            forMoreEvents(waitBeforeProcessing)
 
-        val events = watchKey.pollEvents().asScala
-        events.foreach { e =>
-          logInfo(s"Detected ${e.kind()}, Context = ${e.context()}}")
-          registerIfNewDirectoryCreated(e)
-        }
+            val events = watchKey.pollEvents().asScala
+            events.foreach { e =>
+              logInfo(s"Detected ${e.kind()}, Context = ${e.context()}}")
+              registerIfNewDirectoryCreated(e)
+            }
 
-        if(isRunning && isWatchServiceRunning) {
-          onEvents(events)
-          valid = watchKey.reset()
-        }
+            onEvents(events)
+            val valid = watchKey.reset()
+            if(!valid) {
+              isRunning = Files.exists(path, LinkOption.NOFOLLOW_LINKS)
+            }
+          }
       } catch {
         case e: Exception =>
           logError(s"Closing it due to ${e.getMessage}. ${e.getStackTraceString}")
@@ -75,8 +77,6 @@ class DirectoryWatcher(dirURL: String, watchEvents: Seq[WatchEvent.Kind[_]], wai
       }
     }
     stopWatching
-    watcher.close()
-    isWatchServiceRunning = false
     logInfo(s"Closing Watch on ${dirURL}")
   }
 

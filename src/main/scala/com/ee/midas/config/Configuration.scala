@@ -42,6 +42,10 @@ with ApplicationParsers with Watchable[Configuration] {
       val removed = parsedApps.remove(app)
       logInfo(s"Removed $removed")
     }
+
+    newApps.foreach { case (app, watcher) =>
+      watcher.startWatching
+    }
     parsedApps ++= newApps
     logInfo(s"Total Applications $parsedApps")
   }

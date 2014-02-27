@@ -32,8 +32,9 @@ class Application(val configDir: URL, private[Application] var _name: String, pr
   }
 
   final def update(newApplication: Application) = {
-    val name = newApplication.name
-    if(newApplication.transformer != Transformer.empty) {
+    _name = newApplication.name
+    val newAppTransformer = newApplication.processDeltaFiles
+    if(newAppTransformer != Transformer.empty) {
       transformer = newApplication.transformer
     }
     //todo: work this out same as how configuration works out for nodes

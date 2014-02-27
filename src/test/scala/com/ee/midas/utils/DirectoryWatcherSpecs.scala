@@ -53,7 +53,7 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers {
 
     //then: it was captured by the watcher
     watcher.stopWatching
-    while(watcher.isRunning)
+    while(watcher.isActive)
     watchedCreateEvent must beTrue
   }
 
@@ -75,7 +75,7 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers {
     writer.close()
 
     watcher.stopWatching
-    while(watcher.isRunning)
+    while(watcher.isActive)
 
     //then: it was captured by the watcher
     watchedModifyEvent must beTrue
@@ -98,7 +98,7 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers {
 
     //then: it was captured by the watcher
     watcher.stopWatching
-    while(watcher.isRunning)
+    while(watcher.isActive)
     watchedDeleteEvent must beTrue
   }
 
@@ -128,7 +128,7 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers {
 
     //then: they are captured by the watcher
     watcher.stopWatching
-    while(watcher.isRunning)
+    while(watcher.isActive)
     watchedCreateEvents === 3
   }
 
@@ -159,7 +159,7 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers {
 
     //then: it was captured by the watcher
     watcher.stopWatching
-    while(watcher.isRunning)
+    while(watcher.isActive)
     watchedDeleted === 3
   }
 
@@ -177,7 +177,7 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers {
     watcher.stopWatching
 
     //Then
-    watcher.isRunning must beFalse
+    watcher.isActive must beFalse
   }
 
   @Test
@@ -195,11 +195,11 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers {
     file.createNewFile()
     file.deleteOnExit()
 
-    while(watcher.isRunning)  {
+    while(watcher.isActive)  {
       Thread.sleep(100)
     }
 
     //Then
-    watcher.isRunning must beFalse
+    watcher.isActive must beFalse
   }
 }

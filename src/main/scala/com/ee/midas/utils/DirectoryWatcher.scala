@@ -7,8 +7,8 @@ import java.util.concurrent.TimeUnit._
 import java.nio.file.StandardWatchEventKinds._
 import java.io.File
 
-class DirectoryWatcher(dirURL: String, watchEvents: Seq[WatchEvent.Kind[_]], waitBeforeProcessing: Long = 1000,
-                       timeUnit: TimeUnit = MILLISECONDS, stopWatchingOnException: Boolean = true)(onEvents: Seq[WatchEvent[_]] => Unit)
+class DirectoryWatcher(dirURL: String, watchEvents: Seq[WatchEvent.Kind[_]], watchEvery: Long = 1000,
+                       unit: TimeUnit = MILLISECONDS, stopWatchingOnException: Boolean = true)(onEvents: Seq[WatchEvent[_]] => Unit)
   extends Loggable with Runnable {
 
   private val dirWatcherThread = new Thread(this, getClass.getSimpleName + "-Thread-" + dirURL)
@@ -29,7 +29,7 @@ class DirectoryWatcher(dirURL: String, watchEvents: Seq[WatchEvent.Kind[_]], wai
 
   logInfo(s"Will Watch dir ${dirURL} for ${watchEvents} of Files...")
   
-  var isRunning = true
+  private var isRunning = false
   
   def stopWatching = {
     val stopWatchMsg = s"Stopping Watch on ${dirURL}"
@@ -45,18 +45,16 @@ class DirectoryWatcher(dirURL: String, watchEvents: Seq[WatchEvent.Kind[_]], wai
 
   def isActive: Boolean = isRunning
 
-  def forMoreEvents(waitTime: Long) = {
-    Thread.sleep(waitTime)
-  }
+  def waitForMoreEventsToAccumulate = unit.sleep(watchEvery)
 
   def run: Unit = {
+    isRunning = true
     while(isRunning) {
       try {
         logInfo(s"Watching ${dirURL}...")
         val watchKey = watcher.take()
         if(isRunning) {
-            forMoreEvents(waitBeforeProcessing)
-
+            waitForMoreEventsToAccumulate
             val events = watchKey.pollEvents().asScala
             events.foreach { e =>
               logInfo(s"Detected ${e.kind()}, Context = ${e.context()}}")

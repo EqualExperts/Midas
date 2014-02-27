@@ -136,7 +136,7 @@ class ApplicationSpecs extends JUnitMustMatchers with Mockito {
     processDeltaCalled mustEqual 1
   }
 
-  @Ignore
+  @Test
   def updatesApplicationName: Unit = {
     //Given
     val newAppName = "newAppName"

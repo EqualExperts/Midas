@@ -93,25 +93,26 @@ class ConfigurationSpecs extends Specification with Mockito {
     }
 
 
-    "accept new authorized connection" in new Setup {
+    "Forward authorized connection to corresponding application" in new Setup with After {
       //Given
-      val appSocket = mock[Socket]
-      val mongoSocket = mock[Socket]
-      appSocket.getInetAddress returns InetAddress.getByName("127.0.0.1")
-      val data: Array[Byte] = Array(0.toByte)
-      mongoSocket.getInputStream returns new ByteArrayInputStream(data)
-      mongoSocket.getOutputStream returns new ByteArrayOutputStream
-      appSocket.getInputStream returns new ByteArrayInputStream(data)
-      appSocket.getOutputStream returns new ByteArrayOutputStream
+      val servers = new ServerSetup()
+      servers.start
+      def after = {
+        servers.stop
+        configuration.stop
+      }
+
+      val clientSocket = new Socket("localhost", servers.midasServerPort)
+      val mongoSocket = new Socket("localhost", servers.mongoServerPort)
 
       //When
-      configuration.processNewConnection(appSocket, mongoSocket)
+      configuration.processNewConnection(clientSocket, mongoSocket)
 
       //Then
-      there was no(appSocket).close()
+      configuration.getApplication(node1Ip).get.isActive must beTrue
     }
 
-    "reject unauthorized connection" in new Setup {
+    "Reject unauthorized connection" in new Setup {
       //Given
       val appSocket = mock[Socket]
       val mongoSocket = mock[Socket]
@@ -122,49 +123,6 @@ class ConfigurationSpecs extends Specification with Mockito {
 
       //Then
       there was one(appSocket).close
-    }
-
-    "update itself from a new configuration" in new Setup {
-      //Given: A configuration from setup
-      val updatedMidasConfigText =  s"""
-                                      |apps {
-                                      |  App1
-                                      |}
-                                     """.stripMargin
-      write(updatedMidasConfigText, midasConfigFile)
-      val newAppName = "App1"
-      val newAppNode = "newAppNode1"
-      val newAppConfigDir = new File(deltasDir + File.separator + newAppName)
-      newAppConfigDir.mkdirs()
-      newAppConfigDir.deleteOnExit()
-      val newAppConfigFile = new File(deltasDir + File.separator + newAppName + File.separator + s"$newAppName.midas")
-      newAppConfigFile.createNewFile()
-      newAppConfigFile.deleteOnExit()
-      val newNodeIp = "127.0.0.3"
-      val newNodeInetAddress = InetAddress.getByName(newNodeIp)
-      val newChangeSetNo = 2
-      val newChangeSet = ChangeSet(2)
-      val newAppConfigText = s"""
-                              |$newAppName {
-                              |  mode = expansion
-                              |  $newAppNode {
-                              |    ip = $newNodeIp
-                              |    changeSet = $newChangeSetNo
-                              |  }
-                              |}
-                             """.stripMargin
-      write(newAppConfigText, newAppConfigFile)
-      println(s"${newAppConfigDir.getAbsolutePath} exists: " + newAppConfigDir.exists())
-      val newConfiguration = new Configuration(deltasDir.toURI.toURL, List("App1"))
-      println("new config is: " + newConfiguration)
-
-      //When
-      configuration.update(newConfiguration)
-
-      //Then
-      val node = new Node(newAppName, newNodeInetAddress, newChangeSet)
-      val expectedApplication = new Application(newAppConfigDir.toURI.toURL, newAppName, TransformType.EXPANSION, Set(node))
-      configuration.applications mustEqual List(expectedApplication)
     }
 
     "Update" in {

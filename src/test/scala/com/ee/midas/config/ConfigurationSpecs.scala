@@ -125,6 +125,33 @@ class ConfigurationSpecs extends Specification with Mockito {
       there was one(appSocket).close
     }
 
+    "stop all the applications" in new Setup with After {
+      //Given
+      val servers = new ServerSetup()
+      servers.start
+      def after = {
+        servers.stop
+      }
+
+      val clientSocket1 = new Socket("localhost", servers.midasServerPort)
+      val mongoSocket1 = new Socket("localhost", servers.mongoServerPort)
+      configuration.processNewConnection(clientSocket1, mongoSocket1)
+
+      val clientSocket2 = new Socket("localhost", servers.midasServerPort)
+      val mongoSocket2 = new Socket("localhost", servers.mongoServerPort)
+      configuration.processNewConnection(clientSocket2, mongoSocket2)
+
+      //When
+      configuration.stop
+
+      //Then
+      configuration.getApplication(node1Ip).get.isActive must beFalse
+      clientSocket1.isClosed must beTrue
+      clientSocket2.isClosed must beTrue
+      mongoSocket1.isClosed must beTrue
+      mongoSocket2.isClosed must beTrue
+    }
+
     "Update" in {
 
       "By adding a new application from new configuration" in new UpdateSetup {

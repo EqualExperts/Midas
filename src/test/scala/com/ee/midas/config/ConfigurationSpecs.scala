@@ -1,9 +1,9 @@
 package com.ee.midas.config
 
-import java.net.{Socket, InetAddress}
+import java.net.{URL, Socket, InetAddress}
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
-import org.specs2.mutable.Specification
+import org.specs2.mutable.{After, Specification}
 import com.ee.midas.transform.TransformType
 import java.io._
 import org.specs2.mock.Mockito
@@ -58,14 +58,6 @@ class ConfigurationSpecs extends Specification with Mockito {
      """.stripMargin
 
     write(appConfigText, appConfigFile)
-
-
-    def write(text: String, toFile: File) = {
-      val writer = new PrintWriter(toFile, "utf-8")
-      writer.write(text)
-      writer.flush()
-      writer.close()
-    }
 
     val node1 = new Node(node1Name, node1Ip, ChangeSet(changeSet1))
     val node2 = new Node(node2Name, node2Ip, ChangeSet(changeSet2))
@@ -174,5 +166,194 @@ class ConfigurationSpecs extends Specification with Mockito {
       val expectedApplication = new Application(newAppConfigDir.toURI.toURL, newAppName, TransformType.EXPANSION, Set(node))
       configuration.applications mustEqual List(expectedApplication)
     }
+
+    "Update" in {
+
+      "By adding a new application from new configuration" in new UpdateSetup {
+        //given
+        override val deltasDir = new File("/" + System.getProperty("user.dir") + "/" + "addsNewAppSpec")
+        val (application1, application2, _) = createApplications
+        val oldConfiguration = createNewConfiguration(deltasDir.toURI.toURL, List(appName1))
+        val newConfiguration = createNewConfiguration(deltasDir.toURI.toURL, List(appName1, appName2))
+
+        //when
+        oldConfiguration.update(newConfiguration)
+
+        //then
+        oldConfiguration.applications must contain(application1)
+        oldConfiguration.applications must contain(application2)
+      }
+
+      "By adding two or more new applications and keeping the common ones from new configuration" in new UpdateSetup {
+        //given
+        override val deltasDir = new File("/" + System.getProperty("user.dir") + "/" + "addsTwoNewAppSpec")
+        val (application1, application2, application3) = createApplications
+        val oldConfiguration = createNewConfiguration(deltasDir.toURI.toURL, List(appName1))
+        val newConfiguration = createNewConfiguration(deltasDir.toURI.toURL, List(appName1, appName2, appName3))
+
+        //when
+        oldConfiguration.update(newConfiguration)
+
+        //then
+        oldConfiguration.applications must contain(application1)
+        oldConfiguration.applications must contain(application2)
+        oldConfiguration.applications must contain(application3)
+      }
+
+      "By removing an application that is not present in new configuration" in new UpdateSetup {
+        //given
+        val deltasDir = new File("/" + System.getProperty("user.dir") + "/" + "removesAppSpec")
+        val (application1, application2, _) = createApplications
+        val oldConfiguration = createNewConfiguration(deltasDir.toURI.toURL, List(appName1, appName2))
+        val newConfiguration = createNewConfiguration(deltasDir.toURI.toURL, List(appName1))
+
+        //when
+        oldConfiguration.update(newConfiguration)
+
+        //then
+        oldConfiguration.applications must contain(application1)
+        oldConfiguration.applications contains application2 must beFalse
+      }
+
+      "By removing an application and stopping it, if not present in new configuration" in new UpdateSetup {
+        //given: a configuration with an active application
+        val deltasDir = new File("/" + System.getProperty("user.dir") + "/" + "removesAndStopsAppSpec")
+        val (clientSocket, mongoSocket) = createServerSockets
+
+        override def after = {
+          stopServerSockets
+          delete(deltasDir)
+        }
+
+        val (application1, application2, _) = createApplications
+        val oldConfiguration = createNewConfiguration(deltasDir.toURI.toURL, List(appName1, appName2))
+        val newConfiguration = createNewConfiguration(deltasDir.toURI.toURL, List(appName2))
+
+        val app1FromConfig = oldConfiguration.getApplication(ipAddress1).get
+
+        //when
+        oldConfiguration.processNewConnection(clientSocket, mongoSocket)
+
+        //then
+        app1FromConfig.isActive must beTrue
+
+        //when
+        oldConfiguration.update(newConfiguration)
+
+        //then
+        oldConfiguration.applications must contain(application2)
+        oldConfiguration.applications contains application1 must beFalse
+        app1FromConfig.isActive must beFalse
+      }
+
+    }
   }
+
+  trait UpdateSetup extends After {
+
+      val deltasDir: File
+
+      val appName1 = "app1"
+      val ipAddress1 = InetAddress.getByName("127.0.0.1")
+      val nodeApp1 = new Node("node1", ipAddress1, ChangeSet(1))
+
+      val appName2 = "app2"
+      val ipAddress2 = InetAddress.getByName("127.0.0.2")
+      val nodeApp2 = new Node("node2", ipAddress2, ChangeSet(1))
+
+      val appName3 = "app3"
+      val ipAddress3 = InetAddress.getByName("127.0.0.3")
+      val nodeApp3 = new Node("node3", ipAddress3, ChangeSet(2))
+      val servers = new ServerSetup()
+
+      def createApplications = {
+        val application1 = createNewApplication(deltasDir.toURI.toURL, appName1, TransformType.EXPANSION, Set[Node](nodeApp1))
+        val application2 = createNewApplication(deltasDir.toURI.toURL, appName2, TransformType.EXPANSION, Set[Node](nodeApp2))
+        val application3 = createNewApplication(deltasDir.toURI.toURL, appName3, TransformType.EXPANSION, Set[Node](nodeApp3))
+        (application1, application2, application3)
+      }
+
+      def createServerSockets = {
+        servers.start
+        val midas = new Socket("localhost", servers.midasServerPort)
+        val mongo = new Socket("localhost", servers.mongoServerPort)
+        (midas, mongo)
+      }
+
+      def stopServerSockets = {
+        servers.stop
+      }
+
+      val oldConfiguration: Configuration
+      val newConfiguration: Configuration
+
+      def after = {
+        delete(deltasDir)
+      }
+
+      def delete(directory: File): Unit = {
+        directory.listFiles() foreach { file =>
+          if(file.isFile) {
+            println(s"deleting file: ${file.getAbsolutePath}")
+            file.delete()
+          }
+          else if(file.isDirectory){
+            delete(file)
+          }
+        }
+        println(s"deleting directory: ${directory.getAbsolutePath}")
+        directory.delete()
+      }
+
+      def createNewApplication(deltasDirURL: URL, appName: String, transformType: TransformType, nodes: Set[Node]) = {
+        val appConfigDir = new File(s"${deltasDirURL.toURI.getPath}/$appName")
+        appConfigDir.mkdirs()
+        val appConfigFile = new File(s"${appConfigDir.getAbsolutePath}/$appName.midas")
+        appConfigFile.createNewFile()
+        val nodeText = nodes map { node =>
+                            s"""${node.name} {
+                             | ip = ${node.ip.toString.substring(1)}
+                             | changeSet = ${node.changeSet.number}
+                             |}
+                            """.stripMargin
+                       } mkString (NEW_LINE).trim
+        val appConfigText = s"""
+                            |$appName {
+                            |  mode = ${transformType.name().toLowerCase}
+                            |  ${nodeText}
+                            |}
+                           """.stripMargin
+        println(s"writing to file: $appConfigText")
+        write(appConfigText, appConfigFile)
+        new Application(appConfigDir.toURI.toURL, appName, transformType, nodes)
+      }
+
+
+      val NEW_LINE = System.getProperty("line.separator")
+
+
+      def createNewConfiguration(deltasDirURL: URL, appNames: List[String]) = {
+        val configDir = new File(s"${deltasDirURL.toURI.getPath}")
+        configDir.mkdirs()
+        val configFile = new File(s"${configDir.getAbsolutePath}/midas.config")
+        configFile.createNewFile()
+
+        val configFileText = s"""
+                              |apps {
+                              |  ${appNames.mkString(NEW_LINE)}
+                              |}
+                             """.stripMargin
+        write(configFileText, configFile)
+        new Configuration(deltasDirURL, appNames)
+      }
+
+  }
+
+  def write(text: String, toFile: File) = {
+    val writer = new PrintWriter(toFile, "utf-8")
+    writer.write(text)
+    writer.flush()
+    writer.close()
+  }
+
 }

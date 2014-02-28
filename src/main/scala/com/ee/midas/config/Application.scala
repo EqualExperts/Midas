@@ -80,8 +80,6 @@ class Application(val configDir: URL,
     logInfo(s"Completed Updation of All Nodes for Application ${name}")
   }
 
-  final def hasNode(ip: InetAddress): Boolean = nodes.exists(node => node.ip == ip)
-
   final def getNode(ip: InetAddress): Option[Node] = nodes.find(node => node.ip == ip)
 
   final def isActive = nodes.exists(node => node.isActive)

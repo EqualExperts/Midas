@@ -25,7 +25,7 @@ with ApplicationParsers with Watchable[Configuration] {
 
   def applications: List[Application] = parsedApps.map { case (app, _) => app }.toList
 
-  def getApplication(ip: InetAddress): Option[Application] = applications.find(app => app.hasNode(ip))
+  def getApplication(ip: InetAddress): Option[Application] = applications.find(app => app.getNode(ip).isDefined)
   
   private def diffApps(from: Configuration) = {
     val oldApps = parsedApps.keySet

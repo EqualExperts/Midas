@@ -64,7 +64,7 @@ class ApplicationSpecs extends JUnitMustMatchers with Mockito {
   @Test
   def affirmNodePresenceByIP() {
     //When-Then
-    application.hasNode(node2Ip) mustEqual true
+    application.getNode(node2Ip) mustEqual Some(node2)
   }
 
   @Test
@@ -73,7 +73,7 @@ class ApplicationSpecs extends JUnitMustMatchers with Mockito {
     val ip = InetAddress.getByName("127.0.0.6")
 
     //When-Then
-    application.hasNode(ip) mustEqual false
+    application.getNode(ip) mustEqual None
   }
 
   @Test

@@ -39,9 +39,7 @@ class DirectoryWatcher(dirURL: String, watchEvents: Seq[WatchEvent.Kind[_]], wat
     isRunning = false
   }
 
-  def start : Unit = {
-     dirWatcherThread.start()
-  }
+  def start: Unit = dirWatcherThread.start
 
   def isActive: Boolean = isRunning
 

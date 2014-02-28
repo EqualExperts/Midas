@@ -16,7 +16,6 @@ class ApplicationWatcherSpecs extends Specification with Mockito {
     "start watching the deltas of given application" in new MidasConfigurationSetup {
 
       //Given
-      var updateWasInvoked = 0
       val application = new Application(app1DirURL, "demoApp", TransformType.EXPANSION, Set[Node]())
       val appConfigText = s"""
             |demoApp {
@@ -31,7 +30,9 @@ class ApplicationWatcherSpecs extends Specification with Mockito {
         appWatcher.stopWatching
         super.after
       }
-      writeToFile(app1Config, appConfigText)
+      write(appConfigText, app1Config)
+
+      var updateWasInvoked = 0
       val appWatcher = new ApplicationWatcher(application) {
         override def parse(url: URL) = Try {
           updateWasInvoked += 1
@@ -41,13 +42,13 @@ class ApplicationWatcherSpecs extends Specification with Mockito {
 
       //When
       appWatcher.startWatching
-      Thread.sleep(500)
+      Thread.sleep(4000)
       //And
-      writeToFile(app1ChangeSet01ExpansionDeltaFile, "use someDb")
-      Thread.sleep(500)
+      write("use someDb", app1ChangeSet01ExpansionDeltaFile)
+      Thread.sleep(4000)
+      appWatcher.isActive mustEqual true
 
       //Then
-      appWatcher.isActive must beTrue
       updateWasInvoked mustEqual 1
     }
 

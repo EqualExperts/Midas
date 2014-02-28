@@ -5,7 +5,7 @@ import java.nio.file.StandardWatchEventKinds._
 
 class ApplicationWatcher (application: Application) extends Watcher[Application] with Loggable
 with ApplicationParsers {
-  val waitBeforeProcessing = 100
+  val watchEvery = 100
   val configDir = application.configDir
 
   private val watcher: DirectoryWatcher = {
@@ -13,7 +13,7 @@ with ApplicationParsers {
     println(dirWatchMsg)
     logInfo(dirWatchMsg)
     new DirectoryWatcher(application.configDir.getPath, List(ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY),
-      waitBeforeProcessing, stopWatchingOnException = false)(watchEvents => {
+      watchEvery, stopWatchingOnException = false)(watchEvents => {
       watchEvents.foreach { watchEvent =>
         logInfo(s"Received ${watchEvent.kind()}, Context = ${watchEvent.context()}")
       }

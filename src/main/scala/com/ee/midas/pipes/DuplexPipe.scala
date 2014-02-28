@@ -51,7 +51,7 @@ extends Pipe with Loggable {
     response.stop
   }
 
-  override def toString  = name
+  override def toString = name
 
   class UncaughtExceptionHandler(pipe: Pipe) extends Thread.UncaughtExceptionHandler {
     def uncaughtException(thread: Thread, t: Throwable) : Unit = {

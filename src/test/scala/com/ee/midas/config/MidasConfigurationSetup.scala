@@ -70,13 +70,6 @@ trait MidasConfigurationSetup extends BeforeAfter {
     app2ChangeSet01ContractionDeltaFile.createNewFile()
   }
 
-  def writeToFile(file: File, contents: String) {
-    val writer = new FileWriter(file)
-    writer.write(contents)
-    writer.flush()
-    writer.close()
-  }
-
   def after: Any = {
     app1ChangeSet01ContractionDeltaFile.delete()
     app1ChangeSet01ExpansionDeltaFile.delete()

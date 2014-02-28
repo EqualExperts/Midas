@@ -103,5 +103,13 @@ class Application(val configDir: URL,
 
   final override val hashCode: Int = 17 * (17 + configDir.toURI.hashCode)
 
-  final override def toString = s"""Application(configDir = ${configDir.toURI}, name = $name, mode = $transformType, nodes = ${nodes mkString "," }, $transformerHolder.get"""
+  final override def toString =
+    s"""
+      | //Config Dir = $configDir
+      |$name {
+      |   mode = ${transformType.name.toLowerCase}
+      |   ${nodes mkString " "}
+      |}
+     """.stripMargin
+
 }

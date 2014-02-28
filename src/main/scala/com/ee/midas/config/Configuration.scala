@@ -4,7 +4,6 @@ import java.net.{Socket, InetAddress, URL}
 import com.ee.midas.utils.Loggable
 import java.io.File
 import scala.collection.mutable.Map
-import scala.collection.mutable.Set
 
 final class Configuration(deltasDir: URL, private val apps: List[String]) extends Loggable
 with ApplicationParsers with Watchable[Configuration] {

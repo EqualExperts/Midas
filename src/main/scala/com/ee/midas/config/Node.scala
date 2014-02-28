@@ -51,5 +51,13 @@ class Node(private var _name: String, val ip: InetAddress, private var _changeSe
 
   final override val hashCode: Int = 17 * (17 + ip.hashCode)
 
-  final override def toString = s"Node($name, $ip, $changeSet, $isActive)"
+  final override def toString = {
+    s"""
+      |$name {
+      | ip = ${ip.toString.substring(1)}
+      | changeSet = ${changeSet.number}
+      |}
+      |
+     """.stripMargin
+  }
 }

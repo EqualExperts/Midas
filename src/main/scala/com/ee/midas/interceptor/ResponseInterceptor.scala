@@ -3,14 +3,15 @@ package com.ee.midas.interceptor
 import java.io.InputStream
 import org.bson.BSONObject
 import com.ee.midas.transform.DocumentOperations._
-import com.ee.midas.transform.ResponseTransformer
+import com.ee.midas.transform.{Transformer, ResponseTransformer}
+import com.ee.midas.utils.SynchronizedHolder
 
 //todo: Design changes for later
 // Request really needs to be composed of MongoHeader and Transformer
 // Current scenario is like anemic domain model where we have header and transformer
 // both outside. RequestInterceptor, the client, co-ordinates header, sucks out info from
 // request, transforms it, and puts it back in the response.
-class ResponseInterceptor (tracker: MessageTracker, transformer: ResponseTransformer)
+class ResponseInterceptor (tracker: MessageTracker, transformerHolder: SynchronizedHolder[Transformer])
   extends MidasInterceptable {
 
   def readHeader(response: InputStream): BaseMongoHeader = {
@@ -28,6 +29,7 @@ class ResponseInterceptor (tracker: MessageTracker, transformer: ResponseTransfo
   
   private def modify(response: InputStream, fullCollectionName: String, header: MongoHeader): Array[Byte] = {
     val documents = extractDocumentsFrom(response, header)
+    val transformer = transformerHolder.get
     val transformedDocuments = documents map (document => transformer.transformResponse(document, fullCollectionName))
     val newPayloadBytes = transformedDocuments flatMap (_.toBytes)
     header.updateLength(newPayloadBytes.length)
@@ -70,5 +72,5 @@ class ResponseInterceptor (tracker: MessageTracker, transformer: ResponseTransfo
     documents.toList
   }
 
-  override def toString = s"${getClass.getName}($transformer)"
+  override def toString = s"${getClass.getName}($transformerHolder)"
 }

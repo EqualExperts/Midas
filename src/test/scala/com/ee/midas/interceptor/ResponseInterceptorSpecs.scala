@@ -11,6 +11,7 @@ import org.bson.BasicBSONEncoder
 import com.ee.midas.config.Application
 import java.net.InetAddress
 import com.ee.midas.transform.Transformer
+import com.ee.midas.utils.SynchronizedHolder
 
 @RunWith(classOf[JUnitRunner])
 class ResponseInterceptorSpecs extends Specification with Mockito {
@@ -115,7 +116,7 @@ class ResponseInterceptorSpecs extends Specification with Mockito {
     val transformer = mock[Transformer]
     val ignoreIp : InetAddress = null
 
-    val resInterceptor = new ResponseInterceptor(tracker, transformer)
+    val resInterceptor = new ResponseInterceptor(tracker, SynchronizedHolder(transformer))
     val payloadData = new BasicDBObject("value", 1)
     val encoder = new BasicBSONEncoder()
     val payloadBytes = encoder.encode(payloadData)

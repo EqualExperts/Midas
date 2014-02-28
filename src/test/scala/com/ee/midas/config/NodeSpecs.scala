@@ -7,6 +7,7 @@ import org.junit.runner.RunWith
 import org.mockito.runners.MockitoJUnitRunner
 import org.specs2.matcher.JUnitMustMatchers
 import org.junit._
+import com.ee.midas.utils.SynchronizedHolder
 
 /**
  * IMPORTANT NOTE:
@@ -61,7 +62,7 @@ class NodeSpecs extends JUnitMustMatchers with Mockito {
       val mockTransformer = mock[Transformer]
 
       //when
-      node.startDuplexPipe(clientSocket, mongoSocket, mockTransformer)
+      node.startDuplexPipe(clientSocket, mongoSocket, SynchronizedHolder(mockTransformer))
 
       //then
       node.isActive must beTrue
@@ -77,7 +78,7 @@ class NodeSpecs extends JUnitMustMatchers with Mockito {
       val mockTransformer = mock[Transformer]
 
       //and given
-      val duplexPipe = node.startDuplexPipe(clientSocket, mongoSocket, mockTransformer)
+      val duplexPipe = node.startDuplexPipe(clientSocket, mongoSocket, SynchronizedHolder(mockTransformer))
       duplexPipe.forceStop
 
       //when
@@ -101,8 +102,8 @@ class NodeSpecs extends JUnitMustMatchers with Mockito {
     val mockTransformer = mock[Transformer]
 
     //when: A node starts a duplex pipe for each pair of sockets
-    val duplexPipe1 = node.startDuplexPipe(clientSocket1, mongoSocket1, mockTransformer)
-    val duplexPipe2 = node.startDuplexPipe(clientSocket2, mongoSocket2, mockTransformer)
+    val duplexPipe1 = node.startDuplexPipe(clientSocket1, mongoSocket1, SynchronizedHolder(mockTransformer))
+    val duplexPipe2 = node.startDuplexPipe(clientSocket2, mongoSocket2, SynchronizedHolder(mockTransformer))
 
     //then: The duplex pipes were started successfully
     duplexPipe1.isActive must beTrue
@@ -118,11 +119,11 @@ class NodeSpecs extends JUnitMustMatchers with Mockito {
 
     val clientSocket1 = new Socket(host, NodeSpecs.servers.midasServerPort)
     val mongoSocket1 = new Socket(host, NodeSpecs.servers.mongoServerPort)
-    val duplexPipe1 = node.startDuplexPipe(clientSocket1, mongoSocket1, mockTransformer)
+    val duplexPipe1 = node.startDuplexPipe(clientSocket1, mongoSocket1, SynchronizedHolder(mockTransformer))
 
     val clientSocket2 = new Socket(host, NodeSpecs.servers.midasServerPort)
     val mongoSocket2 = new Socket(host, NodeSpecs.servers.mongoServerPort)
-    val duplexPipe2 = node.startDuplexPipe(clientSocket2, mongoSocket2, mockTransformer)
+    val duplexPipe2 = node.startDuplexPipe(clientSocket2, mongoSocket2, SynchronizedHolder(mockTransformer))
 
     //when: The node is stopped
     node.stop

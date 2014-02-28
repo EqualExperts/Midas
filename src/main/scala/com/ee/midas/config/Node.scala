@@ -4,7 +4,7 @@ import java.net.{Socket, InetAddress}
 import com.ee.midas.interceptor.{ResponseInterceptor, RequestInterceptor, MessageTracker}
 import com.ee.midas.pipes.SocketConnector._
 import com.ee.midas.pipes.DuplexPipe
-import com.ee.midas.utils.Loggable
+import com.ee.midas.utils.{SynchronizedHolder, Loggable}
 import com.ee.midas.transform.Transformer
 import scala.collection.mutable.ArrayBuffer
 
@@ -16,11 +16,11 @@ class Node(private var _name: String, val ip: InetAddress, private var _changeSe
 
   final def changeSet = _changeSet
 
-  final def startDuplexPipe(appSocket: Socket, mongoSocket: Socket, transformer: Transformer) = {
+  final def startDuplexPipe(appSocket: Socket, mongoSocket: Socket, transformerHolder: SynchronizedHolder[Transformer]) = {
     cleanDeadPipes
     val tracker = new MessageTracker()
-    val requestInterceptor = new RequestInterceptor(tracker, transformer, changeSet)
-    val responseInterceptor = new ResponseInterceptor(tracker, transformer)
+    val requestInterceptor = new RequestInterceptor(tracker, transformerHolder, changeSet)
+    val responseInterceptor = new ResponseInterceptor(tracker, transformerHolder)
     val duplexPipe = appSocket <|==|> (mongoSocket, requestInterceptor, responseInterceptor)
     pipes += duplexPipe
     duplexPipe.start

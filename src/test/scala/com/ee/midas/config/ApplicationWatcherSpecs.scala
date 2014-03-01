@@ -5,13 +5,13 @@ import org.specs2.mock.Mockito
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 import com.ee.midas.transform.TransformType
-import java.net.{URL, InetAddress}
-import java.io.File
+import java.net.URL
 import scala.util.Try
 
 @RunWith(classOf[JUnitRunner])
 class ApplicationWatcherSpecs extends Specification with Mockito {
 
+  sequential
   "Application Watcher" should {
     "start watching the deltas of given application" in new MidasConfigurationSetup {
 
@@ -42,10 +42,10 @@ class ApplicationWatcherSpecs extends Specification with Mockito {
 
       //When
       appWatcher.startWatching
-      Thread.sleep(4000)
+      Thread.sleep(1000)
       //And
       write("use someDb", app1ChangeSet01ExpansionDeltaFile)
-      Thread.sleep(4000)
+      Thread.sleep(1000)
       appWatcher.isActive mustEqual true
 
       //Then

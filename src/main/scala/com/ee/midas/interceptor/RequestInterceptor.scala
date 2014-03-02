@@ -5,7 +5,7 @@ import com.ee.midas.transform.{Transformer, RequestTransformer}
 import com.ee.midas.config.ChangeSet
 import com.ee.midas.utils.SynchronizedHolder
 
-class RequestInterceptor (tracker: MessageTracker, transformerHolder: SynchronizedHolder[Transformer], changeSet: ChangeSet)
+class RequestInterceptor (tracker: MessageTracker, transformerHolder: SynchronizedHolder[Transformer], changeSetHolder: SynchronizedHolder[ChangeSet])
   extends MidasInterceptable {
   private val CSTRING_TERMINATION_DELIM = 0
 
@@ -45,7 +45,8 @@ class RequestInterceptor (tracker: MessageTracker, transformerHolder: Synchroniz
   private def modify(request: Request, fullCollectionName: String, header: BaseMongoHeader): Array[Byte] = {
     val document = request.extractDocument
     val transformer = transformerHolder.get
-    val modifiedDocument = transformer.transformRequest(document, changeSet.number, fullCollectionName)
+    val changeSet = changeSetHolder.get.number
+    val modifiedDocument = transformer.transformRequest(document, changeSet, fullCollectionName)
     val modifiedPayload = request.reassemble(modifiedDocument)
     val newLength = modifiedPayload.length
     header.updateLength(newLength)

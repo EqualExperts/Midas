@@ -8,6 +8,7 @@ import org.mockito.runners.MockitoJUnitRunner
 import org.specs2.matcher.JUnitMustMatchers
 import org.junit._
 import com.ee.midas.utils.SynchronizedHolder
+import java.io.StringReader
 
 /**
  * IMPORTANT NOTE:
@@ -133,6 +134,25 @@ class NodeSpecs extends JUnitMustMatchers with Mockito {
     duplexPipe2.isActive must beFalse
   }
 
+  @Test
+  def toStringReturnsParseableNode: Unit = {
+    //Given
+    val name = "testNode"
+    val ip = InetAddress.getByName("127.0.0.3")
+    val changeSet = ChangeSet()
+    val aNode = new Node(name, ip, changeSet)
+
+    //When
+    val input = new StringReader(aNode.toString)
+
+    //Then
+    new ApplicationParsers {
+      parseAll(node, input) match {
+        case NoSuccess(msg, _) => throw new AssertionError(msg)
+        case Success(parsedNode, _) => parsedNode mustEqual aNode
+      }
+    }
+  }
 }
 
 object NodeSpecs {

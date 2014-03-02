@@ -41,6 +41,7 @@ case class Update(data: Array[Byte]) extends Request {
     flag
   }
 
+  //todo: make the below implementation use DocumentOperations
   private def getSelectorUpdator(): (BSONObject, BSONObject) = {
     val decoder: DBDecoder = new DefaultDBDecoder
     val stream = new ByteArrayInputStream(payload)
@@ -68,6 +69,7 @@ case class Insert(data: Array[Byte]) extends Request {
   val (initialBytes, payload) = extractPayload(data)
   val document = getDocument()
 
+  //todo: make the below implementation use DocumentOperations
   private def getDocument(): BSONObject = {
     val decoder: DBDecoder = new DefaultDBDecoder
     val ignoringCollection: DBCollection = null

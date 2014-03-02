@@ -8,18 +8,20 @@ import com.ee.midas.utils.{SynchronizedHolder, Loggable}
 import com.ee.midas.transform.Transformer
 import scala.collection.mutable.ArrayBuffer
 
-class Node(private var _name: String, val ip: InetAddress, private var _changeSet: ChangeSet) extends Loggable {
+class Node(private var _name: String, val ip: InetAddress, private val _changeSet: ChangeSet) extends Loggable {
 
   private val pipes = ArrayBuffer[DuplexPipe]()
+  
+  private val changeSetHolder = SynchronizedHolder[ChangeSet](_changeSet)
 
   final def name = _name
 
-  final def changeSet = _changeSet
+  final def changeSet = changeSetHolder.get
 
   final def startDuplexPipe(appSocket: Socket, mongoSocket: Socket, transformerHolder: SynchronizedHolder[Transformer]) = {
     cleanDeadPipes
     val tracker = new MessageTracker()
-    val requestInterceptor = new RequestInterceptor(tracker, transformerHolder, changeSet)
+    val requestInterceptor = new RequestInterceptor(tracker, transformerHolder, changeSetHolder)
     val responseInterceptor = new ResponseInterceptor(tracker, transformerHolder)
     val duplexPipe = appSocket <|==|> (mongoSocket, requestInterceptor, responseInterceptor)
     pipes += duplexPipe
@@ -41,7 +43,7 @@ class Node(private var _name: String, val ip: InetAddress, private var _changeSe
 
   final def update(fromNode: Node) = {
     _name = fromNode._name
-    _changeSet = fromNode._changeSet
+    changeSetHolder(fromNode.changeSet)
   }
 
   final override def equals(other: Any): Boolean = other match {
@@ -55,7 +57,7 @@ class Node(private var _name: String, val ip: InetAddress, private var _changeSe
     s"""
       |$name {
       | ip = ${ip.toString.substring(1)}
-      | changeSet = ${changeSet.number}
+      | changeSet = ${changeSetHolder.get.number}
       |}
       |
      """.stripMargin

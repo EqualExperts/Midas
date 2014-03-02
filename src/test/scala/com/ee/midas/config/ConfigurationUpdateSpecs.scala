@@ -102,7 +102,7 @@ class ConfigurationUpdateSpecs extends Specification with Mockito {
       new Configuration(deltasDirURL, appNames)
     }
   }
-    "Configuration" should  {
+  "Configuration" should  {
     "update by adding a new application from new configuration" in new UpdateSetup {
       //given
       override val deltasDir = new File("/" + System.getProperty("user.dir") + "/" + "addsNewAppSpec")

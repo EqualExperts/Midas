@@ -8,7 +8,7 @@ import org.mockito.runners.MockitoJUnitRunner
 import org.specs2.matcher.JUnitMustMatchers
 import org.junit.{Ignore, AfterClass, BeforeClass, Test}
 import com.ee.midas.dsl.Translator
-import java.io.File
+import java.io.{StringReader, File}
 import scala.util.Try
 import com.ee.midas.utils.SynchronizedHolder
 
@@ -347,6 +347,21 @@ class ApplicationSpecs extends JUnitMustMatchers with Mockito {
       case None => failure(s"Should have Node with IP ${node1Ip}")
     }
     application.getNode(node2.ip) mustEqual Some(node2)
+  }
+
+  @Test
+  def toStringReturnsParseableApplication: Unit = {
+    //Given
+    val anApplication = new Application(configDir, appName, TransformType.EXPANSION, nodes)
+    val input = new StringReader(anApplication.toString)
+
+    //When-Then
+    new ApplicationParsers {
+      parseAll(app(configDir), input) match {
+        case NoSuccess(msg, _) => throw new AssertionError(msg)
+        case Success(application, _) => application mustEqual anApplication
+      }
+    }
   }
 }
 

@@ -5,7 +5,7 @@ import com.ee.midas.utils.Loggable
 import java.io.File
 import scala.collection.mutable.Map
 
-final class Configuration(deltasDir: URL, private val apps: List[String]) extends Loggable
+class Configuration(deltasDir: URL, private val apps: List[String]) extends Loggable
 with ApplicationParsers with Watchable[Configuration] {
 
   private val parsedApps = Map[Application, ApplicationWatcher](parseApplications: _*)

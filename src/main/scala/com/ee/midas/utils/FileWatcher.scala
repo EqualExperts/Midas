@@ -50,4 +50,6 @@ extends Loggable {
   }
 
   def stop = isRunning = false
+
+  def isActive = isRunning
 }

@@ -34,62 +34,64 @@ class Transform extends Specification with Forms {
           form
         }
 
-     2. Create deltas directory with two folders "expansion" and "contraction".
-      ${
-         val baseDeltaDir = "/deltaSpecs"
-         val delta = Delta(baseDeltaDir, "EXPANSION", () => "")
-         true
-       }
-     2. Start Midas in EXPANSION mode
-      ${
-          midasTerminal = CommandTerminal("--port", "27020", "--deltasDir", System.getProperty("user.dir") + "/deltaSpecs", "--mode", "EXPANSION")
-          val form = midasTerminal.startMidas
-          form
-        }
-
-    3. Create delta file "0001_transactions_orders.delta" to perform transformations on "orders" at
-       location "deltaSpecs" in "expansion" folder
-      ${
-          val baseDeltaDir = "/deltaSpecs"
-          expansionDelta1 = Delta(baseDeltaDir, "EXPANSION", () => {
-            """use transactions
-               db.orders.add('{"Title": "Miss./Mr."}')
-               db.orders.mergeInto('NameWithTitle',' ','["Title", "name"]' )
-               db.orders.transform("Saving", "{$multiply: [1000,10]}")
-            """
-          } )
-          val form = expansionDelta1.saveAs("0001_transactions_orders.delta")
-          form
-        }
-
-    4. Connect with midas and verify that read documents contain all transformations.
-      ${
-          val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "localhost", 27020)
-            .useDatabase("transactions")
-            .verifyIfAdded("orders", Array("Title", "NamewithTitle", "Saving"))
-            .retrieve()
-          form
-        }
-
-    5. Cleanup deltas directory
-      ${
-          expansionDelta1.delete("0001_copy_transactions_orders_OrderListToYourCartField.delta")
-       }
-    6. Clean up the database
-      ${
-          val form = MongoShell("Open MongoShell", "localhost", 27017)
-            .useDatabase("transactions")
-            .runCommand(s"""db.dropDatabase()""")
-            .retrieve()
-          form
-        }
-
-
-    7. Shutdown Midas
-      ${
-          val form = midasTerminal.stopMidas(27020)
-          form
-        }
 
   """
 }
+
+//
+//     2. Create deltas directory with two folders "expansion" and "contraction".
+//      ${
+//         val baseDeltaDir = "/deltaSpecs"
+//         val delta = Delta(baseDeltaDir, "EXPANSION", () => "")
+//         true
+//       }
+//     2. Start Midas in EXPANSION mode
+//      ${
+//          midasTerminal = CommandTerminal("--port", "27020", "--deltasDir", System.getProperty("user.dir") + "/deltaSpecs", "--mode", "EXPANSION")
+//          val form = midasTerminal.startMidas
+//          form
+//        }
+//
+//    3. Create delta file "0001_transactions_orders.delta" to perform transformations on "orders" at
+//       location "deltaSpecs" in "expansion" folder
+//      ${
+//          val baseDeltaDir = "/deltaSpecs"
+//          expansionDelta1 = Delta(baseDeltaDir, "EXPANSION", () => {
+//            """use transactions
+//               db.orders.add('{"Title": "Miss./Mr."}')
+//               db.orders.mergeInto('NameWithTitle',' ','["Title", "name"]' )
+//               db.orders.transform("Saving", "{$multiply: [1000,10]}")
+//            """
+//          } )
+//          val form = expansionDelta1.saveAs("0001_transactions_orders.delta")
+//          form
+//        }
+//
+//    4. Connect with midas and verify that read documents contain all transformations.
+//      ${
+//          val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "localhost", 27020)
+//            .useDatabase("transactions")
+//            .verifyIfAdded("orders", Array("Title", "NamewithTitle", "Saving"))
+//            .retrieve()
+//          form
+//        }
+//
+//    5. Cleanup deltas directory
+//      ${
+//          expansionDelta1.delete("0001_copy_transactions_orders_OrderListToYourCartField.delta")
+//       }
+//    6. Clean up the database
+//      ${
+//          val form = MongoShell("Open MongoShell", "localhost", 27017)
+//            .useDatabase("transactions")
+//            .runCommand(s"""db.dropDatabase()""")
+//            .retrieve()
+//          form
+//        }
+//
+//
+//    7. Shutdown Midas
+//      ${
+//          val form = midasTerminal.stopMidas(27020)
+//          form
+//        }

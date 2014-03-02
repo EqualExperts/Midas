@@ -159,8 +159,9 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
 }
 
 object DocumentOperations {
-  private val ENCODER = new BasicBSONEncoder()
-  private val DECODER = new DefaultDBDecoder()
+  private val ENCODER = new BasicBSONEncoder
+  private val DECODER = new DefaultDBDecoder
   implicit def apply(document: BSONObject) = new DocumentOperations(document)
   implicit def unapply(in: InputStream) : BSONObject = DECODER.decode(in, null)
+  implicit def unapply(bytes: Array[Byte]) : BSONObject = DECODER.decode(bytes, null)
 }

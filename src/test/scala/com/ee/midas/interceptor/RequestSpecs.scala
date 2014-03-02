@@ -101,7 +101,7 @@ class RequestSpecs extends Specification {
       val modifiedDocument : BSONObject = new BasicBSONObject()
       modifiedDocument.put("name", "midas")
       modifiedDocument.put("_expansionVersion", 0)
-      val expectedmodifiedpayload =insertPayload.take(payloadStartsAt) ++ modifiedDocument.toBytes
+      val expectedmodifiedpayload = insertPayload.take(payloadStartsAt) ++ modifiedDocument.toBytes
 
       //When
       val modifiedPayload = insertRequest.reassemble(modifiedDocument)

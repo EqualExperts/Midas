@@ -1,11 +1,9 @@
 package com.ee.midas.interceptor
 
 import org.bson.io.Bits
-import com.mongodb.{DefaultDBDecoder, DBDecoder, DBCollection}
-import org.bson.{BasicBSONObject, BSONObject}
+import org.bson.BSONObject
 import java.io.ByteArrayInputStream
 import com.ee.midas.transform.DocumentOperations._
-
 
 //todo: Design changes for later
 // Request really needs to be composed of BaseMongoHeader and Transformer
@@ -41,14 +39,10 @@ case class Update(data: Array[Byte]) extends Request {
     flag
   }
 
-  //todo: make the below implementation use DocumentOperations
   private def getSelectorUpdator(): (BSONObject, BSONObject) = {
-    val decoder: DBDecoder = new DefaultDBDecoder
     val stream = new ByteArrayInputStream(payload)
-    val ignoringCollection: DBCollection = null
-    val selector = decoder.decode(stream, ignoringCollection)
-    val updator = decoder.decode(stream, ignoringCollection)
-
+    val selector: BSONObject = stream
+    val updator: BSONObject = stream
     (selector, updator)
   }
 
@@ -67,14 +61,7 @@ case class Insert(data: Array[Byte]) extends Request {
 
   override protected val payloadStartIndex = extractFullCollectionName(data).length + delimiterLength
   val (initialBytes, payload) = extractPayload(data)
-  val document = getDocument()
-
-  //todo: make the below implementation use DocumentOperations
-  private def getDocument(): BSONObject = {
-    val decoder: DBDecoder = new DefaultDBDecoder
-    val ignoringCollection: DBCollection = null
-    decoder.decode(payload, ignoringCollection)
-  }
+  val document: BSONObject = payload
 
   def extractDocument: BSONObject = {
     document

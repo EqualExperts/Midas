@@ -2,11 +2,11 @@ package com.ee.midas.dsl.expressions
 
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
-import org.bson.BasicBSONObject
+import org.bson.{BSONObject, BasicBSONObject}
 import org.specs2.mutable.Specification
 
 @RunWith(classOf[JUnitRunner])
-class StringExpressionSpecs extends Specification {
+class StringFunctionSpecs extends Specification {
   "Concat" should {
     "returns empty string when no values are supplied" in {
       //Given
@@ -47,18 +47,6 @@ class StringExpressionSpecs extends Specification {
     "concatenate literals and field values" in {
       //Given
       val concat = Concat(Literal("Mr. "), Field("name"))
-      val document = new BasicBSONObject().append("name", "Test")
-
-      //When
-      val result = concat.evaluate(document).value
-
-      //Then
-      result mustEqual "Mr. Test"
-    }
-
-    "Treat literals with null values as empty string" in {
-      //Given
-      val concat = Concat(Literal("Mr. "), Field("name"), Field("surname"))
       val document = new BasicBSONObject().append("name", "Test")
 
       //When
@@ -129,18 +117,6 @@ class StringExpressionSpecs extends Specification {
       //Then
       result mustEqual ""
     }
-
-    "Treat literals with null values as empty string" in {
-      //Given
-      val toLower = ToLower(Literal(null))
-      val document = new BasicBSONObject()
-
-      //When
-      val result = toLower.evaluate(document).value
-
-      //Then
-      result mustEqual ""
-    }
   }
 
   "ToUpper" should {
@@ -203,17 +179,35 @@ class StringExpressionSpecs extends Specification {
       //Then
       result mustEqual ""
     }
+  }
 
-    "Treat literals with null values as empty string" in {
-      //Given
-      val toUpper = ToUpper(Literal(null))
-      val document = new BasicBSONObject()
+  "Treats Literal" should {
+    val stringFunction = new StringFunction {
+      def evaluate(document: BSONObject): Literal = ???
+    }
 
+    "null as empty string" in {
       //When
-      val result = toUpper.evaluate(document).value
+      val treatedOutcome = stringFunction.value(Literal(null))
 
       //Then
-      result mustEqual ""
+      treatedOutcome mustEqual ""
+    }
+
+    "Double value as String" in {
+      //When
+      val treatedOutcome = stringFunction.value(Literal(23e-2))
+
+      //Then
+      treatedOutcome mustEqual "0.23"
+    }
+
+    "Integer value as String value" in {
+      //When
+      val treatedOutcome = stringFunction.value(Literal(23))
+
+      //Then
+      treatedOutcome mustEqual "23"
     }
   }
 }

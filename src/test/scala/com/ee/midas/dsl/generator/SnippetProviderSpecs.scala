@@ -76,33 +76,32 @@ class SnippetProviderSpecs extends Specification {
     }
 
     "provides snippet for split" in new Snippet {
-        //Given
-        val verb = Verb.split
-        val args: Array[String] = Array("name", "^([a-zA-Z]+) ([a-zA-Z]+)$", "{ \"fName\": \"$1\", \"lName\": \"$2\" }")
-        val document: BSONObject = new BasicBSONObject("name", "John Kennedy")
-        val expectedBSONObject = new BasicBSONObject("name", "John Kennedy")
-        expectedBSONObject.put("fName", "John")
-        expectedBSONObject.put("lName", "Kennedy")
+      //Given
+      val verb = Verb.split
+      val args: Array[String] = Array("name", "^([a-zA-Z]+) ([a-zA-Z]+)$", "{ \"fName\": \"$1\", \"lName\": \"$2\" }")
+      val document: BSONObject = new BasicBSONObject("name", "John Kennedy")
+      val expectedBSONObject = new BasicBSONObject("name", "John Kennedy")
+      expectedBSONObject.put("fName", "John")
+      expectedBSONObject.put("lName", "Kennedy")
 
-        //When
-        val snippet = provideSnippet(verb, args)
+      //When
+      val snippet = provideSnippet(verb, args)
 
-        //Then
-        snippet(document) mustEqual expectedBSONObject
+      //Then
+      snippet(document) mustEqual expectedBSONObject
     }
 
     "provides snippet for transform operation add " in new Snippet {
       //Given
       val verb = Verb.transform
       val args: Array[String] = Array("age", """{ $add: ["$age", 1] }""")
-      val document: BSONObject = new BasicBSONObject()
-      document.put("age", 10)
-      val expectedBSONObject = new BasicBSONObject("age", 11)
+      val document: BSONObject = new BasicBSONObject("age", 10)
 
       //When
       val snippet = provideSnippet(verb, args)
 
       //Then
+      val expectedBSONObject = new BasicBSONObject("age", 11)
       snippet(document) mustEqual expectedBSONObject
     }
 
@@ -180,6 +179,19 @@ class SnippetProviderSpecs extends Specification {
       //Then
       snippet(document) mustEqual expectedBSONObject
     }
-  }
 
+    "provide snippet for arithmetic transform operation containing string that generates error message in document" in new Snippet {
+      //Given
+      val verb = Verb.transform
+      val args: Array[String] = Array("age", """{ $divide: ["$age", 'someString'] }""")
+      val document: BSONObject = new BasicBSONObject("age", 10)
+
+      //When
+      val snippet = provideSnippet(verb, args)
+
+      //Then
+      val expectedBSONObject = new BasicBSONObject("age", new BasicBSONObject("errmsg",  """exception: For input string: "someString""""))
+      snippet(document) mustEqual expectedBSONObject
+    }
+  }
 }

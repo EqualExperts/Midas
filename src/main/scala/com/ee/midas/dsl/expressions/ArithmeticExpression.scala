@@ -2,7 +2,6 @@ package com.ee.midas.dsl.expressions
 
 import org.bson.BSONObject
 
-
 @FunctionExpression
 final case class Add(expressions: Expression*) extends ArithmeticFunction(expressions: _*) {
   def evaluate(document: BSONObject) = {
@@ -46,10 +45,7 @@ final case class Divide(expressions: Expression*) extends ArithmeticFunction(exp
       case _ =>
         val dividend = value(expressions(0).evaluate(document))
         val divisor = value(expressions(1).evaluate(document))
-        divisor match {
-          case 0 => Literal(Double.NaN)
-          case _ => Literal(dividend / divisor)
-        }
+        Literal(dividend / divisor)
     }
 }
 

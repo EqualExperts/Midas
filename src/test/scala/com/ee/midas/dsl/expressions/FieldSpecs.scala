@@ -5,9 +5,10 @@ import org.specs2.mutable.Specification
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 import org.bson.BasicBSONObject
+import org.specs2.matcher.DataTables
 
 @RunWith(classOf[JUnitRunner])
-class FieldSpecs extends Specification {
+class FieldSpecs extends Specification with DataTables {
   "Field" should {
     "give the value of a field if present in the document" in {
       //Given
@@ -59,6 +60,13 @@ class FieldSpecs extends Specification {
 
       //Then
       result mustEqual Literal(value)
+    }
+
+    "stringify just like how it is written" ^ {
+          "field"             |  "fieldString"        |
+        Field("age")          !  "Field(age)"         |
+        Field("order.date")   !  "Field(order.date)"  |>
+        { (field, fieldString) =>  field.toString mustEqual fieldString }
     }
   }
 }

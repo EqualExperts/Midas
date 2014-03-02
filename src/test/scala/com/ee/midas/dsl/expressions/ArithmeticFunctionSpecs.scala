@@ -2,11 +2,12 @@ package com.ee.midas.dsl.expressions
 
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
-import org.bson.BasicBSONObject
+import org.bson.{BSONObject, BasicBSONObject}
 import org.specs2.mutable.Specification
+import org.specs2.matcher.DataTables
 
 @RunWith(classOf[JUnitRunner])
-class ArithmeticExpressionSpecs extends Specification {
+class ArithmeticFunctionSpecs extends Specification with DataTables {
   "Add" should {
     "Give result as 0 when no values are supplied" in {
       //Given
@@ -281,7 +282,7 @@ class ArithmeticExpressionSpecs extends Specification {
       result mustEqual 0
     }
 
-    "Give NaN when a value is divided by 0" in {
+    "Should shout when a positive value is divided by 0" in {
       //Given
       val divide = Divide(Literal(5), Literal(0))
       val document = new BasicBSONObject()
@@ -290,8 +291,21 @@ class ArithmeticExpressionSpecs extends Specification {
       val result = divide.evaluate(document).value
 
       //Then
-      result.asInstanceOf[Double].isNaN must beTrue
+      result mustEqual Double.PositiveInfinity
     }
+
+    "Should shout when a negative value is divided by 0" in {
+      //Given
+      val divide = Divide(Literal(-5), Literal(0))
+      val document = new BasicBSONObject()
+
+      //When
+      val result = divide.evaluate(document).value
+
+      //Then
+      result mustEqual Double.NegativeInfinity
+    }
+
   }
 
   "Mod" should {
@@ -365,6 +379,53 @@ class ArithmeticExpressionSpecs extends Specification {
 
       //Then
       result mustEqual 0
+    }
+  }
+
+  "Operations when combined with divide by zero should give NaN" ^ {
+          "expression"                                        |        "expected"       |
+      Subtract(Literal(3), Divide(Literal(2), Literal(0)))    ! Double.NegativeInfinity |
+      Add(Literal(3), Divide(Literal(2), Literal(0)))         ! Double.PositiveInfinity |
+      Multiply(Literal(3), Divide(Literal(2), Literal(0)))    ! Double.PositiveInfinity |>
+      {
+        (expression: Expression, expected: Double) =>
+          val document = new BasicBSONObject()
+          expression.evaluate(document).value mustEqual expected
+      }
+  }
+
+  "Treats Literal" should {
+    val anyArithmeticFunction = new ArithmeticFunction {
+      def evaluate(document: BSONObject): Literal = ???
+    }
+
+    "null as 0" in {
+      //When
+      val treatedOutcome = anyArithmeticFunction.value(Literal(null))
+
+      //Then
+      treatedOutcome mustEqual 0
+    }
+
+    "with Double as String value as Double" in {
+      //When
+      val treatedOutcome = anyArithmeticFunction.value(Literal("23e-2"))
+
+      //Then
+      treatedOutcome mustEqual 0.23
+    }
+
+    "with Integer as String value as Double" in {
+      //When
+      val treatedOutcome = anyArithmeticFunction.value(Literal("23"))
+
+      //Then
+      treatedOutcome mustEqual 23.0
+    }
+
+    "with character string " in {
+      //When-Then
+      anyArithmeticFunction.value(Literal("unparseable")) must throwAn[NumberFormatException]
     }
   }
 }

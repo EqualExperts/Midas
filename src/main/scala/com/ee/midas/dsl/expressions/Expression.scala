@@ -2,6 +2,7 @@ package com.ee.midas.dsl.expressions
 
 import org.bson.BSONObject
 import com.ee.midas.utils.{Loggable, AnnotationScanner}
+import scala.util.{Success, Try}
 
 sealed trait Expression {
   def evaluate(document: BSONObject): Literal
@@ -9,6 +10,8 @@ sealed trait Expression {
 
 final case class Literal(val value: Any) extends Expression {
   def evaluate(document: BSONObject) = Literal(value)
+
+  override def toString = s"${getClass.getSimpleName}($value)"
 }
 
 import com.ee.midas.transform.DocumentOperations._
@@ -17,9 +20,13 @@ final case class Field(name: String) extends Expression {
     case Some(value) => Literal(value)
     case None => Literal(null)
   }
+
+  override def toString = s"${getClass.getSimpleName}($name)"
 }
 
-sealed abstract class Function(expressions: Expression*) extends Expression
+sealed abstract class Function(expressions: Expression*) extends Expression {
+  override def toString = s"""${getClass.getSimpleName}(${expressions mkString ", "})"""
+}
 
 object Function extends Loggable {
 
@@ -49,12 +56,7 @@ final case class EmptyFunction(expressions: Expression*) extends Function(expres
 abstract class ArithmeticFunction(expressions: Expression*) extends Function(expressions: _*) {
   def value(literal: Literal): Double = literal match {
     case Literal(null) => 0
-    case Literal(x) =>
-      val doubleValue = x.toString.toDouble
-      if(doubleValue.isNaN)
-        0
-      else
-        doubleValue
+    case Literal(x)    => x.toString.toDouble
   }
 }
 

@@ -58,8 +58,13 @@ trait SnippetProvider extends Parser with Loggable {
   private def transform(outputField: String, expressionJson: String) : BSONObject => BSONObject = {
     ((document: BSONObject) => {
         val expression: Expression = parse(expressionJson)
-        val literal = expression.evaluate(document)
-        document + (outputField, literal.value)
+        try {
+          val literal = expression.evaluate(document)
+          document + (outputField, literal.value)
+        } catch {
+          case t: Throwable =>
+            document + (s"${outputField}.errmsg", s"exception: ${t.getMessage}")
+        }
     })
   }
 }

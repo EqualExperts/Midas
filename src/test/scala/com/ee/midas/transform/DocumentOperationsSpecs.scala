@@ -12,6 +12,7 @@ import java.util.regex.Pattern
 @RunWith(classOf[JUnitRunner])
 class DocumentOperationsSpecs extends Specification {
 
+    sequential
     "Document Operations" should {
 
       "Decode documents from input stream" in {
@@ -22,6 +23,19 @@ class DocumentOperationsSpecs extends Specification {
         //when
         val encodedDocumentStream = new ByteArrayInputStream(encoder.encode(document))
         val decodedDocument : BSONObject = encodedDocumentStream
+
+        //Then
+        decodedDocument mustEqual document
+      }
+
+      "Decode documents from sequence of bytes" in {
+        //Given
+        val document = new BasicBSONObject("name" , "midas")
+        val encoder : BSONEncoder = new BasicBSONEncoder()
+
+        //when
+        val encodedDocumentBytes: Array[Byte] = encoder.encode(document)
+        val decodedDocument : BSONObject = encodedDocumentBytes
 
         //Then
         decodedDocument mustEqual document
@@ -497,6 +511,29 @@ class DocumentOperationsSpecs extends Specification {
           val expectedNestedDocument = new BasicBSONObject()
             .append("firstName", "Joe")
             .append ("lastName", "Shmo")
+          actualDocument.get("fullName") mustEqual expectedNestedDocument
+
+
+          val nestedDocument = actualDocument.get("fullName").asInstanceOf[BSONObject]
+          nestedDocument.containsField("firstName") must beTrue
+          nestedDocument.containsField("lastName") must beTrue
+        }
+
+        "Splits field and assign empty string to extra output fields" in {
+          //Given: A document with "name" and "title" fields
+          val document = new BasicBSONObject()
+            .append("name", "Mr Bob")
+
+          //When: "name" field is split into "title", "fullName.firstName" and "fullName.lastName"
+          val actualDocument = DocumentOperations(document).<~>("name",
+            Pattern.compile("""^(Mr|Mrs|Ms|Miss) ([a-zA-Z]+)$"""),
+            """{"title": "$1", "fullName": { "firstName": "$2", "lastName": "$3" }}""")
+
+          //Then: Split was successful and extra output field lastName is assigned empty string
+          actualDocument.containsField("fullName") must beTrue
+          val expectedNestedDocument = new BasicBSONObject()
+            .append("firstName", "Bob")
+            .append ("lastName", "")
           actualDocument.get("fullName") mustEqual expectedNestedDocument
 
 

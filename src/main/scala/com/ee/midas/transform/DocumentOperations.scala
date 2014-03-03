@@ -79,6 +79,7 @@ class DocumentOperations private (document: BSONObject) extends Loggable {
             filledTargetJson = filledTargetJson.replaceAllLiterally(replace, groupValue)
             logDebug(s"Replaced target document: $filledTargetJson" )
           }
+          filledTargetJson = filledTargetJson.replaceAll("\\$[0-9]+", "")
           val splitDocument = JSON.parse(filledTargetJson).asInstanceOf[BSONObject]
           DocumentOperations(document) ++ (splitDocument, overrideOldValue)
           logDebug("After Splitting Fields in Document %s\n".format(document))

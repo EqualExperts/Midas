@@ -7,6 +7,7 @@ import org.specs2.runner.JUnitRunner
 import com.ee.midas.transform.TransformType
 import java.net.URL
 import scala.util.Try
+import java.util.concurrent.TimeUnit
 
 @RunWith(classOf[JUnitRunner])
 class ApplicationWatcherSpecs extends Specification with Mockito {
@@ -33,7 +34,7 @@ class ApplicationWatcherSpecs extends Specification with Mockito {
       write(appConfigText, app1Config)
 
       var updateWasInvoked = 0
-      val appWatcher = new ApplicationWatcher(application) {
+      val appWatcher = new ApplicationWatcher(application, watchEvery = 1, unit = TimeUnit.SECONDS) {
         override def parse(url: URL) = Try {
           updateWasInvoked += 1
           application
@@ -42,10 +43,10 @@ class ApplicationWatcherSpecs extends Specification with Mockito {
 
       //When
       appWatcher.startWatching
-      Thread.sleep(1000)
+      Thread.sleep(2000)
       //And
       write("use someDb", app1ChangeSet01ExpansionDeltaFile)
-      Thread.sleep(1000)
+      Thread.sleep(2000)
       appWatcher.isActive mustEqual true
 
       //Then

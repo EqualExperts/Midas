@@ -2,10 +2,10 @@ package com.ee.midas.config
 
 import com.ee.midas.utils.{DirectoryWatcher, Loggable}
 import java.nio.file.StandardWatchEventKinds._
+import java.util.concurrent.TimeUnit
 
-class ApplicationWatcher (application: Application) extends Watcher[Application] with Loggable
+class ApplicationWatcher (application: Application, val watchEvery: Long = 100, val unit : TimeUnit = TimeUnit.MILLISECONDS) extends Watcher[Application] with Loggable
 with ApplicationParsers {
-  val watchEvery = 100
   val configDir = application.configDir
 
   private val watcher: DirectoryWatcher = {

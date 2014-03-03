@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit._
 import java.nio.file.StandardWatchEventKinds._
 import java.io.File
+import com.sun.nio.file.SensitivityWatchEventModifier
 
 class DirectoryWatcher(dirURL: String, watchEvents: Seq[WatchEvent.Kind[_]], watchEvery: Long = 1000,
                        unit: TimeUnit = MILLISECONDS, stopWatchingOnException: Boolean = true)(onEvents: Seq[WatchEvent[_]] => Unit)
@@ -54,21 +55,23 @@ class DirectoryWatcher(dirURL: String, watchEvents: Seq[WatchEvent.Kind[_]], wat
     while(isRunning) {
       try {
         logInfo(s"Watching ${dirURL}...")
-        val watchKey = watcher.take()
         if(isRunning) {
-            waitForMoreEventsToAccumulate
-            val events = watchKey.pollEvents().asScala
-            events.foreach { e =>
-              logInfo(s"Detected ${e.kind()}, Context = ${e.context()}}")
-              registerIfNewDirectoryCreated(e)
-            }
-
-            onEvents(events)
-            val valid = watchKey.reset()
-            if(!valid) {
-              isRunning = Files.exists(path, LinkOption.NOFOLLOW_LINKS)
-            }
+          logInfo(s"Waiting for Events..")
+          val watchKey = watcher.take()
+          waitForMoreEventsToAccumulate
+          logInfo(s"Polling for Events...")
+          val events = watchKey.pollEvents().asScala
+          events.foreach { e =>
+            logInfo(s"Detected ${e.kind()}, Context = ${e.context()}}")
+            registerIfNewDirectoryCreated(e)
           }
+
+          onEvents(events)
+          val valid = watchKey.reset()
+          if(!valid) {
+            isRunning = Files.exists(path, LinkOption.NOFOLLOW_LINKS)
+          }
+        }
       } catch {
         case e: Exception =>
           logError(s"Closing it due to ${e.getMessage}. ${e.getStackTraceString}")
@@ -82,7 +85,7 @@ class DirectoryWatcher(dirURL: String, watchEvents: Seq[WatchEvent.Kind[_]], wat
 
   private def registerAllDirectories(dir: Path): Unit = {
     logInfo(s"Registering $dir with watcher.")
-    dir.register(watcher, watchEvents.toArray)
+    dir.register(watcher, watchEvents.toArray, SensitivityWatchEventModifier.HIGH)
     val subFolders = new File(dir.toUri).listFiles().filter(file => file.isDirectory) map { file => file.toPath}
     subFolders map registerAllDirectories
   }

@@ -6,6 +6,7 @@ import org.mockito.runners.MockitoJUnitRunner
 import org.specs2.matcher.JUnitMustMatchers
 import org.junit.{After, Before, Test}
 import java.nio.file.StandardWatchEventKinds._
+import java.nio.file.{StandardOpenOption, Files}
 
 /**
  * IMPORTANT NOTE:
@@ -23,7 +24,24 @@ import java.nio.file.StandardWatchEventKinds._
 @RunWith(classOf[MockitoJUnitRunner])
 class DirectoryWatcherSpecs extends JUnitMustMatchers {
 
-  def waitForWatcherToCaptureEvent(millis: Long) = Thread.sleep(millis)
+  private val os = System.getProperty("os.name")
+
+  def waitForWatcherToStart(watcher: DirectoryWatcher, millis: Long) =
+    while(!watcher.isActive)  {
+      Thread.sleep(millis)
+    }
+
+  def waitForWatcherToCaptureEvent(millis: Long) = {
+    /*
+    Mac uses PollingWatcherService and not native and is very slow even after increasing
+    Sensitivity to HIGH.  so increase delay time for Macs
+     */
+    if (os.contains("Mac"))
+      Thread.sleep(millis * 10)
+    else
+      Thread.sleep(millis)
+  }
+
   val path: String = "/" + System.getProperty("user.dir") + "/testWatcherDir"
   val directory = new File(path)
   directory.deleteOnExit()
@@ -43,9 +61,7 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers {
       }
     )
     watcher.start
-    while(!watcher.isActive)  {
-      Thread.sleep(100)
-    }
+    waitForWatcherToStart(watcher, 100)
 
     //when: there is a create event
     val file = new File(path + "/createFile.txt")
@@ -69,15 +85,12 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers {
       watchedModifyEvent = true
     })
     watcher.start
-    while(!watcher.isActive)  {
-      Thread.sleep(100)
-    }
+    waitForWatcherToStart(watcher, 100)
 
     //when: there is a modify event
-    val writer = new FileWriter(file)
-    writer.write("add some data.")
-    writer.close()
-    waitForWatcherToCaptureEvent(200)
+    val data = "add some data."
+    Files.write(file.toPath, data.getBytes, StandardOpenOption.APPEND)
+    waitForWatcherToCaptureEvent(300)
 
     //then: it was captured by the watcher
     watcher.stopWatching
@@ -94,9 +107,7 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers {
       watchedDeleteEvent = true
     })
     watcher.start
-    while(!watcher.isActive)  {
-      Thread.sleep(100)
-    }
+    waitForWatcherToStart(watcher, 100)
 
     //when: there is a modify event
     file.delete()
@@ -116,23 +127,21 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers {
       }
     )
     watcher.start
-    while(!watcher.isActive)  {
-      Thread.sleep(100)
-    }
+    waitForWatcherToStart(watcher, 100)
 
     //when: there are multiple create events
     val file1 = new File(path + "/createFile1.txt")
     file1.createNewFile()
     file1.deleteOnExit()
-    waitForWatcherToCaptureEvent(100)
+    waitForWatcherToCaptureEvent(200)
     val file2 = new File(path + "/createFile2.txt")
     file2.createNewFile()
     file2.deleteOnExit()
-    waitForWatcherToCaptureEvent(100)
+    waitForWatcherToCaptureEvent(200)
     val file3 = new File(path + "/createFile3.txt")
     file3.createNewFile()
     file3.deleteOnExit()
-    waitForWatcherToCaptureEvent(100)
+    waitForWatcherToCaptureEvent(200)
 
     //then: they are captured by the watcher
     watcher.stopWatching
@@ -155,17 +164,15 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers {
       }
     )
     watcher.start
-    while(!watcher.isActive)  {
-      Thread.sleep(100)
-    }
+    waitForWatcherToStart(watcher, 100)
 
     //when: there is a create event
     file1.delete()
-    waitForWatcherToCaptureEvent(100)
+    waitForWatcherToCaptureEvent(200)
     file2.delete()
-    waitForWatcherToCaptureEvent(100)
+    waitForWatcherToCaptureEvent(200)
     file3.delete()
-    waitForWatcherToCaptureEvent(100)
+    waitForWatcherToCaptureEvent(200)
 
     //then: it was captured by the watcher
     watcher.stopWatching
@@ -181,9 +188,7 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers {
       }
     )
     watcher.start
-    while(!watcher.isActive)  {
-      Thread.sleep(100)
-    }
+    waitForWatcherToStart(watcher, 100)
 
     //When
     watcher.stopWatching
@@ -201,18 +206,14 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers {
       }
     )
     watcher.start
-    while(!watcher.isActive)  {
-      Thread.sleep(100)
-    }
+    waitForWatcherToStart(watcher, 100)
 
     //When
     val file = new File(path + "/exceptionFile.txt")
     file.createNewFile()
     file.deleteOnExit()
 
-    while(watcher.isActive)  {
-      Thread.sleep(100)
-    }
+    waitForWatcherToCaptureEvent(200)
 
     //Then
     watcher.isActive must beFalse

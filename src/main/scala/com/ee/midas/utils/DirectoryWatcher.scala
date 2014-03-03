@@ -32,11 +32,15 @@ class DirectoryWatcher(dirURL: String, watchEvents: Seq[WatchEvent.Kind[_]], wat
   private var isRunning = false
   
   def stopWatching = {
-    val stopWatchMsg = s"Stopping Watch on ${dirURL}"
-    println(stopWatchMsg)
-    logInfo(stopWatchMsg)
+    val stoppingWatchMsg = s"Stopping Watch on ${dirURL}"
+    println(stoppingWatchMsg)
+    logInfo(stoppingWatchMsg)
     isRunning = false
     watcher.close()
+    val stoppedWatchMsg = s"Stopped Watch on ${dirURL}"
+    println(stoppedWatchMsg)
+    logInfo(stoppedWatchMsg)
+
   }
 
   def start: Unit = dirWatcherThread.start

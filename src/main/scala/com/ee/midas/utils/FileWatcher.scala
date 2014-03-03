@@ -27,7 +27,7 @@ extends Loggable {
 
   private val exceptionHandler = new UncaughtExceptionHandler(this)
 
-  private val watcherThread = new Thread(watch, "FileWatcherThread") {{
+  private val watcherThread = new Thread(watch, s"FileWatcherThread-${file.getName}") {{
     setUncaughtExceptionHandler(exceptionHandler)
   }}
 

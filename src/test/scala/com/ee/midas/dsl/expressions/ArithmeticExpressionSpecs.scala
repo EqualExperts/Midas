@@ -7,7 +7,7 @@ import org.specs2.mutable.Specification
 import org.specs2.matcher.DataTables
 
 @RunWith(classOf[JUnitRunner])
-class ArithmeticFunctionSpecs extends Specification with DataTables {
+class ArithmeticExpressionSpecs extends Specification with DataTables {
   "Add" should {
     "Give result as 0 when no values are supplied" in {
       //Given
@@ -305,7 +305,6 @@ class ArithmeticFunctionSpecs extends Specification with DataTables {
       //Then
       result mustEqual Double.NegativeInfinity
     }
-
   }
 
   "Mod" should {
@@ -369,7 +368,7 @@ class ArithmeticFunctionSpecs extends Specification with DataTables {
       result mustEqual 0
     }
 
-    "Give result as 0 when a value is divided by 0" in {
+    "Give result as NaN when a value is divided by 0" in {
       //Given
       val mod = Mod(Literal(5), Literal(0))
       val document = new BasicBSONObject()
@@ -378,7 +377,7 @@ class ArithmeticFunctionSpecs extends Specification with DataTables {
       val result = mod.evaluate(document).value
 
       //Then
-      result mustEqual 0
+      result.asInstanceOf[Double].isNaN mustEqual true
     }
   }
 

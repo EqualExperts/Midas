@@ -57,9 +57,6 @@ final case class Mod(expressions: Expression*) extends ArithmeticFunction(expres
       case _ =>
         val dividend = value(expressions(0).evaluate(document))
         val divisor = value(expressions(1).evaluate(document))
-        divisor match {
-          case 0 => Literal(0)
-          case _ => Literal(dividend % divisor)
-        }
+        Literal(dividend % divisor)
     }
 }

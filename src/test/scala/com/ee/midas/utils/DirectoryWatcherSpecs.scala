@@ -23,7 +23,7 @@ import java.nio.file.StandardWatchEventKinds._
 @RunWith(classOf[MockitoJUnitRunner])
 class DirectoryWatcherSpecs extends JUnitMustMatchers {
 
-  def waitForWatcherToStart(millis: Long) = Thread.sleep(millis)
+  def waitForWatcherToCaptureEvent(millis: Long) = Thread.sleep(millis)
   val path: String = "/" + System.getProperty("user.dir") + "/testWatcherDir"
   val directory = new File(path)
   directory.deleteOnExit()
@@ -43,17 +43,18 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers {
       }
     )
     watcher.start
+    while(!watcher.isActive)  {
+      Thread.sleep(100)
+    }
 
     //when: there is a create event
     val file = new File(path + "/createFile.txt")
     file.createNewFile()
     file.deleteOnExit()
-    waitForWatcherToStart(200)
-    watcher.stopWatching
+    waitForWatcherToCaptureEvent(200)
 
     //then: it was captured by the watcher
     watcher.stopWatching
-    while(watcher.isActive)
     watchedCreateEvent must beTrue
   }
 
@@ -68,16 +69,18 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers {
       watchedModifyEvent = true
     })
     watcher.start
+    while(!watcher.isActive)  {
+      Thread.sleep(100)
+    }
 
     //when: there is a modify event
     val writer = new FileWriter(file)
     writer.write("add some data.")
     writer.close()
-
-    watcher.stopWatching
-    while(watcher.isActive)
+    waitForWatcherToCaptureEvent(200)
 
     //then: it was captured by the watcher
+    watcher.stopWatching
     watchedModifyEvent must beTrue
   }
 
@@ -91,14 +94,16 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers {
       watchedDeleteEvent = true
     })
     watcher.start
+    while(!watcher.isActive)  {
+      Thread.sleep(100)
+    }
 
     //when: there is a modify event
     file.delete()
-
+    waitForWatcherToCaptureEvent(200)
 
     //then: it was captured by the watcher
     watcher.stopWatching
-    while(watcher.isActive)
     watchedDeleteEvent must beTrue
   }
 
@@ -107,28 +112,30 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers {
     //given: a watcher with a directory to watch
     var watchedCreateEvents: Int = 0
     val watcher = new DirectoryWatcher(path, List(ENTRY_CREATE), 0)(watchEvent => {
-      watchedCreateEvents += 1
-    }
+        watchedCreateEvents += 1
+      }
     )
     watcher.start
+    while(!watcher.isActive)  {
+      Thread.sleep(100)
+    }
 
     //when: there are multiple create events
     val file1 = new File(path + "/createFile1.txt")
     file1.createNewFile()
     file1.deleteOnExit()
-    Thread.sleep(100)
+    waitForWatcherToCaptureEvent(100)
     val file2 = new File(path + "/createFile2.txt")
     file2.createNewFile()
     file2.deleteOnExit()
-    Thread.sleep(100)
+    waitForWatcherToCaptureEvent(100)
     val file3 = new File(path + "/createFile3.txt")
     file3.createNewFile()
     file3.deleteOnExit()
-    Thread.sleep(100)
+    waitForWatcherToCaptureEvent(100)
 
     //then: they are captured by the watcher
     watcher.stopWatching
-    while(watcher.isActive)
     watchedCreateEvents === 3
   }
 
@@ -148,18 +155,20 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers {
       }
     )
     watcher.start
+    while(!watcher.isActive)  {
+      Thread.sleep(100)
+    }
 
     //when: there is a create event
     file1.delete()
-    Thread.sleep(100)
+    waitForWatcherToCaptureEvent(100)
     file2.delete()
-    Thread.sleep(100)
+    waitForWatcherToCaptureEvent(100)
     file3.delete()
-    Thread.sleep(100)
+    waitForWatcherToCaptureEvent(100)
 
     //then: it was captured by the watcher
     watcher.stopWatching
-    while(watcher.isActive)
     watchedDeleted === 3
   }
 
@@ -172,6 +181,9 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers {
       }
     )
     watcher.start
+    while(!watcher.isActive)  {
+      Thread.sleep(100)
+    }
 
     //When
     watcher.stopWatching
@@ -189,6 +201,9 @@ class DirectoryWatcherSpecs extends JUnitMustMatchers {
       }
     )
     watcher.start
+    while(!watcher.isActive)  {
+      Thread.sleep(100)
+    }
 
     //When
     val file = new File(path + "/exceptionFile.txt")

@@ -34,7 +34,7 @@ object MidasUtils {
     midasProcess.stopThread()
     println("creating fake socket to stop midas")
     try {
-      val fakeSocket = new Socket("localhost", midasPort)
+      val fakeSocket = new Socket("127.0.0.1", midasPort)
       fakeSocket.wait(500)
     } catch {
       case e:Exception => println("midas is closed")

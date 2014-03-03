@@ -10,7 +10,7 @@ case class MongoShell(formName: String, host: String, port: Int) {
   val mongoClient = new MongoClient(host, port)
   var db: DB = null
   var shell = Form(formName)
-  var documents: ArrayList[DBObject] = new ArrayList[DBObject]()
+  var documents: ArrayList[DBObject] = null
 
   def close() = mongoClient.close()
 
@@ -27,6 +27,7 @@ case class MongoShell(formName: String, host: String, port: Int) {
   }
 
   def readDocuments(collection: String) = {
+    documents = new ArrayList[DBObject]()
     val cursor = db.getCollection(collection).find()
     while(cursor.hasNext) {
       val document = cursor.next()
@@ -36,7 +37,9 @@ case class MongoShell(formName: String, host: String, port: Int) {
   }
 
   def update(collection: String, findQuery: DBObject, updateQuery: DBObject) = {
-     db.getCollection(collection).update(findQuery, updateQuery)
+     val result: WriteResult = db.getCollection(collection).update(findQuery, updateQuery)
+     val query = collection + ".update(" + findQuery + ", " + updateQuery + ")"
+     shell = shell.tr(prop(query, result.get.getField("updatedExisting"), true))
      this
   }
   def verifyIfCopied(newOldFields: Array[(String, String)]) = {
@@ -70,16 +73,13 @@ case class MongoShell(formName: String, host: String, port: Int) {
       shell = shell.tr(prop("document.get('_expansionVersion')", expansionVersion, noOfExpansions))
   }
 
-  def verifyIfRemoved(collection: String, fields: Array[String]) = {
-    val documents = db.getCollection(collection).find()
-    while(documents.hasNext) {
-      val document = documents.next()
-      println(document)
+  def verifyIfRemoved(fields: Array[String]) = {
+    documents.toArray.foreach({ document =>
       shell = shell.tr(field(s"document", document))
       for(field <- fields)
-         shell = shell.tr(prop(s"!document.containsField($field)", !document.containsField(field), true))
-      shell = shell.tr(prop(s"document.get('_contractionVersion')", document.get("_contractionVersion"), fields.length))
-    }
+         shell = shell.tr(prop(s"!document.containsField($field)", !document.asInstanceOf[DBObject].containsField(field), true))
+      shell = shell.tr(prop(s"document.get('_contractionVersion')", document.asInstanceOf[DBObject].get("_contractionVersion"), fields.length))
+    })
     this
   }
 

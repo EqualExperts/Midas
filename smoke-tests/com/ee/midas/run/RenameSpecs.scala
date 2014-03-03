@@ -8,7 +8,7 @@ import org.specs2.form.Form
 import com.mongodb.BasicDBObject
 
 class RenameSpecs extends Specification with Forms {
-  sequential
+
   var midasTerminal = CommandTerminal("")
   var expansionDelta1: Delta = null
   var expansionDelta2: Delta = null
@@ -20,6 +20,7 @@ class RenameSpecs extends Specification with Forms {
   var appDir: String = null
   var changeSetDirPath: String = null
 
+  sequential
   def is = s2"""
     ${"Rename Operation".title}
     Narration: IncyWincyShoppingApp stores its persistent data on MongoDB. Bob, the Business analyst
@@ -37,7 +38,7 @@ class RenameSpecs extends Specification with Forms {
     Dave: "Yes exactly."
     Bob:  "Okay, but we have 2 nodes in our cluster. So, Do we apply this to all nodes
            simultaneously."
-    Dave: "Yes, All nodes of a cluster will be same version at a time. Once the system is
+    Dave: "Yes, All nodes of a cluster will be at the same version at a time. Once the system is
            completely upgraded and deemed stable, we will run the contraction scripts and remove the
            old field"
     Bob:  "Okay, but what if after adding new field system is not stable . Do we need to rollback DB?"
@@ -128,16 +129,17 @@ class RenameSpecs extends Specification with Forms {
            form
        }
 
-    7. Start Midas with deltas directory location "deltas"
+    7. Start Midas with deltas directory location as "deltas"
       ${
           midasTerminal = CommandTerminal("--port", "27020", "--deltasDir", System.getProperty("user.dir") + File.separator + baseDeltaDir)
           val form = midasTerminal.startMidas
           form
       }
 
-    8. Connect with midas and verify that read documents contain new fields "YourCart" and "ShippingAddress.pincode"
+    8. Connect with midas and verify that read documents contain new fields "YourCart" and
+       "ShippingAddress.pincode"
       ${
-          val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "localhost", 27020)
+          val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "127.0.0.1", 27020)
             .useDatabase("transactions")
             .readDocuments("orders")
             .verifyIfCopied(Array(("YourCart", "OrderList"), ("ShippingAddress.pincode", "ShippingAddress.zipcode")))
@@ -147,17 +149,17 @@ class RenameSpecs extends Specification with Forms {
 
     9. WebApp update and write back the documents to database
       ${
-          val updateObject1 = new BasicDBObject("YourCart", Array("shoes", "sipper"))
-          updateObject1.put("ShippingAddress.pincode", 411006)
-          val updateObject2 = new BasicDBObject("YourCart", Array("scarf", "footwear"))
-          updateObject2.put("ShippingAddress.pincode", 411004)
-          val updateObject3 = new BasicDBObject("YourCart", Array("headsets"))
-          updateObject3.put("ShippingAddress.pincode", 110007)
-          val form =  MongoShell("IncyWincyShoppingApp - UpgradedVersion", "localhost", 27020)
+          val updateDocument1 = new BasicDBObject("YourCart", Array("shoes", "sipper"))
+          updateDocument1.put("ShippingAddress.pincode", 411006)
+          val updateDocument2 = new BasicDBObject("YourCart", Array("scarf", "footwear"))
+          updateDocument2.put("ShippingAddress.pincode", 411004)
+          val updateDocument3 = new BasicDBObject("YourCart", Array("headsets"))
+          updateDocument3.put("ShippingAddress.pincode", 110007)
+          val form =  MongoShell("IncyWincyShoppingApp - UpgradedVersion", "127.0.0.1", 27020)
             .useDatabase("transactions")
-            .update("orders", new BasicDBObject("name", "Vivek"), new BasicDBObject("$set", updateObject1))
-            .update("orders", new BasicDBObject("name", "Komal"), new BasicDBObject("$set", updateObject2))
-            .update("orders", new BasicDBObject("name", "Dhaval"), new BasicDBObject("$set", updateObject3))
+            .update("orders", new BasicDBObject("name", "Vivek"), new BasicDBObject("$set", updateDocument1))
+            .update("orders", new BasicDBObject("name", "Komal"), new BasicDBObject("$set", updateDocument2))
+            .update("orders", new BasicDBObject("name", "Dhaval"), new BasicDBObject("$set", updateDocument3))
             .retrieve()
           form
       }
@@ -199,9 +201,10 @@ class RenameSpecs extends Specification with Forms {
 
     12. Read documents and verify that "OrderList" and "ShippingAddress.zipcode" fields are removed from documents.
        ${
-          val form = MongoShell("Open Command Terminal", "localhost", 27020)
+          val form = MongoShell("Open Command Terminal", "127.0.0.1", 27020)
             .useDatabase("transactions")
-            .verifyIfRemoved("orders", Array("OrderList", "ShippingAddress.zipcode"))
+            .readDocuments("orders")
+            .verifyIfRemoved(Array("OrderList", "ShippingAddress.zipcode"))
             .retrieve()
           form
        }

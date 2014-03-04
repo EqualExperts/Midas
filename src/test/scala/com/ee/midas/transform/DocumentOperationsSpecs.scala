@@ -8,6 +8,7 @@ import com.mongodb.util.JSON
 import java.io.ByteArrayInputStream
 import com.ee.midas.transform.DocumentOperations._
 import java.util.regex.Pattern
+import java.lang.Exception
 
 @RunWith(classOf[JUnitRunner])
 class DocumentOperationsSpecs extends Specification {
@@ -517,6 +518,17 @@ class DocumentOperationsSpecs extends Specification {
           val nestedDocument = actualDocument.get("fullName").asInstanceOf[BSONObject]
           nestedDocument.containsField("firstName") must beTrue
           nestedDocument.containsField("lastName") must beTrue
+        }
+
+        "Throw an Exception if invalid regex is supplied" in {
+          //Given: A document with "name" field
+          val document = new BasicBSONObject().append("name", "Mr Joe Shmo")
+
+          //When: invalid regex is suppiled
+          //Then it throws an exception
+          DocumentOperations(document).<~>("name",
+            Pattern.compile("""^Mr|Mrs|Ms|Miss ([a-zA-Z]+) ([a-zA-Z]+)$"""),
+            """{"title": "$1", "fullName": { "firstName": "$2", "lastName": "$3" }}""")  must throwAn[Exception]
         }
 
         "Splits field and assign empty string to extra output fields" in {

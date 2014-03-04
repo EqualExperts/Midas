@@ -7,6 +7,7 @@ import com.ee.midas.transform.DocumentOperations._
 import java.util.regex.Pattern
 import com.ee.midas.dsl.expressions.{Parser, Expression}
 import com.ee.midas.utils.Loggable
+import com.ee.midas.transform.DocumentOperations
 
 trait SnippetProvider extends Parser with Loggable {
    def toSnippet(verb: Verb, args: Array[String]): BSONObject => BSONObject = verb match {
@@ -51,8 +52,19 @@ trait SnippetProvider extends Parser with Loggable {
 
   //todo: make split more performant by removing Pattern.compile at runtime, use memoization?.
   private def split(splitField: String, regex: String, json: String) : BSONObject => BSONObject = {
-     ((document: BSONObject) =>
-       document <~> (splitField, Pattern.compile(regex), json))
+    val documentWithSplitFields = JSON.parse(json).asInstanceOf[BSONObject]
+    ((document: BSONObject) => {
+      try {
+        document <~> (splitField, Pattern.compile(regex), json)
+      } catch {
+        case t: Throwable =>
+          val errMsg = if(t.getMessage == null) s"Cannot parse $regex" else t.getMessage
+          documentWithSplitFields.keySet.toArray.foreach { case key: String =>
+            document + (s"${key}.errmsg", s"exception: $errMsg")
+          }
+          document
+      }
+    })
   }
 
   private def transform(outputField: String, expressionJson: String) : BSONObject => BSONObject = {

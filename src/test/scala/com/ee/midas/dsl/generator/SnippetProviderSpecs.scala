@@ -193,5 +193,22 @@ class SnippetProviderSpecs extends Specification {
       val expectedBSONObject = new BasicBSONObject("age", new BasicBSONObject("errmsg",  """exception: For input string: "someString""""))
       snippet(document) mustEqual expectedBSONObject
     }
+
+    "provide snippet for split operation containing invalid regex that generates error message in document" in new Snippet {
+      //Given
+      val verb = Verb.split
+      val args: Array[String] = Array("name", "^Mr|Mrs|Ms|Miss ([a-zA-Z]+) ([a-zA-Z]+)$", """{"title": "$1", "firstName": "$2", "lastName": "$3"}""")
+      val document: BSONObject = new BasicBSONObject("name", "Mr John Smith")
+
+      //When
+      val snippet = provideSnippet(verb, args)
+
+      //Then
+      val expectedBSONObject = new BasicBSONObject("name", "Mr John Smith")
+      expectedBSONObject.put("firstName", new BasicBSONObject("errmsg", "exception: Cannot parse ^Mr|Mrs|Ms|Miss ([a-zA-Z]+) ([a-zA-Z]+)$"))
+      expectedBSONObject.put("lastName", new BasicBSONObject("errmsg", "exception: Cannot parse ^Mr|Mrs|Ms|Miss ([a-zA-Z]+) ([a-zA-Z]+)$"))
+      expectedBSONObject.put("title", new BasicBSONObject("errmsg", "exception: Cannot parse ^Mr|Mrs|Ms|Miss ([a-zA-Z]+) ([a-zA-Z]+)$"))
+      snippet(document) mustEqual expectedBSONObject
+    }
   }
 }

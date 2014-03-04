@@ -63,22 +63,24 @@ with ApplicationParsers with Watchable[Configuration] {
     watcher.startWatching
   }
 
-  def processNewConnection(appSocket: Socket, mongoSocket: Socket) = {
-    val appInetAddress = appSocket.getInetAddress
-    val newConMsg = s"New connection received from Remote IP: ${appInetAddress} Remote Port: ${appSocket.getPort}, Local Port: ${appSocket.getLocalPort}"
+  def processNewConnection(client: Socket, mongo: Socket) = {
+    val clientInetAddress = client.getInetAddress
+    val newConMsg = s"New connection received from Remote IP: ${clientInetAddress} Remote Port: ${client.getPort}, Local Port: ${client.getLocalPort}"
     logInfo(newConMsg)
     println(newConMsg)
 
-    getApplication(appInetAddress) match {
-      case Some(application) => application.acceptAuthorized(appSocket, mongoSocket)
-      case None => rejectUnauthorized(appSocket)
+    getApplication(clientInetAddress) match {
+      case Some(application) => application.acceptAuthorized(client, mongo)
+      case None => rejectUnauthorized(client, mongo)
     }
   }
 
-  private def rejectUnauthorized(appSocket: Socket) = {
-    logError(s"Client on ${appSocket.getInetAddress} Not Authorized to connect to Midas!")
-    appSocket.close()
+  private def rejectUnauthorized(client: Socket, mongo: Socket) = {
+    logError(s"Client on ${client.getInetAddress} Not Authorized to connect to Midas!")
+    client.close()
     logError(s"Unauthorized Client Connection Terminated.")
+    mongo.close()
+    logError(s"Closing connection with MongoDB on ${mongo.getInetAddress} as Client was Not Authorized to connect to Midas!")
   }
 
   override def toString = s"""Configuration(Deltas Dir = $deltasDir, Applications = ${applications mkString "," }"""

@@ -86,11 +86,11 @@ class Application(val configDir: URL,
 
   final def stop = nodes foreach { node => node.stop }
 
-  final def acceptAuthorized(appSocket: Socket, mongoSocket: Socket): Unit = {
-    val appIp = appSocket.getInetAddress
-    getNode(appIp) match {
-      case Some(node) => node.startDuplexPipe(appSocket, mongoSocket, transformerHolder)
-      case None => logError(s"Node with IP Address $appIp does not exist for Application: $name in Config Dir $configDir")
+  final def acceptAuthorized(client: Socket, mongo: Socket): Unit = {
+    val clientIp = client.getInetAddress
+    getNode(clientIp) match {
+      case Some(node) => node.startDuplexPipe(client, mongo, transformerHolder)
+      case None => logError(s"Node with IP Address $clientIp does not exist for Application: $name in Config Dir $configDir")
     }
   }
 

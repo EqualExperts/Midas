@@ -6,8 +6,7 @@ import com.mongodb.util.JSON
 import com.ee.midas.transform.DocumentOperations._
 import java.util.regex.Pattern
 import com.ee.midas.dsl.expressions.{Parser, Expression}
-import com.ee.midas.utils.{Memoize, Loggable}
-import com.ee.midas.transform.DocumentOperations
+import com.ee.midas.utils.Loggable
 
 trait SnippetProvider extends Parser with Loggable {
    def toSnippet(verb: Verb, args: Array[String]): BSONObject => BSONObject = verb match {
@@ -69,14 +68,14 @@ trait SnippetProvider extends Parser with Loggable {
 
   private def transform(outputField: String, expressionJson: String) : BSONObject => BSONObject = {
     ((document: BSONObject) => {
-        val expression: Expression = parse(expressionJson)
-        try {
-          val literal = expression.evaluate(document)
-          document + (outputField, literal.value)
-        } catch {
-          case t: Throwable =>
-            document + (s"${outputField}.errmsg", s"exception: ${t.getMessage}")
-        }
+      val expression: Expression = parse(expressionJson)
+      try {
+        val literal = expression.evaluate(document)
+        document + (outputField, literal.value)
+      } catch {
+        case t: Throwable =>
+          document + (s"${outputField}.errmsg", s"exception: ${t.getMessage}")
+      }
     })
   }
 }

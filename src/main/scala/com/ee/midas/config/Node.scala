@@ -18,12 +18,12 @@ class Node(private var _name: String, val ip: InetAddress, private val _changeSe
 
   final def changeSet = changeSetHolder.get
 
-  final def startDuplexPipe(appSocket: Socket, mongoSocket: Socket, transformerHolder: SynchronizedHolder[Transformer]) = {
+  final def startDuplexPipe(client: Socket, mongo: Socket, transformerHolder: SynchronizedHolder[Transformer]) = {
     cleanDeadPipes
     val tracker = new MessageTracker()
     val requestInterceptor = new RequestInterceptor(tracker, transformerHolder, changeSetHolder)
     val responseInterceptor = new ResponseInterceptor(tracker, transformerHolder)
-    val duplexPipe = appSocket <|==|> (mongoSocket, requestInterceptor, responseInterceptor)
+    val duplexPipe = client <|==|> (mongo, requestInterceptor, responseInterceptor)
     pipes += duplexPipe
     duplexPipe.start
     val pipeReadyMsg = s"Setup Pipes for New Connection, ready to receive traffic on $duplexPipe"

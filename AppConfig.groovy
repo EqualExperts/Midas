@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, Equal Experts Ltd
+ * Copyright (c) 2014, Equal Experts Ltd
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,7 +26,7 @@
  *
  * The views and conclusions contained in the software and documentation
  * are those of the authors and should not be interpreted as representing
- * official policies, either expressed or implied, of the Tayra Project.
+ * official policies, either expressed or implied, of the Midas Project.
  ******************************************************************************/
 def toCompleteVersion() {
 	def completeVersion = new StringBuilder()
@@ -53,9 +53,9 @@ configuration {
 			minor = 0 //changes or feature additions
 			micro = 0 //patches and bug fixes
 			qualifier {
-				alphaNumeric = 'Alpha1' //Alpha# or Beta# or CR# or GA, or SP#
+				alphaNumeric = 'Beta1' //Alpha# or Beta# or CR# or GA, or SP#
 			}
-            previous = '0.0.0.Alpha0'
+            previous = '1.0.0.Alpha1'
 			complete = toCompleteVersion()
 		}
 

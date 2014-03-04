@@ -4,6 +4,7 @@ import org.bson.io.Bits
 import org.bson.BSONObject
 import java.io.ByteArrayInputStream
 import com.ee.midas.transform.DocumentOperations._
+import scala.language.postfixOps
 
 //todo: Design changes for later
 // Request really needs to be composed of BaseMongoHeader and Transformer

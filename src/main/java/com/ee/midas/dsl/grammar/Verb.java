@@ -24,7 +24,8 @@ public enum Verb {
     @Contraction @ArgsSpecs(ArgType.JSON)
     remove;
 
-    private Annotation getAnnotation(final Class annotationClass) {
+    private Annotation getAnnotation(
+            final Class<? extends Annotation> annotationClass) {
         try {
             return Verb.class
                 .getField(name())

@@ -1,6 +1,7 @@
 package com.ee.midas.pipes
 
 import java.net.Socket
+import scala.language.implicitConversions
 
 class SocketConnector private (source: Socket) {
 

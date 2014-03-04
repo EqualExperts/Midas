@@ -1,9 +1,10 @@
 package com.ee.midas.interceptor
 
 import java.io.{InputStream}
-import com.ee.midas.transform.{Transformer, RequestTransformer}
+import com.ee.midas.transform.{Transformer}
 import com.ee.midas.config.ChangeSet
 import com.ee.midas.utils.SynchronizedHolder
+import scala.language.postfixOps
 
 class RequestInterceptor (tracker: MessageTracker, transformerHolder: SynchronizedHolder[Transformer], changeSetHolder: SynchronizedHolder[ChangeSet])
   extends MidasInterceptable {

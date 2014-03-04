@@ -7,6 +7,8 @@ import com.mongodb.{DefaultDBDecoder}
 import com.ee.midas.utils.Loggable
 import com.mongodb.util.JSON
 import java.util.regex.{Matcher, Pattern}
+import scala.language.postfixOps
+import scala.language.implicitConversions
 
 class DocumentOperations private (document: BSONObject) extends Loggable {
 

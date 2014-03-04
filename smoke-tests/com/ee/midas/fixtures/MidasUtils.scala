@@ -27,7 +27,6 @@ object MidasUtils {
       println("Midas woke up... returning control")
       true
     }
-
   }
 
   def stopMidas(midasPort: Int) = {

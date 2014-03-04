@@ -94,12 +94,15 @@ class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParse
       }
       stopApplication = false
       isRunning = false
+
       logInfo("Midas has halted.")
     }
   }
 
   def stop = {
     stopApplication = true
+    watcher.stopWatching
+    configuration.stop
   }
 
 }

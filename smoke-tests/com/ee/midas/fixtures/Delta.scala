@@ -26,8 +26,7 @@ case class Delta(deltaDir: String , deltaStr: () => String) {
     var newForm = form
     var lines = deltaStr().split("\n")
     lines = lines.dropRight(1)
-    for (line <- lines)
-      newForm = newForm.tr(field(line))
+    lines.foreach(line => newForm = newForm.tr(field(line)) )
     newForm
   }
 

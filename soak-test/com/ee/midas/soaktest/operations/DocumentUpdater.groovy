@@ -39,7 +39,7 @@ class DocumentUpdater {
         }
     }
 
-    def sleepFor(millis) {
+    def sleepFor(givenTime) {
         def time, unit
         (time, unit) = givenTime
         println("update -- sleeping for $time $unit at ${new Date().seconds}")

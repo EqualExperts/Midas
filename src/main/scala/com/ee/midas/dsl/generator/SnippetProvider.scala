@@ -6,7 +6,7 @@ import com.mongodb.util.JSON
 import com.ee.midas.transform.DocumentOperations._
 import java.util.regex.Pattern
 import com.ee.midas.dsl.expressions.{Parser, Expression}
-import com.ee.midas.utils.Loggable
+import com.ee.midas.utils.{Memoize, Loggable}
 import com.ee.midas.transform.DocumentOperations
 
 trait SnippetProvider extends Parser with Loggable {
@@ -50,12 +50,12 @@ trait SnippetProvider extends Parser with Loggable {
     })
   }
 
-  //todo: make split more performant by removing Pattern.compile at runtime, use memoization?.
   private def split(splitField: String, regex: String, json: String) : BSONObject => BSONObject = {
     val documentWithSplitFields = JSON.parse(json).asInstanceOf[BSONObject]
+    val compiledRegex = Pattern.compile(regex)
     ((document: BSONObject) => {
       try {
-        document <~> (splitField, Pattern.compile(regex), json)
+        document <~> (splitField, compiledRegex, json)
       } catch {
         case t: Throwable =>
           val errMsg = if(t.getMessage == null) s"Cannot parse $regex" else t.getMessage

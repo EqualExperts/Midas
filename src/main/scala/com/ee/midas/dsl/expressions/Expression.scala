@@ -9,7 +9,7 @@ sealed trait Expression {
 }
 
 final case class Literal(val value: Any) extends Expression {
-  def evaluate(document: BSONObject) = Literal(value)
+  def evaluate(document: BSONObject) = this
 
   override def toString = s"${getClass.getSimpleName}($value)"
 }

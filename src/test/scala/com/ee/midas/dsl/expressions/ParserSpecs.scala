@@ -277,7 +277,7 @@ class ParserSpecs extends Specification {
         args must beEmpty
       }
 
-      "with Number argument" in new ExpressionParser {
+      "with single Number argument in an array" in new ExpressionParser {
         //Given
         val input = "[1]"
 
@@ -288,7 +288,7 @@ class ParserSpecs extends Specification {
         args mustEqual List(Literal(1))
       }
 
-      "with Number and String args" in new ExpressionParser {
+      "with Number and String args in an array" in new ExpressionParser {
         //Given
         val input = """[1, "age"]"""
 
@@ -299,7 +299,7 @@ class ParserSpecs extends Specification {
         args mustEqual List(Literal(1), Literal("age"))
       }
 
-      "with Number, String and Field args" in new ExpressionParser {
+      "with Number, String and Field args in an array" in new ExpressionParser {
         //Given
         val input = """[1, "age", "$name"]"""
 
@@ -310,7 +310,7 @@ class ParserSpecs extends Specification {
         args mustEqual List(Literal(1), Literal("age"), Field("name"))
       }
 
-      "with Function arg" in new ExpressionParser {
+      "with Function arg in an array" in new ExpressionParser {
         //Given
         val input = """[{ $add: [1, "$age"]}]"""
 
@@ -330,6 +330,75 @@ class ParserSpecs extends Specification {
 
         //Then
         objExpr mustEqual Add(Literal(1), Multiply(Literal(2), Field("age")))
+      }
+
+      "with single Number argument" in new ExpressionParser {
+        //Given
+        val input = "1"
+
+        //When
+        val args = Result(parseAll(fnArgs, input))
+
+        //Then
+        args mustEqual List(Literal(1))
+      }
+
+      "with single quoted string argument" in new ExpressionParser {
+        //Given
+        val constant = "age"
+        val input = s"'$constant'"
+
+        //When
+        val args = Result(parseAll(fnArgs, input))
+
+        //Then
+        args mustEqual List(Literal(constant))
+      }
+
+      "with double quoted string argument" in new ExpressionParser {
+        //Given
+        val input = """"age""""
+
+        //When
+        val args = Result(parseAll(fnArgs, input))
+
+        //Then
+        args mustEqual List(Literal("age"))
+      }
+
+
+      "with single quoted Field argument" in new ExpressionParser {
+        //Given
+        val fieldName = "name"
+        val input = s"'$$$fieldName'"
+
+        //When
+        val args = Result(parseAll(fnArgs, input))
+
+        //Then
+        args mustEqual List(Field(fieldName))
+      }
+
+      "with double quoted Field argument" in new ExpressionParser {
+        //Given
+        val input = """"$name""""
+
+        //When
+        val args = Result(parseAll(fnArgs, input))
+
+        //Then
+        args mustEqual List(Field("name"))
+      }
+
+      "with single function argument" in new ExpressionParser {
+        //Given
+        val input = """{ $add : [1, 2] }"""
+
+        //When
+        val args = Result(parseAll(fnArgs, input))
+
+        //Then
+        args mustEqual List(Add(Literal(1), Literal(2)))
       }
     }
 
@@ -363,6 +432,14 @@ class ParserSpecs extends Specification {
       "with ill-formed args" in new ExpressionParser {
         //Given
         val input = "[1]]"
+
+        //When-Then
+        Result(parseAll(fnArgs, input)) must throwA[IllegalArgumentException]
+      }
+
+      "with single function argument" in new ExpressionParser {
+        //Given
+        val input = """"$add : [1, 2]""""
 
         //When-Then
         Result(parseAll(fnArgs, input)) must throwA[IllegalArgumentException]

@@ -18,7 +18,7 @@ class Parser {
     }
 
     def using(db) {
-        log.info "Setting db context to ${db.toString()}"
+        log.info "Changing db context $db"
     }
 
     public Tree parse(Long changeSet, Closure closure) {

@@ -16,7 +16,7 @@ trait Parser extends JavaTokenParsers {
    * value ::= obj | floatingPointNumber | "null" | "true" | "false" | quotedField | singleQuotedField | quotedStringLiteral | singleQuotedStringLiteral.
    * obj ::= "{" function "}".
    * fn ::= fnName ":" fnArgs.
-   * fnArgs ::= "[" values "]".
+   * fnArgs ::= "[" values "]" | value.
    * values ::= value { "," value }.
    */
   def value: Parser[Expression] =
@@ -44,7 +44,7 @@ trait Parser extends JavaTokenParsers {
     ("\'" + stringWithoutDotAndDollar + "\'").r ^^ (s => Literal(s.replaceAllLiterally("\'", "")))
 
   def obj: Parser[Expression] = "{"~> fn <~"}"
-  def fnArgs: Parser[List[Expression]] = "["~> repsep(value, ",") <~"]"
+  def fnArgs: Parser[List[Expression]] = "["~> repsep(value, ",") <~"]"  | (value ^^ (List(_)))
   def fnName: Parser[String] = "$"~> """[a-zA-Z_]\w*""".r
   def fn: Parser[Expression] = fnName~":"~fnArgs ^^ { case name~":"~args => Function(name, args: _*) }
 

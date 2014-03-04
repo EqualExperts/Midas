@@ -1,11 +1,11 @@
 demoApp1Ver1_9 {
   mode = expansion
   nodeA {
-    ip = 14.99.50.219
+    ip = 127.0.0.1
     changeSet = 3
   }
   nodeB {
-    ip = 192.168.3.81
+    ip = 192.168.3.81 //Change this for your set-up
     changeSet = 3
   }
 }

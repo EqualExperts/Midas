@@ -13,8 +13,8 @@
 <br>
 ## Documentation
 * Midas Overview and Guide, Download from [here]()
-* We have executable specifications and double up as documentation as well.  The [examples here](http://htmlpreview.github.com/?https://github.com/EqualExperts/Midas/blob/master/distribution-template/documentation/Midas-Commands.md) in will help you gain better understanding at using Midas  for usage. 
-* Midas [Command Reference](http://htmlpreview.github.com/?https://github.com/EqualExperts/Midas/blob/master/journeys/com.ee.midas.run.Index.html)
+* We have executable specifications and double up as documentation as well.  The [examples here](http://htmlpreview.github.com/?https://github.com/EqualExperts/Midas/blob/master/journeys/com.ee.midas.run.Index.html) in will help you gain better understanding at using Midas  for usage. 
+* Midas [Command Reference](https://github.com/EqualExperts/Midas/blob/master/distribution-template/documentation/Midas-Commands.md)
 * Additionally, you can refer to the ReadMe.txt within binary distribution for features.
 
 ## Binary Distributions

@@ -84,7 +84,7 @@ project.ext {
     mongoDB = System.getProperty('mongoDB', "$MONGODB_SERVER")
 
     acceptanceTestDir = 'acceptance-tests/drivers'
-    acceptanceTestReportsDir = "$reporting.baseDir/acceptance-tests"
+    acceptanceTestReportsDir = "${reporting.baseDir}/acceptance-tests"
     smokeTestsDir = "smoke-tests"
     smokeTestReportsDir = "${project.distsDir}/smoke-tests"
 

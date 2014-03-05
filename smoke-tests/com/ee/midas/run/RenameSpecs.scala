@@ -130,28 +130,28 @@ class RenameSpecs extends Specification with Forms {
     6. Create delta file "0002_copy_transactions_orders_ZipcodeToPincodeField.delta" to copy "zipcode"
        to "pincode" at location "001RenameOrders" in "expansions" folder
        ${
-           val expansionDeltaDir = changeSetDirPath + File.separator + "expansions"
-           expansionDelta2 = Delta(expansionDeltaDir, () => {
-              """use transactions
-                 db.orders.copy("ShippingAddress.zipcode", "ShippingAddress.pincode")
-              """
-            })
-           val form = expansionDelta2.saveAs("Write Delta", "0002_copy_transactions_orders_ZipcodeToPincodeField.delta")
-           form
+          val expansionDeltaDir = changeSetDirPath + File.separator + "expansions"
+          expansionDelta2 = Delta(expansionDeltaDir, () => {
+            """use transactions
+               db.orders.copy("ShippingAddress.zipcode", "ShippingAddress.pincode")
+            """
+          })
+          val form = expansionDelta2.saveAs("Write Delta", "0002_copy_transactions_orders_ZipcodeToPincodeField.delta")
+          form
        }
 
     7. Create delta file "0001_removeFrom_transactions_orders_OrderListField.delta" to remove "OrderList"
         and "ShippingAddress.zipcode" at location "001RenameOrders" in "contraction" folder
         ${
-            val contractionDeltaDir = changeSetDirPath + File.separator + "contractions"
-            contractionDelta = Delta(contractionDeltaDir, () => {
+           val contractionDeltaDir = changeSetDirPath + File.separator + "contractions"
+           contractionDelta = Delta(contractionDeltaDir, () => {
               """use transactions
                          db.orders.remove("['OrderList']")
                          db.orders.remove("['ShippingAddress.zipcode']")
               """
-            } )
-            val form = contractionDelta.saveAs("Write Delta", "0001_removeFrom_transactions_orders_OrderListField.delta")
-            form
+           })
+           val form = contractionDelta.saveAs("Write Delta", "0001_removeFrom_transactions_orders_OrderListField.delta")
+           form
         }
 
     8. Start Midas with deltas directory location as "deltas"
@@ -233,7 +233,7 @@ class RenameSpecs extends Specification with Forms {
           form
        }
 
-    14. Insert a document .
+    14. Insert a document from the Upgraded Version of the app.
        ${
           val address: DBObject = new BasicDBObject("line1", "enter house/street")
                                   .append("line2", "enter city")
@@ -249,7 +249,7 @@ class RenameSpecs extends Specification with Forms {
           form
        }
 
-    15. Read documents and verify that all documents contain contractionVersion.
+    15. Read documents and verify that all documents are contracted.
        ${
            val noOfContractions = 2
            val form = MongoShell("Open Command Terminal", "127.0.0.1", 27020)

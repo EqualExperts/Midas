@@ -1,6 +1,6 @@
 package com.ee.midas.fixtures
 
-import java.io.{PrintWriter, FileWriter, File}
+import java.io.{PrintWriter, File}
 import org.specs2.form.Form
 import org.specs2.specification.Forms._
 

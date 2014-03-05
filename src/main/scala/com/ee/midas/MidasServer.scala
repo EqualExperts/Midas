@@ -94,8 +94,6 @@ class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParse
       }
       stopApplication = false
       isRunning = false
-
-      logInfo("Midas has halted.")
     }
   }
 

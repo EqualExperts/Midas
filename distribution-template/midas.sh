@@ -1,5 +1,5 @@
 ###############################################################################
- # Copyright (c) 2013, Equal Experts Ltd
+ # Copyright (c) 2014, Equal Experts Ltd
  # All rights reserved.
  #
  # Redistribution and use in source and binary forms, with or without

@@ -1,4 +1,4 @@
-# Midas
+# Midas <img src="http://www.equalexperts.com/resources/img/eelogo.png" align="right">
 ***On-the-fly Schema Migration Tool for MongoDB***
 ##Overview
   Currently, applications have to hand-roll their own schema migration infrastructure or use some third-party tool
@@ -11,6 +11,14 @@
 
   Further, Midas is Agnostic of the MongoDB configurations like Standalone, Replica Sets, Sharded environments.
 <br>
+## Documentation
+* Midas Overview and Guide, Download from [here]()
+* We have executable specifications and double up as documentation as well.  The [examples here](http://htmlpreview.github.com/?https://github.com/EqualExperts/Midas/blob/master/distribution-template/documentation/Midas-Commands.md) in will help you gain better understanding at using Midas  for usage. 
+* Midas [Command Reference](http://htmlpreview.github.com/?https://github.com/EqualExperts/Midas/blob/master/journeys/com.ee.midas.run.Index.html)
+* Additionally, you can refer to the ReadMe.txt within binary distribution for features.
+
+## Binary Distributions
+Todo
 
 ## Build Info
 We are using Gradle 1.8 for our builds.  Please do not checkin Eclipse or Intellij or any IDE specific files.  

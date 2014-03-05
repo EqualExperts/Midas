@@ -86,7 +86,7 @@ project.ext {
     acceptanceTestDir = 'acceptance-tests/drivers'
     acceptanceTestReportsDir = "$reporting.baseDir/acceptance-tests"
     smokeTestsDir = "smoke-tests"
-    smokeTestReportsDir = "$reporting.baseDir/smoke-tests"
+    smokeTestReportsDir = "${project.distsDir}/smoke-tests"
 
     javaTestDir = "$acceptanceTestDir/java/driver-version-2.11.3"
     javaTestReportsDir = "$acceptanceTestReportsDir/java"
@@ -162,7 +162,7 @@ def runJVMAcceptanceTests(String srcFolder, String reportsFolder) {
         systemProperties['specs2.junit.outDir'] = reportsFolder
         main = 'org.specs2.files'
         classpath = runtimeClasspath
-        args = ['html', 'junitxml', 'filesrunner.verbose', 'filesrunner.pattern', '(Index.*)']
+        args = ['html', 'junitxml', 'filesrunner.verbose', 'filesrunner.pattern', '(.*Specs)|(Index.*)']
     }
 }
 
@@ -381,4 +381,4 @@ def killFirst(def processName) {
 }
 
 check.dependsOn << ['scalastyle']
-build.dependsOn = ['check', 'cobertura', 'coberturaCheck', 'createTestJar', 'distribute']
+build.dependsOn = ['check', 'cobertura', 'coberturaCheck', 'smoke-tests', 'createTestJar', 'distribute']

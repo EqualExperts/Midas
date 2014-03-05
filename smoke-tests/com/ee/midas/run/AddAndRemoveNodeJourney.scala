@@ -4,7 +4,7 @@ package com.ee.midas.run
 import org.specs2._
 import specification._
 
-class AddAndRemoveNodeSpecs extends Specification with Forms {
+class AddAndRemoveNodeJourney extends Specification with Forms {
 
     sequential
     def is = s2"""

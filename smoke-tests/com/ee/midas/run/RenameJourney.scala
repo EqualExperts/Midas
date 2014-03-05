@@ -7,7 +7,7 @@ import java.io.File
 import org.specs2.form.Form
 import com.mongodb.{DBObject, BasicDBObject}
 
-class RenameSpecs extends Specification with Forms {
+class RenameJourney extends Specification with Forms {
 
   var midasTerminal = CommandTerminal("")
   var expansionDelta1: Delta = null

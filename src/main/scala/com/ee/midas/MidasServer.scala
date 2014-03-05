@@ -5,12 +5,15 @@ import java.net.{Socket, InetAddress, ServerSocket}
 import com.ee.midas.utils.{Loggable}
 import java.io.File
 import scala.util.Try
+import scala.util.control.Breaks._
 
 class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParser {
 
   private val deltasDir = new File(cmdConfig.baseDeltasDir.getPath).toURI.toURL
   private val configuration: Configuration = parseConfiguration(cmdConfig)
   private val watcher = new ConfigurationWatcher(configuration, cmdConfig.baseDeltasDir)
+  var stopApplication = false
+  var isRunning = false
   setupShutdownHook
 
   private def parseConfiguration(cmdConfig: CmdConfig): Configuration =
@@ -63,10 +66,15 @@ class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParse
         val errMsg = s"Cannot Start Midas on IP => ${cmdConfig.midasHost}, Port => ${cmdConfig.midasPort}.  Please Check Your Server IP or Port."
         logError(errMsg)
         println(errMsg)
-
+  
       case scala.util.Success(serverSocket) =>
+       breakable {
         while (true) {
+          isRunning = true
           val clientSocket = waitForNewConnectionOn(serverSocket)
+          if(stopApplication){
+            break
+          }
           val clientIp = clientSocket.getInetAddress
           createMongoSocket match {
             case scala.util.Failure(t) =>
@@ -83,6 +91,16 @@ class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParse
               configuration.processNewConnection(clientSocket, mongoSocket)
           }
         }
+      }
+      stopApplication = false
+      isRunning = false
     }
   }
+
+  def stop = {
+    stopApplication = true
+    watcher.stopWatching
+    configuration.stop
+  }
+
 }

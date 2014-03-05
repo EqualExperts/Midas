@@ -54,7 +54,7 @@ project.ext {
 
     //code coverage lib
     coberturaCoverageReportsDirName = "$reporting.baseDir/cobertura"
-    coberturaLineCoverageBaseline = 87
+    coberturaLineCoverageBaseline = 86
     coberturaBranchCoverageBaseline = 38.5 //reduced from 70
 
     //dependency analysis
@@ -162,7 +162,7 @@ def runJVMAcceptanceTests(String srcFolder, String reportsFolder) {
         systemProperties['specs2.junit.outDir'] = reportsFolder
         main = 'org.specs2.files'
         classpath = runtimeClasspath
-        args = ['html', 'junitxml', 'filesrunner.verbose', 'filesrunner.pattern', '.*Specs']
+        args = ['html', 'junitxml', 'filesrunner.verbose', 'filesrunner.pattern', '(Index.*)']
     }
 }
 
@@ -203,6 +203,7 @@ apply plugin: 'cobertura'
 
 repositories {
     mavenCentral()
+    mavenLocal()
     maven {
         url 'http://code.google.com/p/google-maven-repository'
         url 'https://oss.sonatype.org/content/repositories/snapshots'

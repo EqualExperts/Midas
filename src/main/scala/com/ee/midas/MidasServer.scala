@@ -2,18 +2,16 @@ package com.ee.midas
 
 import com.ee.midas.config.{ConfigurationWatcher, ConfigurationParser, Configuration}
 import java.net.{Socket, InetAddress, ServerSocket}
-import com.ee.midas.utils.{Loggable}
+import com.ee.midas.utils.Loggable
 import java.io.File
 import scala.util.Try
-import scala.util.control.Breaks._
 
 class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParser {
 
   private val deltasDir = new File(cmdConfig.baseDeltasDir.getPath).toURI.toURL
   private val configuration: Configuration = parseConfiguration(cmdConfig)
   private val watcher = new ConfigurationWatcher(configuration, cmdConfig.baseDeltasDir)
-  var stopApplication = false
-  var isRunning = false
+  private var isRunning = true
   setupShutdownHook
 
   private def parseConfiguration(cmdConfig: CmdConfig): Configuration =
@@ -24,6 +22,8 @@ class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParse
         configuration
       }
     }
+
+  def isActive = isRunning
 
   private def waitForNewConnectionOn(serverSocket: ServerSocket) = {
     val listeningMsg = s"Midas Ready! Listening on IP: ${serverSocket.getInetAddress}, Port ${serverSocket.getLocalPort()} for new connections..."
@@ -43,16 +43,23 @@ class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParse
     println(shutdownMsg)
   }
 
-  def createMongoSocket: Try[Socket] =
+  private def createMongoSocket: Try[Socket] =
     Try {
       new Socket(cmdConfig.mongoHost, cmdConfig.mongoPort)
     }
   
-  def createServerSocket: Try[ServerSocket] = 
+  private def createServerSocket: Try[ServerSocket] =
     Try {
       val maxClientConnections = 50
       new ServerSocket(cmdConfig.midasPort, maxClientConnections, InetAddress.getByName(cmdConfig.midasHost))
     }
+
+  def stop = {
+    logInfo("Midas server shutdown requested. Initiating closure.")
+    isRunning = false
+    val terminatingSocket = new Socket(cmdConfig.midasHost, cmdConfig.midasPort)
+    terminatingSocket.close()
+  }
 
   def start = {
     val startingMsg = s"Starting Midas on ${cmdConfig.midasHost}, port ${cmdConfig.midasPort}..."
@@ -68,40 +75,28 @@ class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParse
         println(errMsg)
   
       case scala.util.Success(serverSocket) =>
-       breakable {
-        while (true) {
-          isRunning = true
+        while (isRunning) {
           val clientSocket = waitForNewConnectionOn(serverSocket)
-          if(stopApplication){
-            serverSocket.close
-            break
-          }
-          val clientIp = clientSocket.getInetAddress
-          createMongoSocket match {
-            case scala.util.Failure(t) =>
-              val errMsg =
-                s"""
-                  | MongoDB on ${cmdConfig.mongoHost}:${cmdConfig.mongoPort} is not available!
-                  | Terminating connection from ${clientIp}, Please retry later.
-                 """.stripMargin
-              println(errMsg)
-              logError(errMsg)
-              clientSocket.close()
+          if(isRunning) {
+            val clientIp = clientSocket.getInetAddress
+            createMongoSocket match {
+              case scala.util.Failure(t) =>
+                val errMsg =
+                  s"""
+                    | MongoDB on ${cmdConfig.mongoHost}:${cmdConfig.mongoPort} is not available!
+                    | Terminating connection from ${clientIp}, Please retry later.
+                   """.stripMargin
+                println(errMsg)
+                logError(errMsg)
+                clientSocket.close()
 
-            case scala.util.Success(mongoSocket) =>
-              configuration.processNewConnection(clientSocket, mongoSocket)
+              case scala.util.Success(mongoSocket) =>
+                configuration.processNewConnection(clientSocket, mongoSocket)
+            }
           }
         }
-      }
-      stopApplication = false
-      isRunning = false
     }
-  }
-
-  def stop = {
-    stopApplication = true
-    watcher.stopWatching
-    configuration.stop
+      isRunning = false
   }
 
 }

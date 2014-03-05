@@ -50,5 +50,5 @@ class MidasAsThread(cmdConfig: CmdConfig) extends Thread {
 
   def stopThread() = { midas.stop }
 
-  def isRunning() = { midas.isRunning }
+  def isRunning() = { midas.isActive }
 }

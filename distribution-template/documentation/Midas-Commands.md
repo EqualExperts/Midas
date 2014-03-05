@@ -8,7 +8,7 @@ appearing after it will look for collections within that DB.  This behavior is
 same as the use command used on Mongo Shell.
 
 ####Syntax
-use <db>
+`use <db>`
 
 ####Examples
 `use transactions`
@@ -45,8 +45,8 @@ Remove single or multiple fields
   `db.collection.remove("['fieldOne', 'nested.fieldTwo', 'arrayField', ...]")`
  
 ####Examples
-db.customers.remove("['age']")
-db.orders.remove("['dispatch.status']")
+`db.customers.remove("['age']")`
+`db.orders.remove("['dispatch.status']")`
 
 ###The copy command
 Copies value from a field to another, if the target field does not exist, create one.

@@ -73,6 +73,7 @@ class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParse
           isRunning = true
           val clientSocket = waitForNewConnectionOn(serverSocket)
           if(stopApplication){
+            serverSocket.close
             break
           }
           val clientIp = clientSocket.getInetAddress

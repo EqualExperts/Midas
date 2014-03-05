@@ -109,7 +109,6 @@ class RenameJourney extends Specification with Forms {
           changeSetDirPath = appDir + File.separator + "001RenameOrders"
           changeSetDir = Delta(changeSetDirPath, () => "")
           var form = Form("Create ChangeSet Folder")
-          val value = new File(changeSetDirPath)
           form = form.tr("001RenameOrders")
           form
        }
@@ -193,11 +192,10 @@ class RenameJourney extends Specification with Forms {
     11. Assure that all the documents are expanded. We will simulate this here by connecting to mongo
         directly as shown below:
        ${
-          val noOfExpansions = 2
           val form = MongoShell("IncyWincyShoppingApp - Expansion Complete", "127.0.0.1", 27017)
             .useDatabase("transactions")
             .readDocuments("orders")
-            .verifyIfExpanded(noOfExpansions)
+            .verifyIfExpanded(noOfExpansions = 2)
             .retrieve()
           form
        }
@@ -251,11 +249,10 @@ class RenameJourney extends Specification with Forms {
 
     15. Read documents and verify that all documents are contracted.
        ${
-           val noOfContractions = 2
            val form = MongoShell("Open Command Terminal", "127.0.0.1", 27020)
              .useDatabase("transactions")
              .readDocuments("orders")
-             .verifyIfContracted(noOfContractions)
+             .verifyIfContracted(noOfContractions = 2)
              .retrieve()
            form
         }

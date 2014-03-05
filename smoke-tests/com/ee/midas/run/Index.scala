@@ -52,5 +52,7 @@ class Index extends Specification { def is = "Midas Index".title ^ s2"""
     c.) use midas in contraction mode.
 
     ${"" ~ ("Rename Operation", new RenameJourney)}
+    ${"" ~ ("Add/Remove Node on the fly", new AddAndRemoveNodeJourney)}
+    ${"" ~ ("Add/Remove Delta on the fly", new AddAndRemoveDeltaJourney)}
  """
 }

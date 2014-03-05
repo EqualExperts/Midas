@@ -8,7 +8,7 @@ import java.util.ArrayList
 import com.ee.midas.transform.DocumentOperations._
 
 case class MongoShell(formName: String, host: String, port: Int) {
-  val mongoClient = new MongoClient(host, port)
+  var mongoClient: MongoClient = new MongoClient(host, port)
   var db: DB = null
   var shell = Form(formName)
   var documents: ArrayList[DBObject] = null
@@ -22,8 +22,12 @@ case class MongoShell(formName: String, host: String, port: Int) {
   }
 
   def runCommand(query: String) = {
-    val result = db.doEval(query)
-    shell = shell.tr(prop(s">$query", result.ok(), true))
+    try{
+       val result = db.doEval(query)
+       shell = shell.tr(prop(s">$query", result.ok(), true))
+    } catch {
+       case e: Exception => shell = shell.tr("Client cannot Connect")
+    }
     this
   }
 
@@ -101,15 +105,6 @@ case class MongoShell(formName: String, host: String, port: Int) {
   def verifyContractionVersion(document:DBObject, noOfContractions: Int) = {
     val contractionVersion = document.asInstanceOf[DBObject].get("_contractionVersion")
     shell = shell.tr(prop("document('_contractionVersion')", contractionVersion, noOfContractions))
-  }
-
-  private def readNestedValue(fieldName: String, document: Object): Object = {
-    val nestedFields = fieldName.split("\\.")
-    var fieldValue = document
-    for(field <- nestedFields) {
-      fieldValue = fieldValue.asInstanceOf[BSONObject].get(field)
-    }
-    fieldValue
   }
 
   def retrieve() = {

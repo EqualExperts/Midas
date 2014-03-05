@@ -1,11 +1,2 @@
 use users
-
-/***
- * Merge into a target field multiple fields using a user-defined separator
- *
- * syntax: db.collection.merge('["fieldOne", "fieldTwo", ...]', 'usingSeparator', 'targetField')
- * syntax: db.collection.merge("['fieldOne', 'fieldTwo', ...]", "usingSeparator", "targetField")
- *
- * Separator can be any punctuations, symbols, spaces, alphanumeric string
- */
 db.customers.merge('["title", "lname", "fname"]', ' ', 'details.name')

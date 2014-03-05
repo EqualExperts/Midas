@@ -1,13 +1,3 @@
 use users
 
-/***
- * Split a field in to multiple fields using a user-defined regex.  The regex must contain
- * groups that will be extracted and whose values will be applied to newly created fields.
- *
- * syntax: db.collection.split('field', 'regex', '{ "firstField": "$1", "secondField": "$2", ... }')
- * syntax: db.collection.split("field", "regex", "{ 'firstField': '$1', 'secondField': '$2', ... }")
- *
- * regex can be include any punctuations, symbols, spaces, alphanumeric string
- */
-
 db.customers.split('details.name', '^(Mr|Mrs|Ms|Miss) ([a-zA-Z]+) ([a-zA-Z]+)$', '{"title": "$1", "fullName": { "firstName": "$2", "lastName": "$3" }}')

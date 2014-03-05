@@ -52,7 +52,7 @@ class RenameJourney extends Specification with Forms {
            the Domain Model in hibernate."
     Dave: "No Bob, we don't need to incorporate any change in the application. Midas takes care of
            that. It inserts expansionVersion and contractionVersion field in the document on the way
-           back during insert and update.
+           back during insert and update."
     Bob:  "Ok, great."
 
 
@@ -226,7 +226,7 @@ class RenameJourney extends Specification with Forms {
           val form = MongoShell("Open Command Terminal", "127.0.0.1", 27020)
             .useDatabase("transactions")
             .readDocuments("orders")
-            .verifyIfRemoved(Array("OrderList", "ShippingAddress.zipcode"))
+            .verifyIfRemoved(Array("OrderList", "ShippingAddress.zipcode"), noOfContractions = 2)
             .retrieve()
           form
        }

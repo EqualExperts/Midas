@@ -53,6 +53,6 @@ class Index extends Specification { def is = "Midas Index".title ^ s2"""
 
     ${"" ~ ("Rename Operation", new RenameJourney)}
     ${"" ~ ("Add/Remove Node on the fly", new AddAndRemoveNodeJourney)}
-    ${"" ~ ("Add/Remove Delta on the fly", new AddAndRemoveDeltaJourney)}
+    ${"" ~ ("Add/Remove Delta on the fly", new AddAndRemoveChangeSetJourney)}
  """
 }

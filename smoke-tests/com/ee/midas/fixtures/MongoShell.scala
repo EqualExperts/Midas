@@ -92,12 +92,22 @@ case class MongoShell(formName: String, host: String, port: Int) {
      shell = shell.tr(prop("document('_expansionVersion')", expansionVersion, noOfExpansions))
   }
 
-  def verifyIfRemoved(fields: Array[String]) = {
+  def verifyIfRemoved(fields: Array[String], noOfContractions: Int) = {
     documents.toArray.foreach({ document =>
       shell = shell.tr(field(s"document", document))
       for(field <- fields)
          shell = shell.tr(prop(s"!document.containsField($field)", !document.asInstanceOf[DBObject].containsField(field), true))
-      shell = shell.tr(prop(s"document('_contractionVersion')", document.asInstanceOf[DBObject].get("_contractionVersion"), fields.length))
+      shell = shell.tr(prop(s"document('_contractionVersion')", document.asInstanceOf[DBObject].get("_contractionVersion"), noOfContractions))
+    })
+    this
+  }
+
+  def verifyIfAdded(fields: Array[String], noOfExpansions: Int) = {
+    documents.toArray.foreach({ document =>
+      shell = shell.tr(field(s"document", document))
+      for(field <- fields)
+        shell = shell.tr(prop(s"document.containsField($field)", document.asInstanceOf[DBObject].containsField(field), true))
+      shell = shell.tr(prop(s"document('_expansionVersion')", document.asInstanceOf[DBObject].get("_expansionVersion"), noOfExpansions))
     })
     this
   }

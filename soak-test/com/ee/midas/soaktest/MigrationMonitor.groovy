@@ -22,9 +22,9 @@ def configURL = new File("Config.groovy").toURI().toURL()
 def config = new ConfigSlurper().parse(configURL)
 def currentChangeSet = config.data.app."${clientVersion}".changeSet
 
-def deltasDir = config.data.deltas.baseDir
-def expansions = config.data.deltas.expansions
-def contractions = config.data.deltas.contractions
+def deltasDir = config.data.app."${clientVersion}".deltas.baseDir
+def expansions = config.data.app."${clientVersion}".deltas.expansions
+def contractions = config.data.app."${clientVersion}".deltas.contractions
 
 def expansionFiles = []
 def contractionFiles = []

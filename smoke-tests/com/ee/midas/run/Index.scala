@@ -41,8 +41,8 @@ class Index extends Specification { def is = "Midas Journeys".title ^ s2"""
 
   User Journeys available here are meant to serve as a scenarios guide.
     ${"" ~ ("Rename Field(s)", new RenameJourney)}
+    ${"" ~ ("Add/Remove Application on-the-fly", new AddAndRemoveApplicationJourney)}
     ${"" ~ ("Add/Remove ChangeSet on-the-fly", new AddAndRemoveChangeSetJourney)}
     ${"" ~ ("Add/Remove Nodes on-the-fly", new AddAndRemoveNodeJourney)}
-    ${"" ~ ("Add/Remove Application on-the-fly", new AddAndRemoveApplicationJourney)}
  """
 }

@@ -54,15 +54,32 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
     sequential
     def is = s2"""
       ${"Add/Remove ChangeSet On the fly".title}
-      Narration: IncyWincyShoppingApp stores its persistent data on MongoDB. The new version of application
-                 is connected to Midas. Schema migration is in process and Bob, the Business analyst wants
-                 further more changes in the schema. So, he approaches Dave, the developer.
-      Bob:  "Hi Dave. Can we incorporate more changes in the schema right now. We would like to display
-             discount amount as well. We already have discount in percentage and Total amount. Will that
-             be feasible."
-      Dave: "Ok Bob. I would suggest that we can add one more changeSet for this in midas. So, Discount Amount
-             will also be available after that."
-      Bob:  "Thanks Dave."
+      Narration: Bob, the Business analyst wanted to develop a loyalty programme for IncyWincyShoppingApp.
+                 Developers have baked that feature into the Application and the new version of application is now
+                 ready for release.  So Dave, the developer approaches Oscar, the DevOps guy.
+
+      Dave:  "Oscar, I have the new ChangeSets zipped up containing the schema changes for Loyalty Programme. Can you
+             help us with the release of the new version of the application?"
+
+      Oscar: "Sure Dave, I'll take those offline nodes and upgrade the application to this new version first."
+
+      Oscar: "Further, after that I'll update the IncyWincyShoppingApp.midas offline nodes changesets to the highest
+             changeset number.  Following this, I'll throw in the change set folders that you gave me, in to the
+             IncyWincyShoppingApp folder.  Once all that is done, I'll flip the Load balancer to route the traffic
+             through these nodes."
+      Dave: "Ok Oscar. That sounds like an approach.  What if, we have issues with the new version and it becomes
+             unstable?
+      Oscar: "There are 2 approaches.  1. We could temporarily rollback to the old version of the application, by simply
+             flipping the Load Balancer back and in the mean time you guys work on the fixes and we can then redeploy.
+             After re-deployment, I'll flip the Load Balancer back again to those nodes where we have the new version
+             of the App.
+             2. We could keep the newer version application running, if the problem does not cripple the application
+             completely.  While you can work towards the fix and we will re-deploy the newer fixed version."
+      Dave:  "Ok that sounds reasonable."
+      Dave:  "Oscar, what if we had to change some schema for that fix?"
+      Oscar: "Well Dave, remember that with Midas, you reverse a change by a counter-change and you always move
+             forward in time.  So as long as you respect that and not modify old schema transformations in delta files,
+             we will all be good."
 
       1. To start out we have following documents in the database and this is simulated by inserting
          them as shown below .

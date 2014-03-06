@@ -53,38 +53,39 @@ class RenameJourney extends Specification with Forms {
 
   sequential
   def is = s2"""
-    ${"Rename Operation".title}
-    Narration: IncyWincyShoppingApp stores its persistent data on MongoDB. Bob, the Business analyst
-               wants to rename certain things. He approaches Dave, the Developer.
+    ${"Rename Journey".title}
+    Narration: IncyWincyShoppingApp stores its persistent data on MongoDB. Dave, the Developer
+               wanted to rename certain things so that it closely modeled the domain.  So,
+               he approaches Oscar, the DevOps guy.
 
-    Bob:  "Hey Dave, Lets rename zip to pin in address because it is closer to the domain.
-           Also, Let's rename Order List as Your Cart"
-    Dave: "Ya true Bob, I agree with you."
-    Bob:  "How do you plan to do that Dave ? Do we need to have some downtime ?"
-    Dave: "No Bob, We will use Midas which will migrate our schema on the fly. Here is what we can do
+    Dave:  "Hey Oscar, Lets rename zip to pin in address because it is closer to the domain.
+           Also, Let's rename OrderList as Carts as they are more closer to the domain"
+    Oscar: "Ya Dave, that makes sense!"
+    Dave:  "How do you plan to do that Oscar ? Do we need to have some downtime?"
+    Oscar: "No Dave, We will use Midas which will migrate our schema on the fly. Here is what we can do
            for zero downtime deployment. First, we will run Expansion scripts and copy the current
            field to new field. This will keep our application backwards compatible with the existing
            version."
-    Bob:  "Oh.. So Expansion will add the new field and keep the old field as well."
-    Dave: "Yes exactly."
-    Bob:  "Okay, but we have 2 nodes in our cluster. So, Do we apply this to all nodes
+    Dave:  "Oh.. So Expansion will add the new field and keep the old field as well."
+    Oscar: "Yes exactly."
+    Dave:  "Okay, but we have 2 nodes in our cluster. So, Do we apply this to all nodes
            simultaneously."
-    Dave: "Yes, All nodes of a cluster will be at the same version at a time. Once the system is
+    Oscar: "Yes, All nodes of a cluster will be at the same version at a time. Once the system is
            completely upgraded and deemed stable, we will run the contraction scripts and remove the
            old field."
-    Bob:  "Okay, but what if after adding new field system is not stable . Do we need to rollback DB?"
-    Dave: "No Bob. DB Rollback can lead to loss in data and leave database in inconsistent state.
+    Dave:  "Okay, but what if after adding new field system is not stable . Do we need to rollback DB?"
+    Oscar: "No Dave. DB Rollback can lead to loss in data and leave database in inconsistent state.
            In that case it will be better to rollback application instead."
-    Bob:  "Oh ... right . That makes sense."
-    Dave: "So after the Expansion and Contraction cycle the system will be migrated completely."
-    Bob:  "Ok. I understand, that sounds good."
-    Bob:  "Also, one more thought that just crossed my mind. Do we need to incorporate some
-           changes in the application to do migration with Midas like we need to add version in
-           the Domain Model in hibernate."
-    Dave: "No Bob, we don't need to incorporate any change in the application. Midas takes care of
-           that. It inserts expansionVersion and contractionVersion field in the document on the way
-           back during insert and update."
-    Bob:  "Ok, great."
+    Dave:  "Oh ... right . That makes sense."
+    Oscar: "So after the Expansion and Contraction cycle, the system will be migrated completely."
+    Dave:  "Ok. I understand, that sounds good."
+    Dave:  "Also, one more thought that just crossed my mind. Do we need to incorporate some
+           changes in the application to do migration with Midas, for example, to use optimistic
+           locking with Hibernate, we need to add a version field in the Domain Model."
+    Oscar: "No Dave, we don't need to incorporate any change in the domain model or application.
+           Midas takes care of that. It injects _expansionVersion and _contractionVersion field in
+           the document when the application inserts or updates the document."
+    Dave:  "Ok, great."
 
 
     1. To start out we have following documents in the database and this is simulated by inserting
@@ -144,16 +145,16 @@ class RenameJourney extends Specification with Forms {
           form
        }
 
-    5. Create delta file "0001_copy_transactions_orders_OrderListToYourCartField.delta" to copy "OrderList"
-       into "YourCart" at location "001RenameOrders" in "expansions" folder
+    5. Create delta file "0001_copy_transactions_orders_OrderListToCartsField.delta" to copy "OrderList"
+       into "Carts" at location "001RenameOrders" in "expansions" folder
        ${
           val expansionDeltaDir = changeSetDirPath + File.separator + "expansions"
           expansionDelta1 = Delta(expansionDeltaDir, () => {
             """use transactions
-               db.orders.copy('OrderList','YourCart')
+               db.orders.copy('OrderList','Carts')
             """
           })
-          val form = expansionDelta1.saveAs("Write Delta", "0001_copy_transactions_orders_OrderListToYourCartField.delta")
+          val form = expansionDelta1.saveAs("Write Delta", "0001_copy_transactions_orders_OrderListToCartsField.delta")
           form
        }
 
@@ -191,13 +192,13 @@ class RenameJourney extends Specification with Forms {
           form
        }
 
-    9. Connect with midas and verify that read documents contain new fields "YourCart" and
+    9. Connect with midas and verify that read documents contain new fields "Carts" and
        "ShippingAddress.pincode"
        ${
           val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "127.0.0.1", 27020)
             .useDatabase("transactions")
             .readDocuments("orders")
-            .verifyIfCopied(Array(("YourCart", "OrderList"), ("ShippingAddress.pincode", "ShippingAddress.zipcode")), noOfExpansions = 2)
+            .verifyIfCopied(Array(("Carts", "OrderList"), ("ShippingAddress.pincode", "ShippingAddress.zipcode")), noOfExpansions = 2)
             .retrieve()
           form
        }
@@ -205,11 +206,11 @@ class RenameJourney extends Specification with Forms {
     10. WebApp updates and write back the documents to database. Midas inserts expansionVersion in
         the document on the way back.
        ${
-          val updateDocument1 = new BasicDBObject("YourCart", Array("shoes", "sipper"))
+          val updateDocument1 = new BasicDBObject("Carts", Array("shoes", "sipper"))
                                 .append("ShippingAddress.pincode", 411006)
-          val updateDocument2 = new BasicDBObject("YourCart", Array("scarf", "footwear"))
+          val updateDocument2 = new BasicDBObject("Carts", Array("scarf", "footwear"))
                                 .append("ShippingAddress.pincode", 411004)
-          val updateDocument3 = new BasicDBObject("YourCart", Array("headsets"))
+          val updateDocument3 = new BasicDBObject("Carts", Array("headsets"))
                                 .append("ShippingAddress.pincode", 110007)
           val form =  MongoShell("IncyWincyShoppingApp - UpgradedVersion", "127.0.0.1", 27020)
             .useDatabase("transactions")
@@ -268,7 +269,7 @@ class RenameJourney extends Specification with Forms {
                                   .append("line2", "enter city")
                                   .append("pincode", 411006)
           val insertDocument: DBObject = new BasicDBObject("name", "Pooja")
-                                         .append("YourCart", Array("dress"))
+                                         .append("Carts", Array("dress"))
                                          .append("TotalAmount", 1000)
                                          .append("ShippingAddress", address)
           val form = MongoShell("Open Mongo Shell", "localhost", 27020)
@@ -306,7 +307,7 @@ class RenameJourney extends Specification with Forms {
     18. Cleanup deltas directory
        ${
           contractionDelta.delete("Delete Delta File", "0001_removeFrom_transactions_orders_OrderListField.delta")
-          expansionDelta1.delete("Delete Delta File", "0001_copy_transactions_orders_OrderListToYourCartField.delta")
+          expansionDelta1.delete("Delete Delta File", "0001_copy_transactions_orders_OrderListToCartsField.delta")
           expansionDelta2.delete("Delete Delta File", "0002_copy_transactions_orders_ZipcodeToPincodeField.delta")
           changeSetDir.delete("Delete ChangeSet Folder", "")
           appConfigFile.delete("Delete Application File", "incyWincyShoppingApp.midas")

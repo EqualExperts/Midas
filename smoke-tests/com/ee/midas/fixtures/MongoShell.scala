@@ -38,7 +38,7 @@ import org.bson.BSONObject
 import java.util.ArrayList
 import com.ee.midas.transform.DocumentOperations._
 
-case class MongoShell(formName: String, host: String, port: Int) {
+case class MongoShell(formName: String, host: String, port: Int) extends FormBuilder {
   var mongoClient: MongoClient = new MongoClient(host, port)
   var db: DB = null
   var shell = Form(formName)
@@ -62,9 +62,9 @@ case class MongoShell(formName: String, host: String, port: Int) {
     this
   }
 
-  def readDocuments(collection: String) = {
+  def readDocumentsFromCollection(collectionName: String) = {
     documents = new ArrayList[DBObject]()
-    val cursor = db.getCollection(collection).find()
+    val cursor = db.getCollection(collectionName).find()
     while(cursor.hasNext) {
       val document = cursor.next()
       documents.add(document)
@@ -86,69 +86,71 @@ case class MongoShell(formName: String, host: String, port: Int) {
      this
   }
 
-  def verifyIfCopied(newOldFields: Array[(String, String)], noOfExpansions: Int) = {
+  def assertAllDocumentsHaveEqualValuesInNewAndOldFields(newOldFields: Array[(String, String)], expansionVersion: Int) = {
      documents.toArray.foreach({ document =>
        shell = shell.tr(field(s"document", document))
        for(newOldField <- newOldFields)
-         verifyIfFieldCopiedIn(document.asInstanceOf[DBObject], newOldField)
-       verifyExpansionVersion(document.asInstanceOf[DBObject], noOfExpansions)
+         assertEqualValuesInNewAndOldFields(document.asInstanceOf[DBObject], newOldField)
+       assertExpansionVersion(document.asInstanceOf[DBObject], expansionVersion)
      })
      this
   }
 
-  private def verifyIfFieldCopiedIn(document: DBObject,newOldField: (String, String)) = {
-     val newField = newOldField._1
-     val oldField = newOldField._2
-     shell = shell.tr(prop(s"document(${newField})", document(newField), document(oldField)))
+  private def assertEqualValuesInNewAndOldFields(document: DBObject, newAndOldField: (String, String)) = {
+     val oldField = newAndOldField._1
+     val newField = newAndOldField._2
+     shell = shell.tr(prop(s"document(${newField})", document(oldField), document(newField)))
   }
 
-  def verifyIfExpanded(noOfExpansions: Int) = {
+  def assertAllDocumentsHaveExpanded(expansionVersion: Int) = {
     documents.toArray.foreach({ document =>
       shell = shell.tr(field(s"document", document))
-      verifyExpansionVersion(document.asInstanceOf[DBObject], noOfExpansions)
+      assertExpansionVersion(document.asInstanceOf[DBObject], expansionVersion)
     })
     this
   }
 
-  def verifyIfContracted(noOfContractions: Int) = {
+  def assertAllDocumentsHaveContracted(contractionVersion: Int) = {
     documents.toArray.foreach({ document =>
       shell = shell.tr(field(s"document", document))
-      verifyContractionVersion(document.asInstanceOf[DBObject], noOfContractions)
+      assertContractionVersion(document.asInstanceOf[DBObject], contractionVersion)
     })
     this
   }
 
-  def verifyExpansionVersion(document:DBObject, noOfExpansions: Int) = {
+  def assertExpansionVersion(document:DBObject, expansionVersion: Int) = {
      val expansionVersion = document.asInstanceOf[DBObject].get("_expansionVersion")
-     shell = shell.tr(prop("document('_expansionVersion')", expansionVersion, noOfExpansions))
+     shell = shell.tr(prop("document('_expansionVersion')", expansionVersion, expansionVersion))
   }
 
-  def verifyIfRemoved(fields: Array[String], noOfContractions: Int) = {
-    documents.toArray.foreach({ document =>
+  def assertFieldsRemoved (fields: Array[String], contractionVersion: Int) = {
+    documents.toArray.foreach({ doc =>
+      val document = doc.asInstanceOf[DBObject]
       shell = shell.tr(field(s"document", document))
-      for(field <- fields)
-         shell = shell.tr(prop(s"!document.containsField($field)", !document.asInstanceOf[DBObject].containsField(field), true))
-      shell = shell.tr(prop(s"document('_contractionVersion')", document.asInstanceOf[DBObject].get("_contractionVersion"), noOfContractions))
+      for (field <- fields)
+        shell = shell.tr(prop(s"!document.containsField($field)", !document.containsField(field), true))
+        assertContractionVersion(document, contractionVersion)
     })
     this
   }
 
-  def verifyIfAdded(fields: Array[String], noOfExpansions: Int) = {
-    documents.toArray.foreach({ document =>
+  def assertFieldsAdded(fields: Array[String], expansionVersion: Int) = {
+    documents.toArray.foreach({ doc =>
+      val document = doc.asInstanceOf[DBObject]
       shell = shell.tr(field(s"document", document))
       for(field <- fields)
-        shell = shell.tr(prop(s"document.containsField($field)", document.asInstanceOf[DBObject].containsField(field), true))
-      shell = shell.tr(prop(s"document('_expansionVersion')", document.asInstanceOf[DBObject].get("_expansionVersion"), noOfExpansions))
+        shell = shell.tr(prop(s"document.containsField($field)", document.containsField(field), true))
+        assertExpansionVersion(document, expansionVersion)
     })
     this
   }
 
-  def verifyContractionVersion(document:DBObject, noOfContractions: Int) = {
+  def assertContractionVersion(document:DBObject, contractionVersion: Int) = {
     val contractionVersion = document.asInstanceOf[DBObject].get("_contractionVersion")
-    shell = shell.tr(prop("document('_contractionVersion')", contractionVersion, noOfContractions))
+    shell = shell.tr(prop("document('_contractionVersion')", contractionVersion, contractionVersion))
   }
 
-  def retrieve() = {
+  def build = {
     close
     shell
   }

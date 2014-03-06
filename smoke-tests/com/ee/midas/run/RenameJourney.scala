@@ -96,7 +96,7 @@ class RenameJourney extends Specification with Forms {
             .runCommand(s"""db.orders.insert({name: "Vivek", "OrderList": ['shoes', 'sipper'], "TotalAmount": 6000, ShippingAddress: {line1: "enter house/street", line2: "enter city", "zipcode": 411006} })""")
             .runCommand(s"""db.orders.insert({name: "Komal", "OrderList": ['scarf', 'footwear'], "TotalAmount": 3000, ShippingAddress: {line1: "enter house/street", line2: "enter city", "zipcode": 411004} })""")
             .runCommand(s"""db.orders.insert({name: "Dhaval", "OrderList": ['headsets'], "TotalAmount": 8000, ShippingAddress: {line1: "enter house/street", line2: "enter city", "zipcode": 110007} })""")
-            .retrieve()
+            .build()
           form
        }
 
@@ -195,11 +195,13 @@ class RenameJourney extends Specification with Forms {
     9. Connect with midas and verify that read documents contain new fields "Carts" and
        "ShippingAddress.pincode"
        ${
+          val orderListToCarts = "OrderList" -> "Carts"
+          val zipCodeToPinCode = "ShippingAddress.zipcode" -> "ShippingAddress.pincode"
           val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "127.0.0.1", 27020)
             .useDatabase("transactions")
-            .readDocuments("orders")
-            .verifyIfCopied(Array(("Carts", "OrderList"), ("ShippingAddress.pincode", "ShippingAddress.zipcode")), noOfExpansions = 2)
-            .retrieve()
+            .readDocumentsFromCollection("orders")
+            .assertAllDocumentsHaveEqualValuesInNewAndOldFields(Array(orderListToCarts, zipCodeToPinCode), expansionVersion = 2)
+            .build()
           form
        }
 
@@ -217,7 +219,7 @@ class RenameJourney extends Specification with Forms {
             .update("orders", new BasicDBObject("name", "Vivek"), new BasicDBObject("$set", updateDocument1))
             .update("orders", new BasicDBObject("name", "Komal"), new BasicDBObject("$set", updateDocument2))
             .update("orders", new BasicDBObject("name", "Dhaval"), new BasicDBObject("$set", updateDocument3))
-            .retrieve()
+            .build()
           form
        }
 
@@ -226,9 +228,9 @@ class RenameJourney extends Specification with Forms {
        ${
           val form = MongoShell("IncyWincyShoppingApp - Expansion Complete", "127.0.0.1", 27017)
             .useDatabase("transactions")
-            .readDocuments("orders")
-            .verifyIfExpanded(noOfExpansions = 2)
-            .retrieve()
+            .readDocumentsFromCollection("orders")
+            .assertAllDocumentsHaveExpanded(expansionVersion = 2)
+            .build
           form
        }
 
@@ -257,9 +259,9 @@ class RenameJourney extends Specification with Forms {
        ${
           val form = MongoShell("Open Command Terminal", "127.0.0.1", 27020)
             .useDatabase("transactions")
-            .readDocuments("orders")
-            .verifyIfRemoved(Array("OrderList", "ShippingAddress.zipcode"), noOfContractions = 2)
-            .retrieve()
+            .readDocumentsFromCollection("orders")
+            .assertFieldsRemoved(Array("OrderList", "ShippingAddress.zipcode"), contractionVersion = 2)
+            .build()
           form
        }
 
@@ -275,7 +277,7 @@ class RenameJourney extends Specification with Forms {
           val form = MongoShell("Open Mongo Shell", "localhost", 27020)
             .useDatabase("transactions")
             .insert("orders", insertDocument)
-            .retrieve()
+            .build()
           form
        }
 
@@ -283,9 +285,9 @@ class RenameJourney extends Specification with Forms {
        ${
            val form = MongoShell("Open Command Terminal", "127.0.0.1", 27020)
              .useDatabase("transactions")
-             .readDocuments("orders")
-             .verifyIfContracted(noOfContractions = 2)
-             .retrieve()
+             .readDocumentsFromCollection("orders")
+             .assertAllDocumentsHaveContracted(contractionVersion = 2)
+             .build()
            form
         }
 
@@ -300,7 +302,7 @@ class RenameJourney extends Specification with Forms {
           val form = MongoShell("Open MongoShell", "localhost", 27017)
             .useDatabase("transactions")
             .runCommand("""db.dropDatabase()""")
-            .retrieve()
+            .build()
           form
        }
 

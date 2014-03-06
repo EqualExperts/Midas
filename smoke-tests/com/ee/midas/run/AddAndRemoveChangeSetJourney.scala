@@ -72,7 +72,7 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
               .runCommand(s"""db.orders.insert({name: "Vivek Dhapola", "YourCart": ['shoes', 'sipper'], "TotalAmount": 6000, "discount": 20, ShippingAddress: {line1: "enter house/street", line2: "enter city", "pincode": 411006} })""")
               .runCommand(s"""db.orders.insert({name: "Komal Jain", "YourCart": ['scarf', 'footwear'], "TotalAmount": 3000, "discount": 30, ShippingAddress: {line1: "enter house/street", line2: "enter city", "pincode": 411004} })""")
               .runCommand(s"""db.orders.insert({name: "Dhaval Dalal", "YourCart": ['headsets'], "TotalAmount": 8000, "discount": 15, ShippingAddress: {line1: "enter house/street", line2: "enter city", "pincode": 110007} })""")
-              .retrieve()
+              .build
             form
          }
 
@@ -146,9 +146,9 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
          ${
             val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "127.0.0.1", 27020)
               .useDatabase("transactions")
-              .readDocuments("orders")
-              .verifyIfAdded(Array("firstName", "lastName"), noOfExpansions = 1)
-              .retrieve()
+              .readDocumentsFromCollection("orders")
+              .assertFieldsAdded(Array("firstName", "lastName"), expansionVersion = 1)
+              .build
             form
          }
 
@@ -179,9 +179,9 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
          ${
             val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "127.0.0.1", 27020)
               .useDatabase("transactions")
-              .readDocuments("orders")
-              .verifyIfAdded(Array("firstName", "lastName", "Discount Amount"), noOfExpansions = 2)
-              .retrieve()
+              .readDocumentsFromCollection("orders")
+              .assertFieldsAdded(Array("firstName", "lastName", "Discount Amount"), expansionVersion = 2)
+              .build
             form
          }
 
@@ -196,7 +196,7 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
             val form = MongoShell("Open MongoShell", "localhost", 27017)
                .useDatabase("transactions")
                .runCommand("""db.dropDatabase()""")
-               .retrieve()
+               .build
             form
          }
 

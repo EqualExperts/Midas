@@ -86,7 +86,7 @@ project.ext {
     acceptanceTestDir = 'acceptance-tests/drivers'
     acceptanceTestReportsDir = "${reporting.baseDir}/acceptance-tests"
     smokeTestsDir = "smoke-tests"
-    smokeTestReportsDir = "${project.distsDir}/smoke-tests"
+    smokeTestReportsDir = "${reporting.baseDir}/${smokeTestsDir}"
 
     javaTestDir = "$acceptanceTestDir/java/driver-version-2.11.3"
     javaTestReportsDir = "$acceptanceTestReportsDir/java"

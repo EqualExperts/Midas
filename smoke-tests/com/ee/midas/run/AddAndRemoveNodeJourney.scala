@@ -71,7 +71,7 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
               .runCommand(s"""db.orders.insert({name: "Vivek", "YourCart": ['shoes', 'sipper'], "TotalAmount": 6000, ShippingAddress: {line1: "enter house/street", line2: "enter city", "pincode": 411006} })""")
               .runCommand(s"""db.orders.insert({name: "Komal", "YourCart": ['scarf', 'footwear'], "TotalAmount": 3000, ShippingAddress: {line1: "enter house/street", line2: "enter city", "pincode": 411004} })""")
               .runCommand(s"""db.orders.insert({name: "Dhaval", "YourCart": ['headsets'], "TotalAmount": 8000, ShippingAddress: {line1: "enter house/street", line2: "enter city", "pincode": 110007} })""")
-              .retrieve()
+              .build
             form
          }
 
@@ -144,9 +144,9 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
          ${
             val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "127.0.0.1", 27020)
               .useDatabase("transactions")
-              .readDocuments("orders")
-              .verifyIfExpanded(noOfExpansions = 1)
-              .retrieve()
+              .readDocumentsFromCollection("orders")
+              .assertAllDocumentsHaveExpanded(expansionVersion = 1)
+              .build
             form
          }
 
@@ -173,7 +173,7 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
             val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "127.0.0.1", 27020)
               .useDatabase("transactions")
               .runCommand("show collections")
-              .retrieve()
+              .build
             form
          }
 
@@ -203,9 +203,9 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
          ${
             val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "127.0.0.1", 27020)
               .useDatabase("transactions")
-              .readDocuments("orders")
-              .verifyIfExpanded(noOfExpansions = 1)
-              .retrieve()
+              .readDocumentsFromCollection("orders")
+              .assertAllDocumentsHaveExpanded(expansionVersion = 1)
+              .build
             form
          }
 
@@ -220,7 +220,7 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
             val form = MongoShell("Open MongoShell", "localhost", 27017)
               .useDatabase("transactions")
               .runCommand("""db.dropDatabase()""")
-              .retrieve()
+              .build
             form
          }
 

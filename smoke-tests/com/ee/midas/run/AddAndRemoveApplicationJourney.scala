@@ -79,7 +79,7 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
               .runCommand(s"""db.customers.insert({"firstName": "Vivek", "lastName": "Dhapola", "age": 25, "emailId": "vdhapola@equalexperts.com" })""")
               .runCommand(s"""db.customers.insert({"firstName": "Komal", "lastName": "Jain", "age": 23, "emailId": "kjain@equalexperts.com" })""")
               .runCommand(s"""db.customers.insert({"firstName": "Dhaval", "lastName": "Dalal", "age": 38, "emailId": "ddalal@equalexperts.com" })""")
-              .retrieve()
+              .build
             form
          }
 
@@ -91,7 +91,7 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
               .runCommand(s"""db.orders.insert({name: "Vivek", "MobileNo": "9123456789", "OrderList": ['shoes', 'sipper'], "TotalAmount": 6000, ShippingAddress: {line1: "enter house/street", line2: "enter city", "zipcode": 411006} })""")
               .runCommand(s"""db.orders.insert({name: "Komal", "MobileNo": "9223455677", "OrderList": ['scarf', 'footwear'], "TotalAmount": 3000, ShippingAddress: {line1: "enter house/street", line2: "enter city", "zipcode": 411004} })""")
               .runCommand(s"""db.orders.insert({name: "Dhaval", "MobileNo": "9333455698", "OrderList": ['headsets'], "TotalAmount": 8000, ShippingAddress: {line1: "enter house/street", line2: "enter city", "zipcode": 110007} })""")
-              .retrieve()
+              .build
             form
          }
 
@@ -216,9 +216,9 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
          ${
             val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "127.0.0.1", 27020)
               .useDatabase("users")
-              .readDocuments("customers")
-              .verifyIfAdded(Array("Name"), noOfExpansions = 1)
-              .retrieve()
+              .readDocumentsFromCollection("customers")
+              .assertFieldsAdded(Array("Name"), expansionVersion = 1)
+              .build
             form
          }
 
@@ -235,7 +235,7 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
               .runCommand("""db.dropDatabase()""")
               .useDatabase("transactions")
               .runCommand("""db.dropDatabase()""")
-              .retrieve()
+              .build
             form
          }
 

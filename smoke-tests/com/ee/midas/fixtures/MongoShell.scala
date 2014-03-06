@@ -64,17 +64,7 @@ case class MongoShell(formName: String, host: String, port: Int) {
   private def verifyIfFieldCopiedIn(document: DBObject,newOldField: (String, String)) = {
      val newField = newOldField._1
      val oldField = newOldField._2
-     val newFieldValue = if(newField.contains("."))
-       readNestedValue(newField, document)
-     else
-       document.asInstanceOf[DBObject].get(newField)
-
-     val oldFieldValue = if(oldField.contains("."))
-       readNestedValue(oldField, document)
-     else
-       document.asInstanceOf[DBObject].get(oldField)
-
-     shell = shell.tr(prop(s"document(${newField})", newFieldValue, oldFieldValue))
+     shell = shell.tr(prop(s"document(${newField})", document(newField), document(oldField)))
   }
 
   def verifyIfExpanded(noOfExpansions: Int) = {

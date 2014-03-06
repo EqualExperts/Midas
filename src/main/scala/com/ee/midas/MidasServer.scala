@@ -11,8 +11,8 @@ class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParse
   private val deltasDir = new File(cmdConfig.baseDeltasDir.getPath).toURI.toURL
   private val configuration: Configuration = parseConfiguration(cmdConfig)
   private val watcher = new ConfigurationWatcher(configuration, cmdConfig.baseDeltasDir)
-  private var isRunning = true
-  setupShutdownHook
+  private var isRunning = false
+  private lazy val serverSocket = createServerSocket
 
   private def parseConfiguration(cmdConfig: CmdConfig): Configuration =
     parse(deltasDir, Configuration.filename) match {
@@ -25,30 +25,19 @@ class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParse
 
   def isActive = isRunning
 
-  private def waitForNewConnectionOn(serverSocket: ServerSocket) = {
+  private def waitForNewConnectionOn(serverSocket: ServerSocket): Try[Socket] = Try {
     val listeningMsg = s"Midas Ready! Listening on IP: ${serverSocket.getInetAddress}, Port ${serverSocket.getLocalPort()} for new connections..."
     logInfo(listeningMsg)
     println(listeningMsg)
     serverSocket.accept()
   }
 
-  private def setupShutdownHook = sys.ShutdownHookThread {
-    val forceStopMsg = "User Forced Stop on Midas...Closing Open Connections"
-    logInfo(forceStopMsg)
-    println(forceStopMsg)
-    watcher.stopWatching
-    configuration.stop
-    val shutdownMsg = "Midas Shutdown Complete!"
-    logInfo(shutdownMsg)
-    println(shutdownMsg)
-  }
-
-  private def createMongoSocket: Try[Socket] =
+  protected def createMongoSocket: Try[Socket] =
     Try {
       new Socket(cmdConfig.mongoHost, cmdConfig.mongoPort)
     }
   
-  private def createServerSocket: Try[ServerSocket] =
+  protected def createServerSocket: Try[ServerSocket] =
     Try {
       val maxClientConnections = 50
       new ServerSocket(cmdConfig.midasPort, maxClientConnections, InetAddress.getByName(cmdConfig.midasHost))
@@ -57,8 +46,27 @@ class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParse
   def stop = {
     logInfo("Midas server shutdown requested. Initiating closure.")
     isRunning = false
-    val terminatingSocket = new Socket(cmdConfig.midasHost, cmdConfig.midasPort)
-    terminatingSocket.close()
+    watcher.stopWatching
+    configuration.stop
+    serverSocket.get.close()
+  }
+
+  private def processNewConnection(clientSocket: Socket) = {
+    val clientIp = clientSocket.getInetAddress
+    createMongoSocket match {
+      case scala.util.Failure(t) =>
+        val errMsg =
+          s"""
+          | MongoDB on ${cmdConfig.mongoHost}:${cmdConfig.mongoPort} is not available!
+          | Terminating connection from ${clientIp}, Please retry later.
+          """.stripMargin
+        println(errMsg)
+        logError(errMsg)
+        clientSocket.close()
+
+      case scala.util.Success(mongoSocket) =>
+        configuration.processNewConnection(clientSocket, mongoSocket)
+    }
   }
 
   def start = {
@@ -68,31 +76,23 @@ class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParse
 
     configuration.start
     watcher.startWatching
-    createServerSocket match {
+    serverSocket match {
       case scala.util.Failure(t) =>
         val errMsg = s"Cannot Start Midas on IP => ${cmdConfig.midasHost}, Port => ${cmdConfig.midasPort}.  Please Check Your Server IP or Port."
         logError(errMsg)
         println(errMsg)
   
       case scala.util.Success(serverSocket) =>
+        isRunning = true
         while (isRunning) {
-          val clientSocket = waitForNewConnectionOn(serverSocket)
-          if(isRunning) {
-            val clientIp = clientSocket.getInetAddress
-            createMongoSocket match {
-              case scala.util.Failure(t) =>
-                val errMsg =
-                  s"""
-                    | MongoDB on ${cmdConfig.mongoHost}:${cmdConfig.mongoPort} is not available!
-                    | Terminating connection from ${clientIp}, Please retry later.
-                   """.stripMargin
-                println(errMsg)
-                logError(errMsg)
-                clientSocket.close()
+          waitForNewConnectionOn(serverSocket) match {
+            case scala.util.Success(clientSocket) if(isRunning) =>
+                processNewConnection(clientSocket)
 
-              case scala.util.Success(mongoSocket) =>
-                configuration.processNewConnection(clientSocket, mongoSocket)
-            }
+            case scala.util.Failure(t) =>
+              val errMsg = s"Cannot accept connection on IP => ${cmdConfig.midasHost}, Port => ${cmdConfig.midasPort}. Server currently closed."
+              logError(errMsg)
+              println(errMsg)
           }
         }
     }

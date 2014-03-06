@@ -57,21 +57,28 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
     sequential
     def is = s2"""
       ${"Add/Remove Application On the fly".title}
-      Narration: IncyWincyShoppingApp and IncyWincyTravelBookingApp stores its persistent data on MongoDB.
-                 IncyWincyShoppingApp is connected to Midas and its schema migration is in process. IncyWincy
-                 organisation wants to some schema changes for IncyWincyTravelBookingApp as well. Bob,
-                 the business analyst approaches Dave, the developer.
+      Narration: IncyWincyShoppingApp and IncyWincyTravelApp stores its persistent data on MongoDB.
+                 IncyWincyShoppingApp is already supported by Midas.  Folks at the IncyWincyTravelApp
+                 learnt from IncyWincyShoppingApp developers that schema migration need not be painful. It 
+                 can be done systematically using Midas.  
+                 So, they approach Oscar, the DevOps guy and request him to make IncyWincyTravelApp
+                 Midas enabled.
+                 Dave, a developer from their team works with Oscar to see how that can be possible.
 
-      Bob:  "Hey Dave. IncyWincyTravelBookingApp also need certain changes in schema. We need fullname for the
-             users. Do we need to create a new midas instance for that? "
-      Dave: "No Bob, not at all. Midas can support multiple applications at a time. We just need to add that
-             application to midas.config and that application will be picked up by midas automatically and
-             will start receiving transformed documents according to the deltas provided."
-      Bob:  "Cool .So, Can you do the needful for that Dave?"
-      Dave: "Ya sure."
-      Bob:  "Thanks."
+      Dave:  "Hey Oscar. IncyWincyTravelApp also needs Midas support for dealing with schema changes.
+             Do we need to create a new midas instance for that? "
+      Oscar: "No Dave, not at all. Midas can support multiple applications at a time"
+      Dave:  "What do information or artifacts do you need from me to make this happen?"
+      Oscar: "All, I need is the delta files grouped by expansions/contractions in the changeset folders"
+      Dave:  "ok, so we will zip and ship those!"
+      Oscar: "Thats correct.  From there on, I'll create a folder for IncyWincyTravelApp within Midas' deltas directory,
+             copy in the changesets that you gave me.  I'll also create IncyWincyTravelApp.midas and put your Application
+             Node IPs along with ChangeSet and mode. After that I'll tell Midas to start seeing IncyWincyTravelApp by
+             changing midas.config."
+      Dave:  "Would that mean any down-time for IncyWincyShoppingApp?"
+      Oscar: "No, We can add or remove applications from Midas at runtime, without causing outages."
 
-      1. To start out we have following documents in the IncyWincyTravelBookingApp database and this is
+      1. To start out we have following documents in the IncyWincyTravelApp database and this is
          simulated by inserting them as shown below .
          ${
             val form = MongoShell("Open Mongo Shell", "localhost", 27017)
@@ -156,7 +163,7 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
             form
          }
 
-      8. We want to add IncyWincyTravelBookingApp to midas. So, we create incyWincyTravelBookingApp.midas
+      8. We want to add IncyWincyTravelApp to midas. So, we create incyWincyTravelBookingApp.midas
          file in "incyWincyTravelBookingApp" folder in "deltas" folder with mode as expansion.
          ${
             app2Dir = baseDeltaDir + File.separator + "incyWincyTravelBookingApp"
@@ -211,7 +218,7 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
             form
           }
 
-      12. Connect IncyWincyTravelBookingApp with midas and verify that it receives expanded documents with
+      12. Connect IncyWincyTravelApp with midas and verify that it receives expanded documents with
           "Name" field.
          ${
             val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "127.0.0.1", 27020)

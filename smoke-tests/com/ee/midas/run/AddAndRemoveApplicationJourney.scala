@@ -68,8 +68,9 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
       Dave:  "Hey Oscar. IncyWincyTravelApp also needs Midas support for dealing with schema changes.
              Do we need to create a new midas instance for that? "
       Oscar: "No Dave, not at all. Midas can support multiple applications at a time"
-      Dave:  "What do information or artifacts do you need from me to make this happen?"
-      Oscar: "All, I need is the delta files grouped by expansions/contractions in the changeset folders"
+      Dave:  "What information or artifacts do you need from me to make this happen?"
+      Oscar: "All, I need is the delta files grouped by expansions/contractions folder within a changeset folder and
+             all of such changeset folders"
       Dave:  "ok, so we will zip and ship those!"
       Oscar: "Thats correct.  From there on, I'll create a folder for IncyWincyTravelApp within Midas' deltas directory,
              copy in the changesets that you gave me.  I'll also create IncyWincyTravelApp.midas and put your Application

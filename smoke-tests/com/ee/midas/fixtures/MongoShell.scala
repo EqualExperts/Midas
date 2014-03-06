@@ -55,12 +55,12 @@ case class MongoShell(formName: String, host: String, port: Int) {
      this
   }
 
-  def verifyIfCopied(newOldFields: Array[(String, String)]) = {
+  def verifyIfCopied(newOldFields: Array[(String, String)], noOfExpansions: Int) = {
      documents.toArray.foreach({ document =>
        shell = shell.tr(field(s"document", document))
        for(newOldField <- newOldFields)
          verifyIfFieldCopiedIn(document.asInstanceOf[DBObject], newOldField)
-       verifyExpansionVersion(document.asInstanceOf[DBObject], newOldFields.length)
+       verifyExpansionVersion(document.asInstanceOf[DBObject], noOfExpansions)
      })
      this
   }

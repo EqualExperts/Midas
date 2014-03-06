@@ -2,8 +2,9 @@ package com.ee.midas.fixtures
 
 import java.net.Socket
 import com.ee.midas.{CmdConfig, MidasServer, CLIParser}
+import com.ee.midas.utils.Loggable
 
-object MidasUtils {
+object MidasUtils extends Loggable {
 
   var midasProcess: MidasAsThread = null
 
@@ -14,7 +15,7 @@ object MidasUtils {
     }
 
     if(cmdConfig == null)
-      println("Midas cannot be started . Invalid command line arguments")
+      logError("Midas cannot be started . Invalid command line arguments")
     else
     {
       midasProcess = new MidasAsThread(cmdConfig)
@@ -33,7 +34,7 @@ object MidasUtils {
       val fakeSocket = new Socket("127.0.0.1", midasPort)
       fakeSocket.wait(500)
     } catch {
-      case e:Exception => println("midas is closed")
+      case e:Exception => logInfo("midas is closed")
     }
     while(midasProcess.isRunning())
         Thread.sleep(100)

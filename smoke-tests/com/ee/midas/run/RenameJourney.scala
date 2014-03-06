@@ -61,9 +61,9 @@ class RenameJourney extends Specification with Forms {
        ${
           val form = MongoShell("Open Mongo Shell", "localhost", 27017)
             .useDatabase("transactions")
-            .runCommand(s"""db.orders.insert({name:"Vivek", "OrderList": ['shoes', 'sipper'], "TotalAmount": 6000, ShippingAddress: {line1: "enter house/street", line2: "enter city", "zipcode": 411006} })""")
-            .runCommand(s"""db.orders.insert({name:"Komal", "OrderList": ['scarf', 'footwear'], "TotalAmount": 3000, ShippingAddress: {line1: "enter house/street", line2: "enter city", "zipcode": 411004} })""")
-            .runCommand(s"""db.orders.insert({name:"Dhaval", "OrderList": ['headsets'], "TotalAmount": 8000, ShippingAddress: {line1: "enter house/street", line2: "enter city", "zipcode": 110007} })""")
+            .runCommand(s"""db.orders.insert({name: "Vivek", "OrderList": ['shoes', 'sipper'], "TotalAmount": 6000, ShippingAddress: {line1: "enter house/street", line2: "enter city", "zipcode": 411006} })""")
+            .runCommand(s"""db.orders.insert({name: "Komal", "OrderList": ['scarf', 'footwear'], "TotalAmount": 3000, ShippingAddress: {line1: "enter house/street", line2: "enter city", "zipcode": 411004} })""")
+            .runCommand(s"""db.orders.insert({name: "Dhaval", "OrderList": ['headsets'], "TotalAmount": 8000, ShippingAddress: {line1: "enter house/street", line2: "enter city", "zipcode": 110007} })""")
             .retrieve()
           form
        }
@@ -145,8 +145,8 @@ class RenameJourney extends Specification with Forms {
            val contractionDeltaDir = changeSetDirPath + File.separator + "contractions"
            contractionDelta = Delta(contractionDeltaDir, () => {
               """use transactions
-                         db.orders.remove("['OrderList']")
-                         db.orders.remove("['ShippingAddress.zipcode']")
+                 db.orders.remove("['OrderList']")
+                 db.orders.remove("['ShippingAddress.zipcode']")
               """
            })
            val form = contractionDelta.saveAs("Write Delta", "0001_removeFrom_transactions_orders_OrderListField.delta")
@@ -166,7 +166,7 @@ class RenameJourney extends Specification with Forms {
           val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "127.0.0.1", 27020)
             .useDatabase("transactions")
             .readDocuments("orders")
-            .verifyIfCopied(Array(("YourCart", "OrderList"), ("ShippingAddress.pincode", "ShippingAddress.zipcode")))
+            .verifyIfCopied(Array(("YourCart", "OrderList"), ("ShippingAddress.pincode", "ShippingAddress.zipcode")), noOfExpansions = 2)
             .retrieve()
           form
        }
@@ -205,16 +205,16 @@ class RenameJourney extends Specification with Forms {
           appDir = baseDeltaDir + File.separator + "incyWincyShoppingApp"
           appConfigFile = Delta(appDir, () => {
             """incyWincyShoppingApp {
-                         mode = contraction
-                         nodeA {
-                           ip = 127.0.0.1
-                           changeSet = 1
-                         }
-                         nodeB {
-                           ip = 192.168.1.41
-                           changeSet = 1
-                         }
-                      }
+                 mode = contraction
+                 nodeA {
+                   ip = 127.0.0.1
+                   changeSet = 1
+                 }
+                 nodeB {
+                   ip = 192.168.1.41
+                   changeSet = 1
+                 }
+              }
             """
           })
           val form = appConfigFile.saveAs("Edit Application Config File", "incyWincyShoppingApp.midas")

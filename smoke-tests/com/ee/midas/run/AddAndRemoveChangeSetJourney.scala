@@ -38,9 +38,9 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
          ${
             val form = MongoShell("Open Mongo Shell", "localhost", 27017)
               .useDatabase("transactions")
-              .runCommand(s"""db.orders.insert({name:"Vivek Dhapola", "YourCart": ['shoes', 'sipper'], "TotalAmount": 6000, "discount": 20, ShippingAddress: {line1: "enter house/street", line2: "enter city", "pincode": 411006} })""")
-              .runCommand(s"""db.orders.insert({name:"Komal Jain", "YourCart": ['scarf', 'footwear'], "TotalAmount": 3000, "discount": 30, ShippingAddress: {line1: "enter house/street", line2: "enter city", "pincode": 411004} })""")
-              .runCommand(s"""db.orders.insert({name:"Dhaval Dalal", "YourCart": ['headsets'], "TotalAmount": 8000, "discount": 15, ShippingAddress: {line1: "enter house/street", line2: "enter city", "pincode": 110007} })""")
+              .runCommand(s"""db.orders.insert({name: "Vivek Dhapola", "YourCart": ['shoes', 'sipper'], "TotalAmount": 6000, "discount": 20, ShippingAddress: {line1: "enter house/street", line2: "enter city", "pincode": 411006} })""")
+              .runCommand(s"""db.orders.insert({name: "Komal Jain", "YourCart": ['scarf', 'footwear'], "TotalAmount": 3000, "discount": 30, ShippingAddress: {line1: "enter house/street", line2: "enter city", "pincode": 411004} })""")
+              .runCommand(s"""db.orders.insert({name: "Dhaval Dalal", "YourCart": ['headsets'], "TotalAmount": 8000, "discount": 15, ShippingAddress: {line1: "enter house/street", line2: "enter city", "pincode": 110007} })""")
               .retrieve()
             form
          }
@@ -86,7 +86,6 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
             changeSetDirPath1 = appDir + File.separator + "001SplitName"
             changeSetDir1 = Delta(changeSetDirPath1, () => "")
             var form = Form("Create ChangeSet Folder")
-            val value = new File(changeSetDirPath1)
             form = form.tr("001SplitName")
             form
          }
@@ -127,7 +126,6 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
             changeSetDirPath2 = appDir + File.separator + "002AddDiscountAmount"
             changeSetDir2 = Delta(changeSetDirPath2, () => "")
             var form = Form("Create ChangeSet Folder")
-            val value = new File(changeSetDirPath2)
             form = form.tr("002AddDiscountAmount")
             form
          }

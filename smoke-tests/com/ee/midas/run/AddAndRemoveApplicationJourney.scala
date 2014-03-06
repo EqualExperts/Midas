@@ -66,32 +66,22 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
                  Dave, a developer from their team works with Oscar to see how that can be possible.
 
       Dave:  "Hey Oscar. IncyWincyTravelApp also needs Midas support for dealing with schema changes.
-             Do we need to create a new midas instance for that? "
+              Do we need to create a new midas instance for that? "
       Oscar: "No Dave, not at all. Midas can support multiple applications at a time"
       Dave:  "What information or artifacts do you need from me to make this happen?"
-      Oscar: "All, I need is the delta files grouped by expansions/contractions folder within a changeset folder and
-             all of such changeset folders"
+      Oscar: "All, I need is the delta files grouped by expansions/contractions folder within a changeset
+              folder and all of such changeset folders"
       Dave:  "ok, so we will zip and ship those!"
-      Oscar: "Thats correct.  From there on, I'll create a folder for IncyWincyTravelApp within Midas' deltas directory,
-             copy in the changesets that you gave me.  I'll also create IncyWincyTravelApp.midas and put your Application
-             Node IPs along with ChangeSet and mode. After that I'll tell Midas to start seeing IncyWincyTravelApp by
-             changing midas.config."
+      Oscar: "Thats correct.  From there on, I'll create a folder for IncyWincyTravelApp within Midas' deltas
+              directory, copy in the changesets that you gave me.  I'll also create IncyWincyTravelApp.midas
+              and put your Application Node IPs along with ChangeSet and mode. After that I'll tell Midas to
+              start seeing IncyWincyTravelApp by changing midas.config."
       Dave:  "Would that mean any down-time for IncyWincyShoppingApp?"
       Oscar: "No, We can add or remove applications from Midas at runtime, without causing outages."
 
-      1. To start out we have following documents in the IncyWincyTravelApp database and this is
-         simulated by inserting them as shown below .
-         ${
-            val form = MongoShell("Open Mongo Shell", "localhost", 27017)
-              .useDatabase("users")
-              .runCommand(s"""db.customers.insert({"firstName": "Vivek", "lastName": "Dhapola", "age": 25, "emailId": "vdhapola@equalexperts.com" })""")
-              .runCommand(s"""db.customers.insert({"firstName": "Komal", "lastName": "Jain", "age": 23, "emailId": "kjain@equalexperts.com" })""")
-              .runCommand(s"""db.customers.insert({"firstName": "Dhaval", "lastName": "Dalal", "age": 38, "emailId": "ddalal@equalexperts.com" })""")
-              .build
-            form
-         }
 
-      2. We have following documents in the IncyWincyShoppingApp database and this is simulated by
+
+      1. To start out we have following documents in the IncyWincyShoppingApp database and this is simulated by
          inserting them as shown below .
          ${
             val form = MongoShell("Open Mongo Shell", "localhost", 27017)
@@ -103,7 +93,7 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
             form
          }
 
-      3. There is a midas.config file in "deltas" folder
+      2. IncyWincyShoppingApp is already added to midas.config file in "deltas" folder
          ${
             baseDeltaDir = "/deltas"
             configFile = Delta(baseDeltaDir, () => {
@@ -117,8 +107,8 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
             form
          }
 
-      4. There is a incyWincyShoppingApp.midas file in "incyWincyShoppingApp" folder in "deltas" folder
-         with mode as expansion.
+      3. There is a "incyWincyShoppingApp" folder in "deltas" with incyWincyShoppingApp.midas file having
+         its Node information and mode.
          ${
             app1Dir = baseDeltaDir + File.separator + "incyWincyShoppingApp"
             app1ConfigFile = Delta(app1Dir, () => {
@@ -135,7 +125,7 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
             form
          }
 
-      5. There is a folder for change set "001TransformNumber" in "incyWincyShoppingApp" folder.
+      4. "incyWincyShoppingApp" has one change set "001TransformNumber".
          ${
             changeSetDirPathApp1 = app1Dir + File.separator + "001TransformNumber"
             changeSetDirApp1 = Delta(changeSetDirPathApp1, () => "")
@@ -144,8 +134,8 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
             form
          }
 
-      6. There is a delta file "0001_tranformMobileNo_transactions_orders.delta" to append "+91" to
-         "Mobile No" at location "001TransformNumber" in "expansions" folder.
+      5. "001TransformNumber" changeset has a delta file "0001_tranformMobileNo_transactions_orders.delta"
+         to append "+91" to "Mobile No" in "expansions" folder.
          ${
             val expansionDeltaDirApp1 = changeSetDirPathApp1 + File.separator + "expansions"
             expansionDeltaApp1 = Delta(expansionDeltaDirApp1, () => {
@@ -157,19 +147,31 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
             form
          }
 
-      7. Midas is running with deltas directory location as "deltas"
+      6. Midas is running with deltas directory location as "deltas"
          ${
             midasTerminal = CommandTerminal("--port", "27020", "--deltasDir", System.getProperty("user.dir") + File.separator + baseDeltaDir)
             val form = midasTerminal.startMidas
             form
          }
 
-      8. We want to add IncyWincyTravelApp to midas. So, we create incyWincyTravelBookingApp.midas
-         file in "incyWincyTravelBookingApp" folder in "deltas" folder with mode as expansion.
+      7. We have following documents in the IncyWincyTravelApp database and this is simulated by inserting
+         them as shown below .
          ${
-            app2Dir = baseDeltaDir + File.separator + "incyWincyTravelBookingApp"
+            val form = MongoShell("Open Mongo Shell", "localhost", 27017)
+              .useDatabase("users")
+              .runCommand(s"""db.customers.insert({"firstName": "Vivek", "lastName": "Dhapola", "age": 25, "emailId": "vdhapola@equalexperts.com" })""")
+              .runCommand(s"""db.customers.insert({"firstName": "Komal", "lastName": "Jain", "age": 23, "emailId": "kjain@equalexperts.com" })""")
+              .runCommand(s"""db.customers.insert({"firstName": "Dhaval", "lastName": "Dalal", "age": 38, "emailId": "ddalal@equalexperts.com" })""")
+              .build
+            form
+          }
+
+      8. We create incyWincyTravelApp.midas file with all the nodes ips and changeset information given in
+         "incyWincyTravelApp" folder with mode as expansion.
+         ${
+            app2Dir = baseDeltaDir + File.separator + "incyWincyTravelApp"
             app2ConfigFile = Delta(app2Dir, () => {
-              """incyWincyTravelBookingApp {
+              """incyWincyTravelApp {
                    mode = expansion
                    nodeA {
                      ip = 127.0.0.1
@@ -178,11 +180,11 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
                  }
               """
             })
-            val form = app2ConfigFile.saveAs("Write Application Config File", "incyWincyTravelBookingApp.midas")
+            val form = app2ConfigFile.saveAs("Write Application Config File", "incyWincyTravelApp.midas")
             form
          }
 
-      9. Create a folder for change set "001MergeName" in "incyWincyTravelBookingApp" folder.
+      9. Create a folder for change set "001MergeName" in "incyWincyTravelApp" folder.
          ${
             changeSetDirPathApp2 = app2Dir + File.separator + "001MergeName"
             changeSetDirApp2 = Delta(changeSetDirPathApp2, () => "")
@@ -204,14 +206,14 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
             form
          }
 
-      11. Add application incyWincyTravelBookingApp to midas.config file in "deltas" folder
+      11. Add application incyWincyTravelApp to midas.config file in "deltas" folder
          ${
             baseDeltaDir = "/deltas"
             configFile = Delta(baseDeltaDir, () => {
               """
                 |apps {
                 |  incyWincyShoppingApp
-                |  incyWincyTravelBookingApp
+                |  incyWincyTravelApp
                 |}
               """.stripMargin
             })
@@ -219,10 +221,9 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
             form
           }
 
-      12. Connect IncyWincyTravelApp with midas and verify that it receives expanded documents with
-          "Name" field.
+      12. IncyWincyTravelApp connects with midas and starts receiving expanded documents.
          ${
-            val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "127.0.0.1", 27020)
+            val form = MongoShell("IncyWincyTravelApp - UpgradedVersion", "127.0.0.1", 27020)
               .useDatabase("users")
               .readDocumentsFromCollection("customers")
               .assertFieldsAdded(Array("Name"), expansionVersion = 1)
@@ -253,7 +254,7 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
             changeSetDirApp2.delete("Delete ChangeSet Folder", "")
             expansionDeltaApp1.delete("Delete Delta File", "0001_tranformMobileNo_transactions_orders.delta")
             changeSetDirApp1.delete("Delete ChangeSet Folder", "")
-            app2ConfigFile.delete("Delete Application File", "incyWincyTravelBookingApp.midas")
+            app2ConfigFile.delete("Delete Application File", "incyWincyTravelApp.midas")
             app1ConfigFile.delete("Delete Application File", "incyWincyShoppingApp.midas")
             configFile.delete("Delete Config File", "midas.config")
          }

@@ -55,31 +55,32 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
     def is = s2"""
       ${"Add/Remove ChangeSet On the fly".title}
       Narration: Bob, the Business analyst wanted to develop a loyalty programme for IncyWincyShoppingApp.
-                 Developers have baked that feature into the Application and the new version of application is now
-                 ready for release.  So Dave, the developer approaches Oscar, the DevOps guy.
+                 Developers have baked that feature into the Application and the new version of application is
+                 now ready for release.  So Dave, the developer approaches Oscar, the DevOps guy.
 
-      Dave:  "Oscar, I have the new ChangeSets zipped up containing the schema changes for Loyalty Programme. Can you
-             help us with the release of the new version of the application?"
+      Dave:  "Oscar, I have the new ChangeSets zipped up containing the schema changes for Loyalty Programme.
+              Can you help us with the release of the new version of the application?"
 
       Oscar: "Sure Dave, I'll take those offline nodes and upgrade the application to this new version first."
 
-      Oscar: "Further, after that I'll update the IncyWincyShoppingApp.midas offline nodes changesets to the highest
-             changeset number.  Following this, I'll throw in the change set folders that you gave me, in to the
-             IncyWincyShoppingApp folder.  Once all that is done, I'll flip the Load balancer to route the traffic
-             through these nodes."
-      Dave: "Ok Oscar. That sounds like an approach.  What if, we have issues with the new version and it becomes
-             unstable?
-      Oscar: "There are 2 approaches.  1. We could temporarily rollback to the old version of the application, by simply
-             flipping the Load Balancer back and in the mean time you guys work on the fixes and we can then redeploy.
-             After re-deployment, I'll flip the Load Balancer back again to those nodes where we have the new version
-             of the App.
-             2. We could keep the newer version application running, if the problem does not cripple the application
-             completely.  While you can work towards the fix and we will re-deploy the newer fixed version."
+      Oscar: "Further, after that I'll update the IncyWincyShoppingApp.midas offline nodes changesets to the
+              highest changeset number.  Following this, I'll throw in the change set folders that you gave
+              me, in to the IncyWincyShoppingApp folder.  Once all that is done, I'll flip the Load balancer
+              to route the traffic through these nodes."
+      Dave:  "Ok Oscar. That sounds like an approach.  What if, we have issues with the new version and it
+              becomes unstable?"
+      Oscar: "There are 2 approaches.  1. We could temporarily rollback to the old version of the application,
+              by simply flipping the Load Balancer back and in the mean time you guys work on the fixes and we
+              can then redeploy. After re-deployment, I'll flip the Load Balancer back again to those nodes
+              where we have the new version of the App.
+              2. We could keep the newer version application running, if the problem does not cripple the
+              application completely.  While you can work towards the fix and we will re-deploy the newer
+              fixed version."
       Dave:  "Ok that sounds reasonable."
       Dave:  "Oscar, what if we had to change some schema for that fix?"
       Oscar: "Well Dave, remember that with Midas, you reverse a change by a counter-change and you always move
-             forward in time.  So as long as you respect that and not modify old schema transformations in delta files,
-             we will all be good."
+              forward in time.  So as long as you respect that and not modify old schema transformations in delta
+              files, we will all be good."
 
       1. To start out we have following documents in the database and this is simulated by inserting
          them as shown below .
@@ -93,7 +94,7 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
             form
          }
 
-      2. There is a midas.config file in "deltas" folder
+      2. "incyWincyShoppingApp" is already added to midas.config file in "deltas" folder
          ${
             baseDeltaDir = "/deltas"
             configFile = Delta(baseDeltaDir, () => {
@@ -107,18 +108,18 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
             form
          }
 
-      3. There is a incyWincyShoppingApp.midas file in "incyWincyShoppingApp" folder in "deltas" folder
-         with mode as expansion.
+      3. incyWincyShoppingApp.midas file in "incyWincyShoppingApp" folder contain all nodes information
+         with mode as expansion. NodeX is offline and traffic is routed through NodeY currently.
          ${
             appDir = baseDeltaDir + File.separator + "incyWincyShoppingApp"
             appConfigFile = Delta(appDir, () => {
               """incyWincyShoppingApp {
                    mode = expansion
-                   nodeX {
+                   NodeX {
                      ip = 127.0.0.1
                      changeSet = 1
                    }
-                   nodeY {
+                   NodeY {
                      ip = 192.168.1.41
                      changeSet = 1
                    }
@@ -129,7 +130,7 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
             form
           }
 
-      4. There is a folder for change set "001SplitName" in "incyWincyShoppingApp" folder.
+      4. There is a already a change set "001SplitName" in "incyWincyShoppingApp" folder.
          ${
             changeSetDirPath1 = appDir + File.separator + "001SplitName"
             changeSetDir1 = Delta(changeSetDirPath1, () => "")
@@ -138,8 +139,8 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
             form
          }
 
-      5. There is a delta file "0001_splitName_transactions_orders.delta" to split "name" into
-         "firstName" and "lastName" at location "001SplitName" in "expansions" folder.
+      5. changeset "001SplitName" has a delta file "0001_splitName_transactions_orders.delta" to split
+         "name" into firstName" and "lastName" in "expansions" folder.
          ${
             val expansionDeltaDir = changeSetDirPath1 + File.separator + "expansions"
             expansionDelta1 = Delta(expansionDeltaDir, () => {
@@ -158,7 +159,7 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
             form
          }
 
-      7. Connect with midas and verify that it receives expanded documents with "name" field splited as
+      7. NodeY connects with midas and it receives expanded documents with "name" field splited as
          "firstName" and "lastName".
          ${
             val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "127.0.0.1", 27020)
@@ -169,7 +170,29 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
             form
          }
 
-      8. Lets add one more change set "002AddDiscountAmount" folder in "incyWincyShoppingApp" folder.
+      8. NodeX is upgraded to new version of application. Updating NodeX to highest changeSet in
+         "incyWincyShoppingApp.midas".
+         ${
+            appDir = baseDeltaDir + File.separator + "incyWincyShoppingApp"
+            appConfigFile = Delta(appDir, () => {
+              """incyWincyShoppingApp {
+                   mode = expansion
+                   NodeX {
+                     ip = 127.0.0.1
+                     changeSet = 2
+                   }
+                   NodeY {
+                     ip = 192.168.1.41
+                     changeSet = 1
+                   }
+                 }
+              """
+            })
+            val form = appConfigFile.saveAs("Write Application Config File", "incyWincyShoppingApp.midas")
+            form
+         }
+
+      9. Adding change set "002AddDiscountAmount" folder in "incyWincyShoppingApp" folder.
          ${
             changeSetDirPath2 = appDir + File.separator + "002AddDiscountAmount"
             changeSetDir2 = Delta(changeSetDirPath2, () => "")
@@ -178,7 +201,7 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
             form
          }
 
-      9. Create a delta file "0001_calculateDiscountAmount_transactions_orders.delta" to calculate
+      10. Create a delta file "0001_calculateDiscountAmount_transactions_orders.delta" to calculate
          "Discount Amount" at location "002AddDiscountAmount" in "expansions" folder.
          ${
             val expansionDeltaDir = changeSetDirPath2 + File.separator + "expansions"
@@ -191,8 +214,8 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
             form
          }
 
-      10. Connect with midas and verify that it receives expanded documents with "name" field splited as
-         "firstName" and "lastName" and new field "Discount Amount".
+      11. Now NodeX is online and traffic is routed through NodeX. It connects with midas and it starts
+          receiving expanded documents.
          ${
             val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "127.0.0.1", 27020)
               .useDatabase("transactions")
@@ -202,13 +225,13 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
             form
          }
 
-      11. Shutdown Midas
+      12. Shutdown Midas
          ${
             val form = midasTerminal.stopMidas(27020)
             form
          }
 
-      12. Clean up the database
+      13. Clean up the database
          ${
             val form = MongoShell("Open MongoShell", "localhost", 27017)
                .useDatabase("transactions")
@@ -217,7 +240,7 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
             form
          }
 
-      13. Cleanup deltas directory
+      14. Cleanup deltas directory
          ${
             expansionDelta2.delete("Delete Delta File", "0001_calculateDiscountAmount_transactions_orders.delta")
             expansionDelta1.delete("Delete Delta File", "0001_splitName_transactions_orders.delta")

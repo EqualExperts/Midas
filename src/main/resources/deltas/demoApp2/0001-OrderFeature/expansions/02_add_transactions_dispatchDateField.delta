@@ -2,3 +2,4 @@ use transactions
 
 // add to orders collection a nested document
 db.orders.add('{"dispatch" : { "status" : "Default Status", "address": { "line1" : "Some Road", "city": "Some City" }}}')
+db.orders.transform("dispatch.date", "{ $date : ['dd-MMM-yy', '18-Aug-87']}")

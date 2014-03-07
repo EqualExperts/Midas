@@ -44,25 +44,17 @@ final case class Concat(expressions: Expression*) extends StringFunction(express
 }
 
 @FunctionExpression
-final case class ToLower(expressions: Expression*) extends StringFunction(expressions: _*) {
+final case class ToLower(expression: Expression) extends StringFunction(expression) {
   def evaluate(document: BSONObject) = {
-    expressions.length match {
-      case 0 => Literal("")
-      case _ => val inputString: String = value(expressions(0).evaluate(document))
-                val transformedString = inputString.toLowerCase
-                Literal(transformedString)
-    }
+    val string = value(expression.evaluate(document))
+    Literal(string.toLowerCase)
   }
 }
 
 @FunctionExpression
-final case class ToUpper(expressions: Expression*) extends StringFunction(expressions: _*) {
+final case class ToUpper(expression: Expression) extends StringFunction(expression) {
   def evaluate(document: BSONObject) = {
-    expressions.length match {
-      case 0 => Literal("")
-      case _ => val inputString: String = value(expressions(0).evaluate(document))
-        val transformedString = inputString.toUpperCase
-        Literal(transformedString)
-    }
+    val string = value(expression.evaluate(document))
+    Literal(string.toUpperCase)
   }
 }

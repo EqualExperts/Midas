@@ -38,6 +38,8 @@ import com.ee.midas.dsl.grammar.Verb
 import org.specs2.specification.Scope
 import org.bson.{BasicBSONObject, BSONObject}
 import com.ee.midas.transform.ResponseTypes
+import java.util
+import com.mongodb.util.JSON
 
 @RunWith(classOf[JUnitRunner])
 class SnippetProviderSpecs extends Specification {
@@ -61,7 +63,37 @@ class SnippetProviderSpecs extends Specification {
         snippet(document) mustEqual expectedBSONObject
       }
 
-     "provides snippet for remove" in new Snippet {
+    "provides snippet for add for multiple fields" in new Snippet {
+      //Given
+      val verb = Verb.add
+      val args: Array[String] = Array("{\"age\" : 0, \"isPresent\": false }")
+      val document: BSONObject = new BasicBSONObject()
+      val expectedBSONObject = new BasicBSONObject("age", 0).append("isPresent", false)
+
+      //When
+      val snippet = provideSnippet(verb, args)
+
+      //Then
+      snippet(document) mustEqual expectedBSONObject
+    }
+
+    "parses" in new Snippet {
+      //Given
+      val input =
+        """
+          |{
+          |  "zip" : 400058,
+          |  "executionDate" : { "$date": "Jun 23, 1912"}
+          |}
+        """.stripMargin
+      println(s"Parsing Input = $input")
+      println("Parsed JSON = " + JSON.parse(input))
+
+      //Then
+      true mustEqual true
+    }
+
+    "provides snippet for remove" in new Snippet {
         //Given
         val verb = Verb.remove
         val args: Array[String] = Array("['age']")

@@ -33,7 +33,7 @@ package com.ee.midas.dsl.expressions
 
 import org.bson.BSONObject
 import com.ee.midas.utils.{Loggable, AnnotationScanner}
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success, Try}
 
 sealed trait Expression {
   def evaluate(document: BSONObject): Literal
@@ -61,22 +61,33 @@ sealed abstract class Function(expressions: Expression*) extends Expression {
 
 object Function extends Loggable {
 
-  lazy val functions = new AnnotationScanner("com.ee.midas", classOf[FunctionExpression])
-                          .scan
-                          .map { className =>
-                            logDebug(s"Loading Class $className...")
-                            val clazz = Class.forName(className).asInstanceOf[Class[Function]]
-                            logDebug(s"Loaded Class $className!")
-                            clazz.getSimpleName.toLowerCase -> clazz
-                          }
-                          .toMap
-                          .withDefaultValue(classOf[EmptyFunction])
+  lazy val functions: Map[String, Class[_ >: EmptyFunction <: Function]] =
+    new AnnotationScanner("com.ee.midas", classOf[FunctionExpression])
+      .scan
+      .map { className =>
+        logDebug(s"Loading Class $className...")
+        val clazz = Class.forName(className).asInstanceOf[Class[Function]]
+        logDebug(s"Loaded Class $className!")
+        clazz.getSimpleName.toLowerCase -> clazz
+      }
+      .toMap
+      .withDefaultValue(classOf[EmptyFunction])
 
   def apply(fnName: String, args: Expression*): Function = {
     val fnClazz = functions(fnName.toLowerCase)
-    val constructor = fnClazz.getConstructor(classOf[Seq[Expression]])
-    logDebug(s"Instantiating Class $fnClazz...")
-    constructor.newInstance(args)
+    Try {
+      val constructor = fnClazz.getConstructor(classOf[Seq[Expression]])
+      logDebug(s"Instantiating Class $fnClazz...with Args $args")
+      constructor.newInstance(args)
+    }.recover { case failure =>
+      val argsExpressionClazz = args map (e => classOf[Expression])
+      val constructor = fnClazz.getConstructor(argsExpressionClazz : _*)
+      logDebug(s"Instantiating Class $fnClazz...with Args $args")
+      constructor.newInstance(args: _*)
+    } match {
+      case Success(func) => func
+      case Failure(f) => throw new IllegalArgumentException(s"Incorrect Arguments Supplied for Function: ${fnName.toLowerCase}")
+    }
   }
 }
 
@@ -94,6 +105,13 @@ abstract class ArithmeticFunction(expressions: Expression*) extends Function(exp
 abstract class StringFunction(expressions: Expression*) extends Function(expressions: _*) {
   def value(literal: Literal): String = literal match {
     case Literal(null) => ""
+    case Literal(x) => x.toString
+  }
+}
+
+abstract class DateFunction(expressions: Expression*) extends Function(expressions: _*) {
+  def value(literal: Literal): String = literal match {
+    case Literal(null) => throw new IllegalArgumentException("Expression evaluation Resulted in null Literal")
     case Literal(x) => x.toString
   }
 }

@@ -38,6 +38,7 @@ import com.ee.midas.transform.DocumentOperations._
 import java.util.regex.Pattern
 import com.ee.midas.dsl.expressions.{Parser, Expression}
 import com.ee.midas.utils.Loggable
+import scala.util.Try
 
 trait SnippetProvider extends Parser with Loggable {
    def toSnippet(verb: Verb, args: Array[String]): BSONObject => BSONObject = verb match {
@@ -98,9 +99,13 @@ trait SnippetProvider extends Parser with Loggable {
   }
 
   private def transform(outputField: String, expressionJson: String) : BSONObject => BSONObject = {
+    val expression: Expression = Try { parse(expressionJson) } match {
+      case scala.util.Success(expr) => expr
+      case scala.util.Failure(failure) => throw failure
+    }
     ((document: BSONObject) => {
-      val expression: Expression = parse(expressionJson)
       try {
+        logDebug(s"Evaluating Expression = $expression")
         val literal = expression.evaluate(document)
         document + (outputField, literal.value)
       } catch {

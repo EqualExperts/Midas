@@ -1,2 +1,2 @@
 use transactions
-db.orders.add('{ "executionDate" : "new Date(\'Jun 23, 1912\')" }')
+db.orders.transform("executionDate", '{ $date: ["MMM dd, yyyy HH:mm", "Jun 23, 1912 00:00"]}')

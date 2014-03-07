@@ -31,13 +31,12 @@
 
 package com.ee.midas.dsl.expressions
 
-import org.specs2.mutable.Specification
-import org.specs2.matcher.DataTables
+import org.specs2.mutable.{Tables, Specification}
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class FunctionSpecs extends Specification with DataTables {
+class FunctionSpecs extends Specification with Tables {
   "stringify just like how it is written" ^ {
             "function"                 |  "functionString"                     |
               Add()                    !  "Add()"                              |

@@ -330,9 +330,20 @@ class ParserSpecs extends Specification {
         args mustEqual List(Literal(1), Literal("age"))
       }
 
-      "with Number, String and Field args in an array" in new ExpressionParser {
+      "with Number, double quoted String and double quote Field args in an array" in new ExpressionParser {
         //Given
         val input = """[1, "age", "$name"]"""
+
+        //When
+        val args = Result(parseAll(fnArgs, input))
+
+        //Then
+        args mustEqual List(Literal(1), Literal("age"), Field("name"))
+      }
+
+      "with Number, single quoted String and single quoted Field args in an array" in new ExpressionParser {
+        //Given
+        val input = """[1, 'age', '$name']"""
 
         //When
         val args = Result(parseAll(fnArgs, input))
@@ -483,6 +494,55 @@ class ParserSpecs extends Specification {
         //When-Then
         Result(parseAll(obj, input)) must throwA[IllegalArgumentException]
       }
+
+      "empty divide function" in new ExpressionParser {
+        //Given
+        val input = """$divide: []"""
+
+        //When
+        Result(parseAll(fn, input)) must throwA[IllegalArgumentException]
+
+      }
+
+      "divide function with 1 argument" in new ExpressionParser {
+        //Given
+        val input = """$divide: [1.0]"""
+
+        //When-Then
+        Result(parseAll(fn, input)) must throwA[IllegalArgumentException]
+      }
+
+      "empty subtract function" in new ExpressionParser {
+        //Given
+        val input = """$subtract: []"""
+
+        //When-Then
+        Result(parseAll(fn, input)) must throwA[IllegalArgumentException]
+      }
+
+      "subtract function with 1 argument" in new ExpressionParser {
+        //Given
+        val input = """$subtract: [1.0]"""
+
+        //When-Then
+        Result(parseAll(fn, input)) must throwA[IllegalArgumentException]
+      }
+
+      "empty Mod function" in new ExpressionParser {
+        //Given
+        val input = """$mod: []"""
+
+        //When-Then
+        Result(parseAll(fn, input)) must throwA[IllegalArgumentException]
+      }
+
+      "function with 1 argument" in new ExpressionParser {
+        //Given
+        val input = """$mod: [1.0]"""
+
+        //When-Then
+        Result(parseAll(fn, input)) must throwA[IllegalArgumentException]
+      }
     }
 
     "Parse Arithmetic Function" in {
@@ -568,28 +628,6 @@ class ParserSpecs extends Specification {
           subtract mustEqual Subtract(Literal(1), Field("age"))
         }
 
-        "empty function" in new ExpressionParser {
-          //Given
-          val input = """$subtract: []"""
-
-          //When
-          val subtract = Result(parseAll(fn, input))
-
-          //Then
-          subtract mustEqual Subtract()
-        }
-
-        "function with 1 argument" in new ExpressionParser {
-          //Given
-          val input = """$subtract: [1.0]"""
-
-          //When
-          val subtract = Result(parseAll(fn, input))
-
-          //Then
-          subtract mustEqual Subtract(Literal(1d))
-        }
-
         "recursive function" in new ExpressionParser {
           //Given
           val input = """$subtract: [1, { $subtract: [2, "$age"]}]"""
@@ -614,28 +652,6 @@ class ParserSpecs extends Specification {
           divide mustEqual Divide(Literal(1), Field("age"))
         }
 
-        "empty function" in new ExpressionParser {
-          //Given
-          val input = """$divide: []"""
-
-          //When
-          val divide = Result(parseAll(fn, input))
-
-          //Then
-          divide mustEqual Divide()
-        }
-
-        "function with 1 argument" in new ExpressionParser {
-          //Given
-          val input = """$divide: [1.0]"""
-
-          //When
-          val divide = Result(parseAll(fn, input))
-
-          //Then
-          divide mustEqual Divide(Literal(1d))
-        }
-
         "recursive function" in new ExpressionParser {
           //Given
           val input = """$divide: [1, { $divide: [2, "$age"]}]"""
@@ -658,28 +674,6 @@ class ParserSpecs extends Specification {
 
           //Then
           modulus mustEqual Mod(Literal(1), Field("age"))
-        }
-
-        "empty function" in new ExpressionParser {
-          //Given
-          val input = """$mod: []"""
-
-          //When
-          val modulus = Result(parseAll(fn, input))
-
-          //Then
-          modulus mustEqual Mod()
-        }
-
-        "function with 1 argument" in new ExpressionParser {
-          //Given
-          val input = """$mod: [1.0]"""
-
-          //When
-          val modulus = Result(parseAll(fn, input))
-
-          //Then
-          modulus mustEqual Mod(Literal(1d))
         }
 
         "recursive function" in new ExpressionParser {

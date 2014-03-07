@@ -6,6 +6,6 @@ demoApp2Ver1_0 {
   }
   nodeB {
     ip = 192.168.3.29 //Change this for your set-up
-    changeSet = 1
+    changeSet = 2
   }
 }

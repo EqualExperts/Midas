@@ -179,45 +179,10 @@ class ArithmeticExpressionSpecs extends Specification with DataTables {
   }
 
   "Subtract" should {
-    "Give result as 0 when no values are supplied" in {
-      //Given
-      val subtract = Subtract()
-      val document = new BasicBSONObject()
-
-      //When
-      val result = subtract.evaluate(document).value
-
-      //Then
-      result mustEqual 0
-    }
-
-    "Give result as 0 when 1 value is supplied" in {
-      //Given
-      val subtract = Subtract(Literal(0))
-      val document = new BasicBSONObject()
-
-      //When
-      val result = subtract.evaluate(document).value
-
-      //Then
-      result mustEqual 0
-    }
 
     "Give difference when minuend and subtrahend are supplied" in {
       //Given
       val subtract = Subtract(Literal(1d), Literal(3.5))
-      val document = new BasicBSONObject()
-
-      //When
-      val result = subtract.evaluate(document).value
-
-      //Then
-      result mustEqual -2.5
-    }
-
-    "Gives difference of first two values when more than 2 are supplied ignoring the rest" in {
-      //Given
-      val subtract = Subtract(Literal(1d), Literal(3.5), Literal(4), Literal(-3.2))
       val document = new BasicBSONObject()
 
       //When
@@ -253,30 +218,6 @@ class ArithmeticExpressionSpecs extends Specification with DataTables {
   }
 
   "Divide" should {
-    "Give result as 0 when no values are supplied" in {
-      //Given
-      val divide = Divide()
-      val document = new BasicBSONObject()
-
-      //When
-      val result = divide.evaluate(document)
-
-      //Then
-      result mustEqual Literal(0)
-    }
-
-    "Give result as 0 when 1 value is supplied" in {
-      //Given
-      val divide = Divide(Literal(3))
-      val document = new BasicBSONObject()
-
-      //When
-      val result = divide.evaluate(document)
-
-      //Then
-      result mustEqual Literal(0)
-    }
-
     "Give division of homogeneous types" in {
       //Given
       val divide = Divide(Literal(-4), Literal(2d))
@@ -339,30 +280,6 @@ class ArithmeticExpressionSpecs extends Specification with DataTables {
   }
 
   "Mod" should {
-    "Give result as 0 when no values are supplied" in {
-      //Given
-      val mod = Mod()
-      val document = new BasicBSONObject()
-
-      //When
-      val result = mod.evaluate(document)
-
-      //Then
-      result mustEqual Literal(0)
-    }
-
-    "Give result as 0 when 1 value is supplied" in {
-      //Given
-      val mod = Mod(Literal(3))
-      val document = new BasicBSONObject()
-
-      //When
-      val result = mod.evaluate(document)
-
-      //Then
-      result mustEqual Literal(0)
-    }
-
     "Give remainder from division of homogeneous types" in {
       //Given
       val mod = Mod(Literal(-4), Literal(2d))

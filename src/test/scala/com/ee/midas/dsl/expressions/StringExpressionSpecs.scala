@@ -37,7 +37,7 @@ import org.bson.{BSONObject, BasicBSONObject}
 import org.specs2.mutable.Specification
 
 @RunWith(classOf[JUnitRunner])
-class StringFunctionSpecs extends Specification {
+class StringExpressionSpecs extends Specification {
   "Concat" should {
     "returns empty string when no values are supplied" in {
       //Given
@@ -89,18 +89,6 @@ class StringFunctionSpecs extends Specification {
   }
 
   "ToLower" should {
-    "returns empty string when no values are supplied" in {
-      //Given
-      val toLower = ToLower()
-      val document = new BasicBSONObject()
-
-      //When
-      val result = toLower.evaluate(document).value
-
-      //Then
-      result mustEqual ""
-    }
-
     "convert string literal to lower case" in {
       //Given
       val toLower = ToLower(Literal("Hello"))
@@ -151,18 +139,6 @@ class StringFunctionSpecs extends Specification {
   }
 
   "ToUpper" should {
-    "returns empty string when no values are supplied" in {
-      //Given
-      val toUpper = ToUpper()
-      val document = new BasicBSONObject()
-
-      //When
-      val result = toUpper.evaluate(document).value
-
-      //Then
-      result mustEqual ""
-    }
-
     "convert string literal to upper case" in {
       //Given
       val toUpper = ToUpper(Literal("Hello"))

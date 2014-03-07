@@ -45,7 +45,7 @@ trait Parser extends JavaTokenParsers {
    * BNF:
    * ----
    * value ::= obj | floatingPointNumber | "null" | "true" | "false" | quotedField | singleQuotedField | quotedStringLiteral | singleQuotedStringLiteral.
-   * obj ::= "{" function "}".
+   * obj ::= "{" fn "}".
    * fn ::= fnName ":" fnArgs.
    * fnArgs ::= "[" values "]" | value.
    * values ::= value { "," value }.
@@ -67,12 +67,12 @@ trait Parser extends JavaTokenParsers {
   def quotedField: Parser[Expression]       = "\"$" ~> field <~ "\"" ^^ (Field(_))
   def singleQuotedField: Parser[Expression] = "\'$" ~> field <~ "\'" ^^ (Field(_))
 
-  val stringWithoutDotAndDollar: String =
-    """([^"\p{Cntrl}\\\$\.]|\\[\\'"bfnrt]|\\u[a-fA-F0-9]{4})*"""
+//  val stringWi  thoutDotAndDollar: String =
+//    """([^"\p{Cntrl}\\\$\.]|\\[\\'"bfnrt]|\\u[a-fA-F0-9]{4})*"""
   def quotedStringLiteral: Parser[Expression] =
-    ("\"" + stringWithoutDotAndDollar + "\"").r ^^ (s => Literal(s.replaceAllLiterally("\"", "")))
+    ("\"" + """([^"\p{Cntrl}\\\$\.]|\\[\\'"bfnrt]|\\u[a-fA-F0-9]{4})*""" + "\"").r ^^ (s => Literal(s.replaceAllLiterally("\"", "")))
   def singleQuotedStringLiteral: Parser[Expression] =
-    ("\'" + stringWithoutDotAndDollar + "\'").r ^^ (s => Literal(s.replaceAllLiterally("\'", "")))
+    ("\'" + """([^'\p{Cntrl}\\\$\.]|\\[\\'"bfnrt]|\\u[a-fA-F0-9]{4})*""" + "\'").r ^^ (s => Literal(s.replaceAllLiterally("\'", "")))
 
   def obj: Parser[Expression] = "{"~> fn <~"}"
   def fnArgs: Parser[List[Expression]] = "["~> repsep(value, ",") <~"]"  | (value ^^ (List(_)))

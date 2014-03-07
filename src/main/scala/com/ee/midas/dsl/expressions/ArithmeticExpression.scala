@@ -57,37 +57,28 @@ final case class Multiply(expressions: Expression*) extends ArithmeticFunction(e
 }
 
 @FunctionExpression
-final case class Subtract(expressions: Expression*) extends ArithmeticFunction(expressions: _*) {
-  def evaluate(document: BSONObject) =
-    expressions.length match {
-      case 0 | 1 => Literal(0)
-      case _ =>
-        val minuend = value(expressions(0).evaluate(document))
-        val subtrahend = value(expressions(1).evaluate(document))
-        Literal(minuend - subtrahend)
-    }
+final case class Subtract(minuend: Expression, subtrahend: Expression) extends ArithmeticFunction(minuend, subtrahend) {
+  def evaluate(document: BSONObject) = {
+        val left = value(minuend.evaluate(document))
+        val right = value(subtrahend.evaluate(document))
+        Literal(left - right)
+  }
 }
 
 @FunctionExpression
-final case class Divide(expressions: Expression*) extends ArithmeticFunction(expressions: _*) {
-  def evaluate(document: BSONObject) =
-    expressions.length match {
-      case 0 | 1 => Literal(0)
-      case _ =>
-        val dividend = value(expressions(0).evaluate(document))
-        val divisor = value(expressions(1).evaluate(document))
-        Literal(dividend / divisor)
-    }
+final case class Divide(dividend: Expression, divisor: Expression) extends ArithmeticFunction(dividend, divisor) {
+  def evaluate(document: BSONObject) = {
+    val numerator = value(dividend.evaluate(document))
+    val denominator = value(divisor.evaluate(document))
+    Literal(numerator / denominator)
+  }
 }
 
 @FunctionExpression
-final case class Mod(expressions: Expression*) extends ArithmeticFunction(expressions: _*) {
-  def evaluate(document: BSONObject) =
-    expressions.length match {
-      case 0 | 1 => Literal(0)
-      case _ =>
-        val dividend = value(expressions(0).evaluate(document))
-        val divisor = value(expressions(1).evaluate(document))
-        Literal(dividend % divisor)
-    }
+final case class Mod(dividend: Expression, divisor: Expression) extends ArithmeticFunction(dividend, divisor) {
+  def evaluate(document: BSONObject) = {
+    val numerator = value(dividend.evaluate(document))
+    val denominator = value(divisor.evaluate(document))
+    Literal(numerator % denominator)
+  }
 }

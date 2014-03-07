@@ -14,7 +14,13 @@ and Java drivers) and their versions within those languages.
 Further, Midas is agnostic of the MongoDB configurations like Standalone, Replica Sets, Sharded environments.
 
 Features Summary:
-* TBD
+* Schema migration for multiple applications simultaneously
+* Support multi node configuration for application
+* Expansion operations - add, copy, merge, split, transform.
+* Contraction operations - remove
+* Addition and removal of application on the fly
+* Addition and removal of nodes on the fly
+* Addition and removal of deltas/changeset on the fly
 
 Pre-Requisites
 * It assumes that you have JDK1.6 or 1.7 installed and you have java
@@ -23,4 +29,7 @@ in your path.
 Running Midas
 * After having exploded the Midas zip -
   * For Unix machine, grant executable permissions to midas.sh script.
-  * In order to start Midas, run midas.sh backing up a MongoDB (participating in a ReplicaSet), you
+  * In order to start Midas, run midas.sh/midas.bat backing up a MongoDB (participating in a ReplicaSet), you need to provide
+    path of deltas directory, mongoHost, mongoPort, midasHost and midasPort.
+  * For delta scripts follow the conventions given in Midas-Overview-Guide.pdf
+

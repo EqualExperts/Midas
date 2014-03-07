@@ -718,6 +718,27 @@ class DocumentOperationsSpecs extends Specification {
 
         }
 
+        "Merge 2 fields - one existent and one non-existent field into a new field" in {
+          //Given: A document
+          val document = new BasicBSONObject()
+            .append("fName", "Rafael")
+            .append("lName", "Nadal")
+
+          //When: fields "fName" and "lastName" are merged into new field "name"
+          val actualDocument = DocumentOperations(document).>~<("name", " ", List("fName","lastName"))
+
+          //Then: Merge was successful with new field value as existent field's value
+          actualDocument.containsField("name") must beTrue
+          actualDocument.get("name") mustEqual "Rafael"
+
+          val expectedNestedDocument = new BasicBSONObject()
+            .append("fName", "Rafael")
+            .append ("lName", "Nadal")
+            .append("name", "Rafael")
+          actualDocument mustEqual expectedNestedDocument
+
+        }
+
         "Merge 3 simple fields into a new field using the provided separator" in {
           //Given: A document
           val document = new BasicBSONObject()

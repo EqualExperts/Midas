@@ -58,7 +58,7 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
     def is = s2"""
       ${"Add/Remove Application On the fly".title}
       Narration: IncyWincyShoppingApp and IncyWincyTravelApp stores its persistent data on MongoDB.
-                 IncyWincyShoppingApp is already supported by Midas.  Folks at the IncyWincyTravelApp
+                 IncyWincyShoppingApp is already supported by Midas. Folks at the IncyWincyTravelApp
                  learnt from IncyWincyShoppingApp developers that schema migration need not be painful. It 
                  can be done systematically using Midas.  
                  So, they approach Oscar, the DevOps guy and request him to make IncyWincyTravelApp
@@ -107,7 +107,7 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
             form
          }
 
-      3. There is a "incyWincyShoppingApp" folder in "deltas" with incyWincyShoppingApp.midas file having
+      3. There is a "incyWincyShoppingApp" folder in "deltas" with "incyWincyShoppingApp.midas" file having
          its Node information and mode.
          ${
             app1Dir = baseDeltaDir + File.separator + "incyWincyShoppingApp"
@@ -256,7 +256,7 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
             changeSetDirApp1.delete("Delete ChangeSet Folder", "")
             app2ConfigFile.delete("Delete Application File", "incyWincyTravelApp.midas")
             app1ConfigFile.delete("Delete Application File", "incyWincyShoppingApp.midas")
-            configFile.delete("Delete Config File", "midas.config")
+            configFile.delete("Delete Deltas Directory", "midas.config")
          }
                                                                                                       """
 }

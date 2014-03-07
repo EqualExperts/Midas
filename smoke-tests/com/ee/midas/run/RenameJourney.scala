@@ -313,7 +313,7 @@ class RenameJourney extends Specification with Forms {
           expansionDelta2.delete("Delete Delta File", "0002_copy_transactions_orders_ZipcodeToPincodeField.delta")
           changeSetDir.delete("Delete ChangeSet Folder", "")
           appConfigFile.delete("Delete Application File", "incyWincyShoppingApp.midas")
-          configFile.delete("Delete Config File", "midas.config")
+          configFile.delete("Delete Deltas Directory", "midas.config")
        }
 
                                                                                     """

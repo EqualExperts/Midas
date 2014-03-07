@@ -56,7 +56,7 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
       ${"Add/Remove ChangeSet On the fly".title}
       Narration: Bob, the Business analyst wanted to develop a loyalty programme for IncyWincyShoppingApp.
                  Developers have baked that feature into the Application and the new version of application is
-                 now ready for release.  So Dave, the developer approaches Oscar, the DevOps guy.
+                 now ready for release. So Dave, the developer approaches Oscar, the DevOps guy.
 
       Dave:  "Oscar, I have the new ChangeSets zipped up containing the schema changes for Loyalty Programme.
               Can you help us with the release of the new version of the application?"
@@ -67,8 +67,10 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
               highest changeset number.  Following this, I'll throw in the change set folders that you gave
               me, in to the IncyWincyShoppingApp folder.  Once all that is done, I'll flip the Load balancer
               to route the traffic through these nodes."
+
       Dave:  "Ok Oscar. That sounds like an approach.  What if, we have issues with the new version and it
               becomes unstable?"
+
       Oscar: "There are 2 approaches.  1. We could temporarily rollback to the old version of the application,
               by simply flipping the Load Balancer back and in the mean time you guys work on the fixes and we
               can then redeploy. After re-deployment, I'll flip the Load Balancer back again to those nodes
@@ -76,11 +78,13 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
               2. We could keep the newer version application running, if the problem does not cripple the
               application completely.  While you can work towards the fix and we will re-deploy the newer
               fixed version."
+
       Dave:  "Ok that sounds reasonable."
       Dave:  "Oscar, what if we had to change some schema for that fix?"
+
       Oscar: "Well Dave, remember that with Midas, you reverse a change by a counter-change and you always move
-              forward in time.  So as long as you respect that and not modify old schema transformations in delta
-              files, we will all be good."
+              forward in time.  So as long as you respect that and not modify old schema transformations in
+              delta files, we will all be good."
 
       1. To start out we have following documents in the database and this is simulated by inserting
          them as shown below .
@@ -139,7 +143,7 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
             form
          }
 
-      5. changeset "001SplitName" has a delta file "0001_splitName_transactions_orders.delta" to split
+      5. Changeset "001SplitName" has a delta file "0001_splitName_transactions_orders.delta" to split
          "name" into firstName" and "lastName" in "expansions" folder.
          ${
             val expansionDeltaDir = changeSetDirPath1 + File.separator + "expansions"
@@ -247,7 +251,7 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
             changeSetDir1.delete("Delete ChangeSet Folder", "")
             changeSetDir2.delete("Delete ChangeSet Folder", "")
             appConfigFile.delete("Delete Application File", "incyWincyShoppingApp.midas")
-            configFile.delete("Delete Config File", "midas.config")
+            configFile.delete("Delete Deltas Directory", "midas.config")
          }
                                                                                                 """
 }

@@ -56,21 +56,21 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
                  Adam, the admin needs to take down one node for scheduled maintenance. So, he
                  approaches Oscar, the DevOps guy.
 
-      Adam:  "Hey Dave, We need to take down Node1 for a scheduled maintenance and give it back to you in
+      Adam:  "Hey Oscar, We need to take down NodeX for a scheduled maintenance and give it back to you in
               about couple of hours.  How do we go about that?"
       Oscar: "Ok Adam, thats not a problem. We just need to remove that node from application's config file
-             and the Load Balancer. After that no requests from that node will be accepted.
-             Once the node is up, we can again add it to the application config file and the Load balancer
-             and immediately after that the requests from the node will be entertained like they
+              and the Load Balancer. After that no requests from that node will be accepted.
+              Once the node is up, we can again add it to the application config file and the Load balancer
+              and immediately after that the requests from the node will be entertained like they
               were before."
       Adam:  "By any chance would Midas be shutdown during the whole process? In other words any
-             disservice to already connected nodes and clients?"
+              disservice to already connected nodes and clients?"
       Oscar: "No, all this happens at runtime and Midas will be running all the time.  There will
-             be no issues to clients connected to other Nodes of the same application."
+              be no issues to clients connected to other Nodes of the same application."
       Adam:  "Ok, That will be great."
 
       1. To start out we have following documents in the database and this is simulated by inserting
-         them as shown below .
+         them as shown below.
          ${
             val form = MongoShell("Open Mongo Shell", "localhost", 27017)
               .useDatabase("transactions")
@@ -81,7 +81,7 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
             form
          }
 
-      2. There is a midas.config file in "deltas" folder
+      2. IncyWincyShoppingApp is already added to midas.config file in "deltas" folder.
          ${
             baseDeltaDir = "/deltas"
             configFile = Delta(baseDeltaDir, () => {
@@ -95,8 +95,8 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
             form
          }
 
-      3. There is a incyWincyShoppingApp.midas file in "incyWincyShoppingApp" folder in "deltas" folder
-         with mode as expansion.
+      3. There is a "incyWincyShoppingApp" folder in "deltas" with "incyWincyShoppingApp.midas" file having
+         its Node information and mode.
          ${
             appDir = baseDeltaDir + File.separator + "incyWincyShoppingApp"
             appConfigFile = Delta(appDir, () => {
@@ -117,7 +117,7 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
             form
          }
 
-      4. There is a folder for change set "001AddToOrders" in "incyWincyShoppingApp" folder.
+      4. "incyWincyShoppingApp" has one change set "001AddToOrders".
          ${
             changeSetDirPath = appDir + File.separator + "001AddToOrders"
             changeSetDir = Delta(changeSetDirPath, () => "")
@@ -126,8 +126,9 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
             form
          }
 
-      5. There is a delta file "0001_add_CountryToShippingAddress_transactions_orders.delta" to add
-         "country" field to "ShippingAddress" at location "001AddToOrders" in "expansions" folder.
+      5. "001AddToOrders" changeset has a delta file
+         "0001_add_CountryToShippingAddress_transactions_orders.delta" to add "country"
+         field to "ShippingAddress" in "expansions" folder.
          ${
             val expansionDeltaDir = changeSetDirPath + File.separator + "expansions"
             expansionDelta = Delta(expansionDeltaDir, () => {
@@ -146,7 +147,7 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
             form
          }
 
-      7. Connect NodeX with midas and verify that it receives expanded documents
+      7. NodeX connects with midas and it receives expanded documents
          ${
             val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "127.0.0.1", 27020)
               .useDatabase("transactions")
@@ -174,7 +175,7 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
             form
          }
 
-      9. Try to connect from NodeX. It is not allowed to connect to midas.
+      9. NodeX try to connect. It is not allowed to connect to midas.
          ${
             val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "127.0.0.1", 27020)
               .useDatabase("transactions")
@@ -183,8 +184,8 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
             form
          }
 
-      10. Lets say NodeX is up after maintenance now. So, we add NodeX to "incyWincyShoppingApp.midas" file
-          in "incyWincyShoppingApp" folder in "deltas" folder
+      10. NodeX is up after maintenance now. So, we add NodeX to "incyWincyShoppingApp.midas" file in
+          "incyWincyShoppingApp" folder in "deltas" folder
          ${
             appDir = baseDeltaDir + File.separator + "incyWincyShoppingApp"
             appConfigFile = Delta(appDir, () => {
@@ -205,7 +206,7 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
             form
          }
 
-      11. Again connect from NodeX. It should see the expanded documents.
+      11.  NodeX connects to midas. It starts receiving the expanded documents.
          ${
             val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "127.0.0.1", 27020)
               .useDatabase("transactions")
@@ -235,7 +236,7 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
             expansionDelta.delete("Delete Delta File", "0001_add_CountryToShippingAddress_transactions_orders.delta")
             changeSetDir.delete("Delete ChangeSet Folder", "")
             appConfigFile.delete("Delete Application File", "incyWincyShoppingApp.midas")
-            configFile.delete("Delete Config File", "midas.config")
+            configFile.delete("Delete Deltas Directory", "midas.config")
          }
                                                                                                             """
 

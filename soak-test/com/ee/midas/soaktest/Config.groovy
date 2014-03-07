@@ -38,9 +38,9 @@ data {
     }
 
     app {
-        v1 {
+        v0 {
 
-            changeSet = 1
+            changeSet = 0
             deltas {
                 expansion {
 
@@ -80,9 +80,9 @@ data {
             }
         }
 
-        v2 {
+        v1 {
 
-            changeSet = 2
+            changeSet = 1
 
             deltas {
 
@@ -143,7 +143,7 @@ data {
             }
         }
 
-        v3 {
+        v2 {
 
         }
     }

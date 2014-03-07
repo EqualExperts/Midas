@@ -29,19 +29,36 @@ def dataUpdater = new DocumentUpdater(midasHost, midasPort, updateFrequency)
 
 
 def databases = config.data.app."$clientVersion".databases
-databases.each { databaseName, collections ->
-    collections.each { collectionName, documentSpec ->
-        println("$databaseName, $collectionName, ${documentSpec.document}, ${documentSpec.count}")
-        dataInserter.insertSampleDataFor(databaseName, collectionName, documentSpec.document, documentSpec.count)
+
+def insertionProcess = new Thread(new Runnable() {
+    @Override
+    void run() {
+        databases.each { databaseName, collections ->
+            collections.each { collectionName, documentSpec ->
+                println("$databaseName, $collectionName, ${documentSpec.document}, ${documentSpec.count}")
+                dataInserter.insertSampleDataFor(databaseName, collectionName, documentSpec.document, documentSpec.count)
+            }
+        }
     }
-}
+}, "DataInserter-Thread")
 
-def updateAge = {
-    document, fieldToUpdate ->
-        def value = new Random().nextInt(100)
-        document.put(fieldToUpdate, value)
-}
+def updateProcess = new Thread(new Runnable() {
+    def updateAge = {
+        document, fieldToUpdate ->
+            def value = new Random().nextInt(100)
+            document.put(fieldToUpdate, value)
+    }
 
-dataUpdater.viewAndUpdateData("users", "customers", "age", updateAge)
-dataUpdater.viewAndUpdateData("users", "customers", "customerID", {document, field -> document})
-dataUpdater.viewAndUpdateData("transactions", "orders", "orderID", {document, field -> document})
+    @Override
+    void run() {
+        dataUpdater.viewAndUpdateData("users", "customers", "age", updateAge)
+        dataUpdater.viewAndUpdateData("users", "customers", "customerID", {document, field -> document})
+        dataUpdater.viewAndUpdateData("transactions", "orders", "orderID", {document, field -> document})
+    }
+}, "DataUpdater-Thread")
+
+insertionProcess.start()
+updateProcess.start()
+insertionProcess.join()
+updateProcess.join()
+

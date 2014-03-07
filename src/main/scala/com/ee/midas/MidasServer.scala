@@ -43,7 +43,7 @@ class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParse
   private val configuration: Configuration = parseConfiguration(cmdConfig)
   private val watcher = new ConfigurationWatcher(configuration, cmdConfig.baseDeltasDir)
   private var isRunning = false
-  private lazy val serverSocket = createServerSocket
+  private var serverSocket: ServerSocket = null
 
   private def parseConfiguration(cmdConfig: CmdConfig): Configuration =
     parse(deltasDir, Configuration.filename) match {
@@ -79,7 +79,7 @@ class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParse
     isRunning = false
     watcher.stopWatching
     configuration.stop
-    serverSocket.get.close()
+    serverSocket.close()
   }
 
   private def processNewConnection(clientSocket: Socket) = {
@@ -107,27 +107,28 @@ class MidasServer(cmdConfig: CmdConfig) extends Loggable with ConfigurationParse
 
     configuration.start
     watcher.startWatching
-    serverSocket match {
+    createServerSocket match {
       case scala.util.Failure(t) =>
         val errMsg = s"Cannot Start Midas on IP => ${cmdConfig.midasHost}, Port => ${cmdConfig.midasPort}.  Please Check Your Server IP or Port."
         logError(errMsg)
         println(errMsg)
   
-      case scala.util.Success(serverSocket) =>
+      case scala.util.Success(server) =>
+        serverSocket = server
         isRunning = true
         while (isRunning) {
-          waitForNewConnectionOn(serverSocket) match {
-            case scala.util.Success(clientSocket) if(isRunning) =>
-                processNewConnection(clientSocket)
+          waitForNewConnectionOn(server) match {
+            case scala.util.Success(client) if(isRunning) =>
+                processNewConnection(client)
 
             case scala.util.Failure(t) =>
               val errMsg = s"Cannot accept connection on IP => ${cmdConfig.midasHost}, Port => ${cmdConfig.midasPort}. Server currently closed."
               logError(errMsg)
               println(errMsg)
+              stop
           }
         }
     }
-      isRunning = false
   }
 
 }

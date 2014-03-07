@@ -59,16 +59,20 @@ class MidasServerSpecs extends Specification with Mockito {
 
   "Midas Server"  should {
 
-    "initialize the configuration" in new Setup {
+    "start the configuration" in new Setup {
       //given
       val server = new MidasServer(cmdConfig) {
         override def parse(url: URL, configFileName: String) = Try {
           mockConfiguration
         }
+        override def createServerSocket: Try[ServerSocket] = Try {
+          mockServer
+        }
       }
 
+      mockServer.accept() throws new IOException("stop accepting clients.")
+
       //when
-      MidasTerminator(server, 50, MILLISECONDS).start()
       server.start
 
       //then
@@ -81,18 +85,15 @@ class MidasServerSpecs extends Specification with Mockito {
         override def parse(url: URL, configFileName: String) = Try {
           mockConfiguration
         }
-
         override def createServerSocket: Try[ServerSocket] = Try {
           mockServer
         }
-
         override def createMongoSocket: Try[Socket] = Try {
           mockMongoSocket
         }
       }
 
       mockServer.accept() returns mockClient thenThrows new IOException("stop accepting clients.")
-      MidasTerminator(server, 50, MILLISECONDS).start()
 
       //when
       server.start
@@ -101,24 +102,24 @@ class MidasServerSpecs extends Specification with Mockito {
       there was one(mockConfiguration).processNewConnection(mockClient, mockMongoSocket)
     }
 
-    "rejects a connection if mongo is not reachable" in new Setup {
+    "reject an incoming connection if mongo is not reachable" in new Setup {
       //given
       val server = new MidasServer(cmdConfig) {
         override def parse(url: URL, configFileName: String) = Try {
           mockConfiguration
         }
-
         override def logError(msg: String) = {
-          errorLog = msg
+          errorLog = s"$errorLog, $msg"
         }
-
         override def createServerSocket: Try[ServerSocket] = Try {
           mockServer
+        }
+        override def createMongoSocket: Try[Socket] = Try {
+          throw new IOException("mongo not available.")
         }
       }
 
       mockServer.accept() returns mockClient thenThrows new IOException("stop accepting clients.")
-      MidasTerminator(server, 50, MILLISECONDS).start()
 
       //when
       server.start
@@ -128,13 +129,12 @@ class MidasServerSpecs extends Specification with Mockito {
       there was one(mockClient).close()
     }
 
-    "terminate all the active connections when stopped" in new Setup {
+    "terminate the configuration when the server is stopped" in new Setup {
       //given
       val server = new MidasServer(cmdConfig) {
         override def parse(url: URL, configFileName: String) = Try {
           mockConfiguration
         }
-
         override def createServerSocket: Try[ServerSocket] = Try {
           mockServer
         }
@@ -143,12 +143,13 @@ class MidasServerSpecs extends Specification with Mockito {
       mockServer.accept() returns mockClient thenReturn mock[Socket]
 
       //when
-      MidasTerminator(server, 50, MILLISECONDS).start()
+      MidasTerminator(server, stopAfter = 200, MILLISECONDS).start()
       server.start
 
       //then
       there was one(mockConfiguration).stop
       there was one(mockServer).close()
+      server.isActive must beFalse
     }
   }
 

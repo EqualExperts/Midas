@@ -87,6 +87,8 @@ project.ext {
     acceptanceTestReportsDir = "${reporting.baseDir}/acceptance-tests"
     smokeTestsDir = "smoke-tests"
     smokeTestReportsDir = "${reporting.baseDir}/${smokeTestsDir}"
+    documentationDir = "distribution-template/documentation/"
+    journeysDir = "${documentationDir}/journeys"
 
     javaTestDir = "$acceptanceTestDir/java/driver-version-2.11.3"
     javaTestReportsDir = "$acceptanceTestReportsDir/java"
@@ -122,6 +124,10 @@ test {
 task ('smoke-tests', dependsOn: 'unzip') << {
     println "Running smoke tests..."
     runJVMAcceptanceTests(project.ext.smokeTestsDir, project.ext.smokeTestReportsDir)
+    copy {
+        from (project.ext.smokeTestReportsDir)
+        into "${project.ext.journeysDir}"
+    }
 }
 
 task ('acceptance-tests', dependsOn: ['unzip', 'cleanAcceptanceReportsDir']) << {

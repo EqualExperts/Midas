@@ -1,0 +1,145 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      <style type="text/css" media="all">
+        @import url('./css/maven-base.css');
+        @import url('./css/maven-theme.css');
+      </style>
+      <link href="./css/prettify.css" type="text/css" rel="stylesheet" />
+      <script type="text/javascript" src="./css/prettify.js"></script>
+      <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+      <link href="./css/tooltip.css" rel="stylesheet" type="text/css" />
+      <link href="./css/specs2-user.css" type="text/css" rel="stylesheet" />
+
+      <script type="text/javascript" src="./css/jquery.js"></script>
+      <script type="text/javascript" src="./css/jquery.cookie.js"></script>
+      <script type="text/javascript" src="./css/jquery.hotkeys.js"></script>
+      <script type="text/javascript" src="./css/jquery.jstree.js"></script>
+      <script type="text/javascript" src="./css/tooltip.js"></script>
+      <script type="text/javascript" src="./js/specs2-user.js"></script>
+      <script language="javascript">$.getScript("./js/specs2-user.js", initUserScript(document));</script>
+      <script language="javascript">
+      function init() {  prettyPrint(); };
+      /* found on : http://www.tek-tips.com/faqs.cfm?fid=6620 */
+      String.prototype.endsWith = function(str) { return (this.match(str+'$') == str) };
+      function changeWidth(id,width) {  document.getElementById(id).style.width = width; };
+      function changeMarginLeft(id, margin) { document.getElementById(id).style.marginLeft = margin; };
+      function toggleImage(image) {
+        if (image.src.endsWith('images/expanded.gif')) 
+          image.src = image.src.replace('expanded', 'collapsed');
+        else 
+          image.src = image.src.replace('collapsed', 'expanded');
+      };
+      function showHide(id) {
+        element = document.getElementById(id);
+        element.style.display = (element.style.display == 'block')? 'none' : 'block';
+      };
+      function showHideByClass(name) {
+        var elements = document.getElementsByClassName(name);
+        for (i = 0; i < elements.length; i++) {
+          elements[i].style.display = (elements[i].style.display == 'none') ? elements[i].style.display = '': 'none';
+        }
+      };
+      function showByClass(name) {
+        var elements = document.getElementsByClassName(name);
+        for (i = 0; i < elements.length; i++) {
+          elements[i].style.display = 'block';
+        }
+      };
+      function hideByClass(name) {
+        var elements = document.getElementsByClassName(name);
+        for (i = 0; i < elements.length; i++) {
+          elements[i].style.display = 'none';
+        }
+      };
+      function showById(id) {
+        document.getElementById(id).style.display = ''
+      };
+      function hideById(id) {
+        document.getElementById(id).style.display = 'none'
+      };
+    </script>
+      <script language="javascript">window.onload=init;</script>
+      <!-- the tabber.js file must be loaded after the onload function has been set, in order to run the
+           tabber code, then the init code -->
+      <script type="text/javascript" src="./css/tabber.js"></script>
+      <link rel="stylesheet" href="./css/tabber.css" type="text/css" media="screen" />
+      <title>Add/Remove ChangeSet On the fly</title>
+    </head><body><div id="breadcrumbs"><a href="com.ee.midas.run.Index.html">Index</a><t> / </t><a href="com.ee.midas.run.AddAndRemoveChangeSetJourney.html">AddAndRemoveChangeSetJourney</a></div><div class="colmask threecol">
+            <div class="colmid">
+              <div class="colleft">
+                <div class="col1"><div id="central"><html><title>Add/Remove ChangeSet On the fly</title><a name="Add%2FRemove+ChangeSet+On+the+fly"><h2 specId="866980119">Add/Remove ChangeSet On the fly</h2></a><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  Narration: Bob, the Business analyst wanted to develop a loyalty programme for IncyWincyShoppingApp.
+             Developers have baked that feature into the Application and the new version of application is
+             now ready for release. So Dave, the developer approaches Oscar, the DevOps guy.
+
+  Dave:  &quot;Oscar, I have the new ChangeSets zipped up containing the schema changes for Loyalty Programme.
+          Can you help us with the release of the new version of the application?&quot;
+
+  Oscar: &quot;Sure Dave, I'll take those offline nodes and upgrade the application to this new version first.&quot;
+
+  Oscar: &quot;Further, after that I'll update the IncyWincyShoppingApp.midas offline nodes changesets to the
+          highest changeset number.  Following this, I'll throw in the change set folders that you gave
+          me, in to the IncyWincyShoppingApp folder.  Once all that is done, I'll flip the Load balancer
+          to route the traffic through these nodes.&quot;
+
+  Dave:  &quot;Ok Oscar. That sounds like an approach.  What if, we have issues with the new version and it
+          becomes unstable?&quot;
+
+  Oscar: &quot;There are 2 approaches.  1. We could temporarily rollback to the old version of the application,
+          by simply flipping the Load Balancer back and in the mean time you guys work on the fixes and we
+          can then redeploy. After re-deployment, I'll flip the Load Balancer back again to those nodes
+          where we have the new version of the App.
+          2. We could keep the newer version application running, if the problem does not cripple the
+          application completely.  While you can work towards the fix and we will re-deploy the newer
+          fixed version.&quot;
+
+  Dave:  &quot;Ok that sounds reasonable.&quot;
+  Dave:  &quot;Oscar, what if we had to change some schema for that fix?&quot;
+
+  Oscar: &quot;Well Dave, remember that with Midas, you reverse a change by a counter-change and you always move
+          forward in time.  So as long as you respect that and not modify old schema transformations in
+          delta files, we will all be good.&quot;
+
+  1. To start out we have following documents in the database and this is simulated by inserting
+     them as shown below .
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Open Mongo Shell</th></tr><tr><td colspan="3" class="info" style="">&gt;use transactions</td></tr><tr><td style="">&gt;db.orders.insert({name: &quot;Vivek Dhapola&quot;, &quot;YourCart&quot;: ['shoes', 'sipper'], &quot;TotalAmount&quot;: 6000, &quot;discount&quot;: 20, ShippingAddress: {line1: &quot;enter house/street&quot;, line2: &quot;enter city&quot;, &quot;pincode&quot;: 411006} })</td><td colspan="3" class="success">true</td></tr><tr><td style="">&gt;db.orders.insert({name: &quot;Komal Jain&quot;, &quot;YourCart&quot;: ['scarf', 'footwear'], &quot;TotalAmount&quot;: 3000, &quot;discount&quot;: 30, ShippingAddress: {line1: &quot;enter house/street&quot;, line2: &quot;enter city&quot;, &quot;pincode&quot;: 411004} })</td><td colspan="3" class="success">true</td></tr><tr><td style="">&gt;db.orders.insert({name: &quot;Dhaval Dalal&quot;, &quot;YourCart&quot;: ['headsets'], &quot;TotalAmount&quot;: 8000, &quot;discount&quot;: 15, ShippingAddress: {line1: &quot;enter house/street&quot;, line2: &quot;enter city&quot;, &quot;pincode&quot;: 110007} })</td><td colspan="3" class="success">true</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  2. &quot;incyWincyShoppingApp&quot; is already added to midas.config file in &quot;deltas&quot; folder
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Write Config File</th></tr><tr><td colspan="3" class="info" style=""></td></tr><tr><td colspan="3" class="info" style="">apps {</td></tr><tr><td colspan="3" class="info" style="">  incyWincyShoppingApp</td></tr><tr><td colspan="3" class="info" style="">}</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  3. incyWincyShoppingApp.midas file in &quot;incyWincyShoppingApp&quot; folder contain all nodes information
+     with mode as expansion. NodeX is offline and traffic is routed through NodeY currently.
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Write Application Config File</th></tr><tr><td colspan="3" class="info" style="">incyWincyShoppingApp {</td></tr><tr><td colspan="3" class="info" style="">                   mode = expansion</td></tr><tr><td colspan="3" class="info" style="">                   NodeX {</td></tr><tr><td colspan="3" class="info" style="">                     ip = 127.0.0.1</td></tr><tr><td colspan="3" class="info" style="">                     changeSet = 1</td></tr><tr><td colspan="3" class="info" style="">                   }</td></tr><tr><td colspan="3" class="info" style="">                   NodeY {</td></tr><tr><td colspan="3" class="info" style="">                     ip = 192.168.1.41</td></tr><tr><td colspan="3" class="info" style="">                     changeSet = 1</td></tr><tr><td colspan="3" class="info" style="">                   }</td></tr><tr><td colspan="3" class="info" style="">                 }</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  4. There is a already a change set &quot;001SplitName&quot; in &quot;incyWincyShoppingApp&quot; folder.
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Create ChangeSet Folder</th></tr><tr><td colspan="3" class="info" style="">001SplitName</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  5. Changeset &quot;001SplitName&quot; has a delta file &quot;0001_splitName_transactions_orders.delta&quot; to split
+     &quot;name&quot; into firstName&quot; and &quot;lastName&quot; in &quot;expansions&quot; folder.
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Write Delta</th></tr><tr><td colspan="3" class="info" style="">use transactions</td></tr><tr><td colspan="3" class="info" style="">                 db.orders.split('name', '^([a-zA-Z]+) ([a-zA-Z]+)$', '{&quot;firstName&quot;: &quot;$1&quot;, &quot;lastName&quot;: &quot;$2&quot; }')</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  6. Midas is running with deltas directory location as &quot;deltas&quot;
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Open Command Terminal</th></tr><tr><td style="">&gt;</td><td colspan="3" class="info" style="">midas --port 27020 --deltasDir /home/komal/midas_workspace/Midas//deltas</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  7. NodeY connects with midas and it receives expanded documents with &quot;name&quot; field splited as
+     &quot;firstName&quot; and &quot;lastName&quot;.
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">IncyWincyShoppingApp - UpgradedVersion</th></tr><tr><td colspan="3" class="info" style="">&gt;use transactions</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a261e358c175febe0b3e&quot;} , &quot;name&quot; : &quot;Vivek Dhapola&quot; , &quot;YourCart&quot; : [ &quot;shoes&quot; , &quot;sipper&quot;] , &quot;TotalAmount&quot; : 6000.0 , &quot;discount&quot; : 20.0 , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;pincode&quot; : 411006.0} , &quot;firstName&quot; : &quot;Vivek&quot; , &quot;lastName&quot; : &quot;Dhapola&quot; , &quot;_expansionVersion&quot; : 1.0}</td></tr><tr><td style="">document.containsField(firstName)</td><td colspan="3" class="success">true</td></tr><tr><td style="">document.containsField(lastName)</td><td colspan="3" class="success">true</td></tr><tr><td style="">document('_expansionVersion')</td><td colspan="3" class="success">1.0</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a261e358c175febe0b3f&quot;} , &quot;name&quot; : &quot;Komal Jain&quot; , &quot;YourCart&quot; : [ &quot;scarf&quot; , &quot;footwear&quot;] , &quot;TotalAmount&quot; : 3000.0 , &quot;discount&quot; : 30.0 , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;pincode&quot; : 411004.0} , &quot;firstName&quot; : &quot;Komal&quot; , &quot;lastName&quot; : &quot;Jain&quot; , &quot;_expansionVersion&quot; : 1.0}</td></tr><tr><td style="">document.containsField(firstName)</td><td colspan="3" class="success">true</td></tr><tr><td style="">document.containsField(lastName)</td><td colspan="3" class="success">true</td></tr><tr><td style="">document('_expansionVersion')</td><td colspan="3" class="success">1.0</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a261e358c175febe0b40&quot;} , &quot;name&quot; : &quot;Dhaval Dalal&quot; , &quot;YourCart&quot; : [ &quot;headsets&quot;] , &quot;TotalAmount&quot; : 8000.0 , &quot;discount&quot; : 15.0 , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;pincode&quot; : 110007.0} , &quot;firstName&quot; : &quot;Dhaval&quot; , &quot;lastName&quot; : &quot;Dalal&quot; , &quot;_expansionVersion&quot; : 1.0}</td></tr><tr><td style="">document.containsField(firstName)</td><td colspan="3" class="success">true</td></tr><tr><td style="">document.containsField(lastName)</td><td colspan="3" class="success">true</td></tr><tr><td style="">document('_expansionVersion')</td><td colspan="3" class="success">1.0</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  8. NodeX is upgraded to new version of application. Updating NodeX to highest changeSet in
+     &quot;incyWincyShoppingApp.midas&quot;.
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Write Application Config File</th></tr><tr><td colspan="3" class="info" style="">incyWincyShoppingApp {</td></tr><tr><td colspan="3" class="info" style="">                   mode = expansion</td></tr><tr><td colspan="3" class="info" style="">                   NodeX {</td></tr><tr><td colspan="3" class="info" style="">                     ip = 127.0.0.1</td></tr><tr><td colspan="3" class="info" style="">                     changeSet = 2</td></tr><tr><td colspan="3" class="info" style="">                   }</td></tr><tr><td colspan="3" class="info" style="">                   NodeY {</td></tr><tr><td colspan="3" class="info" style="">                     ip = 192.168.1.41</td></tr><tr><td colspan="3" class="info" style="">                     changeSet = 1</td></tr><tr><td colspan="3" class="info" style="">                   }</td></tr><tr><td colspan="3" class="info" style="">                 }</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  9. Adding change set &quot;002AddDiscountAmount&quot; folder in &quot;incyWincyShoppingApp&quot; folder.
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Create ChangeSet Folder</th></tr><tr><td colspan="3" class="info" style="">002AddDiscountAmount</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  10. Create a delta file &quot;0001_calculateDiscountAmount_transactions_orders.delta&quot; to calculate
+     &quot;Discount Amount&quot; at location &quot;002AddDiscountAmount&quot; in &quot;expansions&quot; folder.
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Write Delta</th></tr><tr><td colspan="3" class="info" style="">use transactions</td></tr><tr><td colspan="3" class="info" style="">                 db.orders.transform('Discount Amount', '{ $multiply: [&quot;$TotalAmount&quot;, { $divide: [&quot;$discount&quot;, 100] }] }')</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  11. Now NodeX is online and traffic is routed through NodeX. It connects with midas and it starts
+      receiving expanded documents.
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">IncyWincyShoppingApp - UpgradedVersion</th></tr><tr><td colspan="3" class="info" style="">&gt;use transactions</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a261e358c175febe0b3e&quot;} , &quot;name&quot; : &quot;Vivek Dhapola&quot; , &quot;YourCart&quot; : [ &quot;shoes&quot; , &quot;sipper&quot;] , &quot;TotalAmount&quot; : 6000.0 , &quot;discount&quot; : 20.0 , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;pincode&quot; : 411006.0} , &quot;firstName&quot; : &quot;Vivek&quot; , &quot;lastName&quot; : &quot;Dhapola&quot; , &quot;_expansionVersion&quot; : 2.0 , &quot;Discount Amount&quot; : 1200.0}</td></tr><tr><td style="">document.containsField(firstName)</td><td colspan="3" class="success">true</td></tr><tr><td style="">document.containsField(lastName)</td><td colspan="3" class="success">true</td></tr><tr><td style="">document.containsField(Discount Amount)</td><td colspan="3" class="success">true</td></tr><tr><td style="">document('_expansionVersion')</td><td colspan="3" class="success">2.0</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a261e358c175febe0b3f&quot;} , &quot;name&quot; : &quot;Komal Jain&quot; , &quot;YourCart&quot; : [ &quot;scarf&quot; , &quot;footwear&quot;] , &quot;TotalAmount&quot; : 3000.0 , &quot;discount&quot; : 30.0 , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;pincode&quot; : 411004.0} , &quot;firstName&quot; : &quot;Komal&quot; , &quot;lastName&quot; : &quot;Jain&quot; , &quot;_expansionVersion&quot; : 2.0 , &quot;Discount Amount&quot; : 900.0}</td></tr><tr><td style="">document.containsField(firstName)</td><td colspan="3" class="success">true</td></tr><tr><td style="">document.containsField(lastName)</td><td colspan="3" class="success">true</td></tr><tr><td style="">document.containsField(Discount Amount)</td><td colspan="3" class="success">true</td></tr><tr><td style="">document('_expansionVersion')</td><td colspan="3" class="success">2.0</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a261e358c175febe0b40&quot;} , &quot;name&quot; : &quot;Dhaval Dalal&quot; , &quot;YourCart&quot; : [ &quot;headsets&quot;] , &quot;TotalAmount&quot; : 8000.0 , &quot;discount&quot; : 15.0 , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;pincode&quot; : 110007.0} , &quot;firstName&quot; : &quot;Dhaval&quot; , &quot;lastName&quot; : &quot;Dalal&quot; , &quot;_expansionVersion&quot; : 2.0 , &quot;Discount Amount&quot; : 1200.0}</td></tr><tr><td style="">document.containsField(firstName)</td><td colspan="3" class="success">true</td></tr><tr><td style="">document.containsField(lastName)</td><td colspan="3" class="success">true</td></tr><tr><td style="">document.containsField(Discount Amount)</td><td colspan="3" class="success">true</td></tr><tr><td style="">document('_expansionVersion')</td><td colspan="3" class="success">2.0</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  12. Shutdown Midas
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Open Command Terminal</th></tr><tr><td colspan="3" class="info" style="">Shut Down Midas</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  13. Clean up the database
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Open MongoShell</th></tr><tr><td colspan="3" class="info" style="">&gt;use transactions</td></tr><tr><td style="">&gt;db.dropDatabase()</td><td colspan="3" class="success">true</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  14. Cleanup deltas directory
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="2">Delete Deltas Directory</th></tr></table></form></status><status class="ok"><div style="display: show; text-indent:480px;"></div></status><status class="ok"><br /></status><table class="dataTable">
+        <tr><th colSpan="2">Total for specification AddAndRemoveChangeSetJourney</th></tr>
+        <tr><td>Finished in</td><td class="info">2 ms</td></tr>
+        <tr><td>Results</td><td class="success">14 examples, 152 expectations, 0 failure, 0 error</td></tr>
+      </table></html></div></div>
+                <div class="col2"><div id="leftcolumn"><div id="tree">
+      <ul><li id="1786896782"><a href="com.ee.midas.run.Index.html#Midas+Journeys">Midas Journeys</a>
+            <ul><li id="1477096391"><a href="com.ee.midas.run.RenameJourney.html#Rename+Journey">Rename Journey</a>
+            
+          </li><li id="988556209"><a href="com.ee.midas.run.AddAndRemoveApplicationJourney.html#Add%2FRemove+Application+On+the+fly">Add/Remove Application On the fly</a>
+            
+          </li><li id="866980119"><a href="com.ee.midas.run.AddAndRemoveChangeSetJourney.html#Add%2FRemove+ChangeSet+On+the+fly">Add/Remove ChangeSet On the fly</a>
+            
+          </li><li id="1191171086"><a href="com.ee.midas.run.AddAndRemoveNodeJourney.html#Add%2FRemove+Node+On+the+fly">Add/Remove Node On the fly</a>
+            
+          </li></ul>
+          </li></ul>
+      <script>$(function () {  $('#tree').jstree({'core':{'initially_open':['1786896782','866980119'], 'animation':200}, 'plugins':['themes', 'html_data']}); });</script>
+    </div></div></div>
+                <div class="col3"><div id="rightcolumn"></div></div>
+              </div>
+            </div>
+          </div></body></html>

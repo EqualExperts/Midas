@@ -1,0 +1,152 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      <style type="text/css" media="all">
+        @import url('./css/maven-base.css');
+        @import url('./css/maven-theme.css');
+      </style>
+      <link href="./css/prettify.css" type="text/css" rel="stylesheet" />
+      <script type="text/javascript" src="./css/prettify.js"></script>
+      <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+      <link href="./css/tooltip.css" rel="stylesheet" type="text/css" />
+      <link href="./css/specs2-user.css" type="text/css" rel="stylesheet" />
+
+      <script type="text/javascript" src="./css/jquery.js"></script>
+      <script type="text/javascript" src="./css/jquery.cookie.js"></script>
+      <script type="text/javascript" src="./css/jquery.hotkeys.js"></script>
+      <script type="text/javascript" src="./css/jquery.jstree.js"></script>
+      <script type="text/javascript" src="./css/tooltip.js"></script>
+      <script type="text/javascript" src="./js/specs2-user.js"></script>
+      <script language="javascript">$.getScript("./js/specs2-user.js", initUserScript(document));</script>
+      <script language="javascript">
+      function init() {  prettyPrint(); };
+      /* found on : http://www.tek-tips.com/faqs.cfm?fid=6620 */
+      String.prototype.endsWith = function(str) { return (this.match(str+'$') == str) };
+      function changeWidth(id,width) {  document.getElementById(id).style.width = width; };
+      function changeMarginLeft(id, margin) { document.getElementById(id).style.marginLeft = margin; };
+      function toggleImage(image) {
+        if (image.src.endsWith('images/expanded.gif')) 
+          image.src = image.src.replace('expanded', 'collapsed');
+        else 
+          image.src = image.src.replace('collapsed', 'expanded');
+      };
+      function showHide(id) {
+        element = document.getElementById(id);
+        element.style.display = (element.style.display == 'block')? 'none' : 'block';
+      };
+      function showHideByClass(name) {
+        var elements = document.getElementsByClassName(name);
+        for (i = 0; i < elements.length; i++) {
+          elements[i].style.display = (elements[i].style.display == 'none') ? elements[i].style.display = '': 'none';
+        }
+      };
+      function showByClass(name) {
+        var elements = document.getElementsByClassName(name);
+        for (i = 0; i < elements.length; i++) {
+          elements[i].style.display = 'block';
+        }
+      };
+      function hideByClass(name) {
+        var elements = document.getElementsByClassName(name);
+        for (i = 0; i < elements.length; i++) {
+          elements[i].style.display = 'none';
+        }
+      };
+      function showById(id) {
+        document.getElementById(id).style.display = ''
+      };
+      function hideById(id) {
+        document.getElementById(id).style.display = 'none'
+      };
+    </script>
+      <script language="javascript">window.onload=init;</script>
+      <!-- the tabber.js file must be loaded after the onload function has been set, in order to run the
+           tabber code, then the init code -->
+      <script type="text/javascript" src="./css/tabber.js"></script>
+      <link rel="stylesheet" href="./css/tabber.css" type="text/css" media="screen" />
+      <title>Rename Journey</title>
+    </head><body><div id="breadcrumbs"><a href="com.ee.midas.run.Index.html">Index</a><t> / </t><a href="com.ee.midas.run.RenameJourney.html">RenameJourney</a></div><div class="colmask threecol">
+            <div class="colmid">
+              <div class="colleft">
+                <div class="col1"><div id="central"><html><title>Rename Journey</title><a name="Rename+Journey"><h2 specId="1477096391">Rename Journey</h2></a><status class="ok"><div style="display: show; text-indent:20px;"><pre><code class="prettyprint">Narration: IncyWincyShoppingApp stores its persistent data on MongoDB. Dave, the Developer
+           wanted to rename certain things so that it closely modeled the domain.  So,
+           he approaches Oscar, the DevOps guy.
+
+Dave:  &quot;Hey Oscar, Lets rename zip to pin in address because it is closer to the domain.
+       Also, Let's rename OrderList as Carts as they are more closer to the domain&quot;
+Oscar: &quot;Ya Dave, that makes sense!&quot;
+Dave:  &quot;How do you plan to do that Oscar ? Do we need to have some downtime?&quot;
+Oscar: &quot;No Dave, We will use Midas which will migrate our schema on the fly. Here is what we can do
+       for zero downtime deployment. First, we will run Expansion scripts and copy the current
+       field to new field. This will keep our application backwards compatible with the existing
+       version.&quot;
+Dave:  &quot;Oh.. So Expansion will add the new field and keep the old field as well.&quot;
+Oscar: &quot;Yes exactly.&quot;
+Dave:  &quot;Okay, but we have 2 nodes in our cluster. So, Do we apply this to all nodes
+       simultaneously.&quot;
+Oscar: &quot;Yes, All nodes of a cluster will be at the same version at a time. Once the system is
+       completely upgraded and deemed stable, we will run the contraction scripts and remove the
+       old field.&quot;
+Dave:  &quot;Okay, but what if after adding new field system is not stable . Do we need to rollback DB?&quot;
+Oscar: &quot;No Dave. DB Rollback can lead to loss in data and leave database in inconsistent state.
+       In that case it will be better to rollback application instead.&quot;
+Dave:  &quot;Oh ... right . That makes sense.&quot;
+Oscar: &quot;So after the Expansion and Contraction cycle, the system will be migrated completely.&quot;
+Dave:  &quot;Ok. I understand, that sounds good.&quot;
+Dave:  &quot;Also, one more thought that just crossed my mind. Do we need to incorporate some
+       changes in the application to do migration with Midas, for example, to use optimistic
+       locking with Hibernate, we need to add a version field in the Domain Model.&quot;
+Oscar: &quot;No Dave, we don't need to incorporate any change in the domain model or application.
+       Midas takes care of that. It injects _expansionVersion and _contractionVersion field in
+       the document when the application inserts or updates the document.&quot;
+Dave:  &quot;Ok, great.&quot;
+
+
+1. To start out we have following documents in the database and this is simulated by inserting
+   them as shown below .
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Open Mongo Shell</th></tr><tr><td colspan="3" class="info" style="">&gt;use transactions</td></tr><tr><td style="">&gt;db.orders.insert({name: &quot;Vivek&quot;, &quot;OrderList&quot;: ['shoes', 'sipper'], &quot;TotalAmount&quot;: 6000, ShippingAddress: {line1: &quot;enter house/street&quot;, line2: &quot;enter city&quot;, &quot;zipcode&quot;: 411006} })</td><td colspan="3" class="success">true</td></tr><tr><td style="">&gt;db.orders.insert({name: &quot;Komal&quot;, &quot;OrderList&quot;: ['scarf', 'footwear'], &quot;TotalAmount&quot;: 3000, ShippingAddress: {line1: &quot;enter house/street&quot;, line2: &quot;enter city&quot;, &quot;zipcode&quot;: 411004} })</td><td colspan="3" class="success">true</td></tr><tr><td style="">&gt;db.orders.insert({name: &quot;Dhaval&quot;, &quot;OrderList&quot;: ['headsets'], &quot;TotalAmount&quot;: 8000, ShippingAddress: {line1: &quot;enter house/street&quot;, line2: &quot;enter city&quot;, &quot;zipcode&quot;: 110007} })</td><td colspan="3" class="success">true</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:20px;"><pre><code class="prettyprint">2. Create a midas.config file in &quot;deltas&quot; folder
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Write Config File</th></tr><tr><td colspan="3" class="info" style=""></td></tr><tr><td colspan="3" class="info" style="">apps {</td></tr><tr><td colspan="3" class="info" style="">  incyWincyShoppingApp</td></tr><tr><td colspan="3" class="info" style="">}</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:20px;"><pre><code class="prettyprint">3. Create a incyWincyShoppingApp.midas file in &quot;incyWincyShoppingApp&quot; folder in &quot;deltas&quot; folder
+   with mode as expansion.
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Write Application Config File</th></tr><tr><td colspan="3" class="info" style="">incyWincyShoppingApp {</td></tr><tr><td colspan="3" class="info" style="">                   mode = expansion</td></tr><tr><td colspan="3" class="info" style="">                   nodeA {</td></tr><tr><td colspan="3" class="info" style="">                     ip = 127.0.0.1</td></tr><tr><td colspan="3" class="info" style="">                     changeSet = 1</td></tr><tr><td colspan="3" class="info" style="">                   }</td></tr><tr><td colspan="3" class="info" style="">                   nodeB {</td></tr><tr><td colspan="3" class="info" style="">                     ip = 192.168.1.41</td></tr><tr><td colspan="3" class="info" style="">                     changeSet = 1</td></tr><tr><td colspan="3" class="info" style="">                   }</td></tr><tr><td colspan="3" class="info" style="">                }</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:20px;"><pre><code class="prettyprint">4. Create a folder for change set &quot;001RenameOrders&quot; in &quot;incyWincyShoppingApp&quot; folder.
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Create ChangeSet Folder</th></tr><tr><td colspan="3" class="info" style="">001RenameOrders</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:20px;"><pre><code class="prettyprint">5. Create delta file &quot;0001_copy_transactions_orders_OrderListToCartsField.delta&quot; to copy &quot;OrderList&quot;
+   into &quot;Carts&quot; at location &quot;001RenameOrders&quot; in &quot;expansions&quot; folder
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Write Delta</th></tr><tr><td colspan="3" class="info" style="">use transactions</td></tr><tr><td colspan="3" class="info" style="">               db.orders.copy('OrderList','Carts')</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:20px;"><pre><code class="prettyprint">6. Create delta file &quot;0002_copy_transactions_orders_ZipcodeToPincodeField.delta&quot; to copy &quot;zipcode&quot;
+   to &quot;pincode&quot; at location &quot;001RenameOrders&quot; in &quot;expansions&quot; folder
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Write Delta</th></tr><tr><td colspan="3" class="info" style="">use transactions</td></tr><tr><td colspan="3" class="info" style="">               db.orders.copy(&quot;ShippingAddress.zipcode&quot;, &quot;ShippingAddress.pincode&quot;)</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:20px;"><pre><code class="prettyprint">7. Create delta file &quot;0001_removeFrom_transactions_orders_OrderListField.delta&quot; to remove &quot;OrderList&quot;
+    and &quot;ShippingAddress.zipcode&quot; at location &quot;001RenameOrders&quot; in &quot;contraction&quot; folder
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Write Delta</th></tr><tr><td colspan="3" class="info" style="">use transactions</td></tr><tr><td colspan="3" class="info" style="">                 db.orders.remove(&quot;['OrderList']&quot;)</td></tr><tr><td colspan="3" class="info" style="">                 db.orders.remove(&quot;['ShippingAddress.zipcode']&quot;)</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:20px;"><pre><code class="prettyprint">8. Start Midas with deltas directory location as &quot;deltas&quot;
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Open Command Terminal</th></tr><tr><td style="">&gt;</td><td colspan="3" class="info" style="">midas --port 27020 --deltasDir /home/komal/midas_workspace/Midas//deltas</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:20px;"><pre><code class="prettyprint">9. Connect with midas and verify that read documents contain new fields &quot;Carts&quot; and
+   &quot;ShippingAddress.pincode&quot;
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">IncyWincyShoppingApp - UpgradedVersion</th></tr><tr><td colspan="3" class="info" style="">&gt;use transactions</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a215e358c175febe0b35&quot;} , &quot;name&quot; : &quot;Vivek&quot; , &quot;OrderList&quot; : [ &quot;shoes&quot; , &quot;sipper&quot;] , &quot;TotalAmount&quot; : 6000.0 , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;zipcode&quot; : 411006.0 , &quot;pincode&quot; : 411006.0} , &quot;Carts&quot; : [ &quot;shoes&quot; , &quot;sipper&quot;] , &quot;_expansionVersion&quot; : 2.0}</td></tr><tr><td style="">document(Carts)</td><td colspan="3" class="success">Some([ &quot;shoes&quot; , &quot;sipper&quot;])</td></tr><tr><td style="">document(ShippingAddress.pincode)</td><td colspan="3" class="success">Some(411006.0)</td></tr><tr><td style="">document('_expansionVersion')</td><td colspan="3" class="success">2.0</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a215e358c175febe0b36&quot;} , &quot;name&quot; : &quot;Komal&quot; , &quot;OrderList&quot; : [ &quot;scarf&quot; , &quot;footwear&quot;] , &quot;TotalAmount&quot; : 3000.0 , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;zipcode&quot; : 411004.0 , &quot;pincode&quot; : 411004.0} , &quot;Carts&quot; : [ &quot;scarf&quot; , &quot;footwear&quot;] , &quot;_expansionVersion&quot; : 2.0}</td></tr><tr><td style="">document(Carts)</td><td colspan="3" class="success">Some([ &quot;scarf&quot; , &quot;footwear&quot;])</td></tr><tr><td style="">document(ShippingAddress.pincode)</td><td colspan="3" class="success">Some(411004.0)</td></tr><tr><td style="">document('_expansionVersion')</td><td colspan="3" class="success">2.0</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a215e358c175febe0b37&quot;} , &quot;name&quot; : &quot;Dhaval&quot; , &quot;OrderList&quot; : [ &quot;headsets&quot;] , &quot;TotalAmount&quot; : 8000.0 , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;zipcode&quot; : 110007.0 , &quot;pincode&quot; : 110007.0} , &quot;Carts&quot; : [ &quot;headsets&quot;] , &quot;_expansionVersion&quot; : 2.0}</td></tr><tr><td style="">document(Carts)</td><td colspan="3" class="success">Some([ &quot;headsets&quot;])</td></tr><tr><td style="">document(ShippingAddress.pincode)</td><td colspan="3" class="success">Some(110007.0)</td></tr><tr><td style="">document('_expansionVersion')</td><td colspan="3" class="success">2.0</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:20px;"><pre><code class="prettyprint">10. WebApp updates and write back the documents to database. Midas inserts expansionVersion in
+    the document on the way back.
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">IncyWincyShoppingApp - UpgradedVersion</th></tr><tr><td colspan="3" class="info" style="">&gt;use transactions</td></tr><tr><td style="">orders.update({ &quot;name&quot; : &quot;Vivek&quot;}, { &quot;$set&quot; : { &quot;Carts&quot; : [ &quot;shoes&quot; , &quot;sipper&quot;] , &quot;ShippingAddress.pincode&quot; : 411006}})</td><td colspan="3" class="success">true</td></tr><tr><td style="">orders.update({ &quot;name&quot; : &quot;Komal&quot;}, { &quot;$set&quot; : { &quot;Carts&quot; : [ &quot;scarf&quot; , &quot;footwear&quot;] , &quot;ShippingAddress.pincode&quot; : 411004}})</td><td colspan="3" class="success">true</td></tr><tr><td style="">orders.update({ &quot;name&quot; : &quot;Dhaval&quot;}, { &quot;$set&quot; : { &quot;Carts&quot; : [ &quot;headsets&quot;] , &quot;ShippingAddress.pincode&quot; : 110007}})</td><td colspan="3" class="success">true</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:20px;"><pre><code class="prettyprint">11. Assure that all the documents are expanded. We will simulate this here by connecting to mongo
+    directly as shown below:
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">IncyWincyShoppingApp - Expansion Complete</th></tr><tr><td colspan="3" class="info" style="">&gt;use transactions</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;Carts&quot; : [ &quot;shoes&quot; , &quot;sipper&quot;] , &quot;OrderList&quot; : [ &quot;shoes&quot; , &quot;sipper&quot;] , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;pincode&quot; : 411006 , &quot;zipcode&quot; : 411006.0} , &quot;TotalAmount&quot; : 6000.0 , &quot;_expansionVersion&quot; : 2.0 , &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a215e358c175febe0b35&quot;} , &quot;name&quot; : &quot;Vivek&quot;}</td></tr><tr><td style="">document('_expansionVersion')</td><td colspan="3" class="success">2.0</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;Carts&quot; : [ &quot;scarf&quot; , &quot;footwear&quot;] , &quot;OrderList&quot; : [ &quot;scarf&quot; , &quot;footwear&quot;] , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;pincode&quot; : 411004 , &quot;zipcode&quot; : 411004.0} , &quot;TotalAmount&quot; : 3000.0 , &quot;_expansionVersion&quot; : 2.0 , &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a215e358c175febe0b36&quot;} , &quot;name&quot; : &quot;Komal&quot;}</td></tr><tr><td style="">document('_expansionVersion')</td><td colspan="3" class="success">2.0</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;Carts&quot; : [ &quot;headsets&quot;] , &quot;OrderList&quot; : [ &quot;headsets&quot;] , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;pincode&quot; : 110007 , &quot;zipcode&quot; : 110007.0} , &quot;TotalAmount&quot; : 8000.0 , &quot;_expansionVersion&quot; : 2.0 , &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a215e358c175febe0b37&quot;} , &quot;name&quot; : &quot;Dhaval&quot;}</td></tr><tr><td style="">document('_expansionVersion')</td><td colspan="3" class="success">2.0</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:20px;"><pre><code class="prettyprint">12. Change mode of Application to &quot;CONTRACTION&quot; in &quot;incyWincyShoppingApp.midas&quot; file.
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Edit Application Config File</th></tr><tr><td colspan="3" class="info" style="">incyWincyShoppingApp {</td></tr><tr><td colspan="3" class="info" style="">                 mode = contraction</td></tr><tr><td colspan="3" class="info" style="">                 nodeA {</td></tr><tr><td colspan="3" class="info" style="">                   ip = 127.0.0.1</td></tr><tr><td colspan="3" class="info" style="">                   changeSet = 1</td></tr><tr><td colspan="3" class="info" style="">                 }</td></tr><tr><td colspan="3" class="info" style="">                 nodeB {</td></tr><tr><td colspan="3" class="info" style="">                   ip = 192.168.1.41</td></tr><tr><td colspan="3" class="info" style="">                   changeSet = 1</td></tr><tr><td colspan="3" class="info" style="">                 }</td></tr><tr><td colspan="3" class="info" style="">              }</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:20px;"><pre><code class="prettyprint">13. Read documents and verify that &quot;OrderList&quot; and &quot;ShippingAddress.zipcode&quot; fields are removed from documents.
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Open Command Terminal</th></tr><tr><td colspan="3" class="info" style="">&gt;use transactions</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a215e358c175febe0b35&quot;} , &quot;Carts&quot; : [ &quot;shoes&quot; , &quot;sipper&quot;] , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;pincode&quot; : 411006} , &quot;TotalAmount&quot; : 6000.0 , &quot;_expansionVersion&quot; : 2.0 , &quot;name&quot; : &quot;Vivek&quot; , &quot;_contractionVersion&quot; : 2.0}</td></tr><tr><td style="">!document.containsField(OrderList)</td><td colspan="3" class="success">true</td></tr><tr><td style="">!document.containsField(ShippingAddress.zipcode)</td><td colspan="3" class="success">true</td></tr><tr><td style="">document('_contractionVersion')</td><td colspan="3" class="success">2.0</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a215e358c175febe0b36&quot;} , &quot;Carts&quot; : [ &quot;scarf&quot; , &quot;footwear&quot;] , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;pincode&quot; : 411004} , &quot;TotalAmount&quot; : 3000.0 , &quot;_expansionVersion&quot; : 2.0 , &quot;name&quot; : &quot;Komal&quot; , &quot;_contractionVersion&quot; : 2.0}</td></tr><tr><td style="">!document.containsField(OrderList)</td><td colspan="3" class="success">true</td></tr><tr><td style="">!document.containsField(ShippingAddress.zipcode)</td><td colspan="3" class="success">true</td></tr><tr><td style="">document('_contractionVersion')</td><td colspan="3" class="success">2.0</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a215e358c175febe0b37&quot;} , &quot;Carts&quot; : [ &quot;headsets&quot;] , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;pincode&quot; : 110007} , &quot;TotalAmount&quot; : 8000.0 , &quot;_expansionVersion&quot; : 2.0 , &quot;name&quot; : &quot;Dhaval&quot; , &quot;_contractionVersion&quot; : 2.0}</td></tr><tr><td style="">!document.containsField(OrderList)</td><td colspan="3" class="success">true</td></tr><tr><td style="">!document.containsField(ShippingAddress.zipcode)</td><td colspan="3" class="success">true</td></tr><tr><td style="">document('_contractionVersion')</td><td colspan="3" class="success">2.0</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:20px;"><pre><code class="prettyprint">14. Insert a document from the Upgraded Version of the app.
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Open Mongo Shell</th></tr><tr><td colspan="3" class="info" style="">&gt;use transactions</td></tr><tr><td style="">orders.insert({ &quot;name&quot; : &quot;Pooja&quot; , &quot;Carts&quot; : [ &quot;dress&quot;] , &quot;TotalAmount&quot; : 1000 , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;pincode&quot; : 411006} , &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a23c44ae0e9f3e4518de&quot;}})</td><td colspan="3" class="success">1.0</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:20px;"><pre><code class="prettyprint">15. Read documents and verify that all documents are contracted.
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Open Command Terminal</th></tr><tr><td colspan="3" class="info" style="">&gt;use transactions</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a215e358c175febe0b35&quot;} , &quot;Carts&quot; : [ &quot;shoes&quot; , &quot;sipper&quot;] , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;pincode&quot; : 411006} , &quot;TotalAmount&quot; : 6000.0 , &quot;_expansionVersion&quot; : 2.0 , &quot;name&quot; : &quot;Vivek&quot; , &quot;_contractionVersion&quot; : 2.0}</td></tr><tr><td style="">document('_contractionVersion')</td><td colspan="3" class="success">2.0</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a215e358c175febe0b36&quot;} , &quot;Carts&quot; : [ &quot;scarf&quot; , &quot;footwear&quot;] , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;pincode&quot; : 411004} , &quot;TotalAmount&quot; : 3000.0 , &quot;_expansionVersion&quot; : 2.0 , &quot;name&quot; : &quot;Komal&quot; , &quot;_contractionVersion&quot; : 2.0}</td></tr><tr><td style="">document('_contractionVersion')</td><td colspan="3" class="success">2.0</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a215e358c175febe0b37&quot;} , &quot;Carts&quot; : [ &quot;headsets&quot;] , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;pincode&quot; : 110007} , &quot;TotalAmount&quot; : 8000.0 , &quot;_expansionVersion&quot; : 2.0 , &quot;name&quot; : &quot;Dhaval&quot; , &quot;_contractionVersion&quot; : 2.0}</td></tr><tr><td style="">document('_contractionVersion')</td><td colspan="3" class="success">2.0</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a23c44ae0e9f3e4518de&quot;} , &quot;name&quot; : &quot;Pooja&quot; , &quot;Carts&quot; : [ &quot;dress&quot;] , &quot;TotalAmount&quot; : 1000 , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;pincode&quot; : 411006} , &quot;_expansionVersion&quot; : 2.0 , &quot;_contractionVersion&quot; : 2.0}</td></tr><tr><td style="">document('_contractionVersion')</td><td colspan="3" class="success">2.0</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:20px;"><pre><code class="prettyprint">16. Shutdown Midas
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Open Command Terminal</th></tr><tr><td colspan="3" class="info" style="">Shut Down Midas</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:20px;"><pre><code class="prettyprint">17. Clean up the database
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Open MongoShell</th></tr><tr><td colspan="3" class="info" style="">&gt;use transactions</td></tr><tr><td style="">&gt;db.dropDatabase()</td><td colspan="3" class="success">true</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:20px;"><pre><code class="prettyprint">18. Cleanup deltas directory
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="2">Delete Deltas Directory</th></tr></table></form></status><status class="ok"><div style="display: show; text-indent:420px;"></div></status><status class="ok"><br /></status><table class="dataTable">
+        <tr><th colSpan="2">Total for specification RenameJourney</th></tr>
+        <tr><td>Finished in</td><td class="info">17 ms</td></tr>
+        <tr><td>Results</td><td class="success">18 examples, 198 expectations, 0 failure, 0 error</td></tr>
+      </table></html></div></div>
+                <div class="col2"><div id="leftcolumn"><div id="tree">
+      <ul><li id="1786896782"><a href="com.ee.midas.run.Index.html#Midas+Journeys">Midas Journeys</a>
+            <ul><li id="1477096391"><a href="com.ee.midas.run.RenameJourney.html#Rename+Journey">Rename Journey</a>
+            
+          </li><li id="988556209"><a href="com.ee.midas.run.AddAndRemoveApplicationJourney.html#Add%2FRemove+Application+On+the+fly">Add/Remove Application On the fly</a>
+            
+          </li><li id="866980119"><a href="com.ee.midas.run.AddAndRemoveChangeSetJourney.html#Add%2FRemove+ChangeSet+On+the+fly">Add/Remove ChangeSet On the fly</a>
+            
+          </li><li id="1191171086"><a href="com.ee.midas.run.AddAndRemoveNodeJourney.html#Add%2FRemove+Node+On+the+fly">Add/Remove Node On the fly</a>
+            
+          </li></ul>
+          </li></ul>
+      <script>$(function () {  $('#tree').jstree({'core':{'initially_open':['1786896782','1477096391'], 'animation':200}, 'plugins':['themes', 'html_data']}); });</script>
+    </div></div></div>
+                <div class="col3"><div id="rightcolumn"></div></div>
+              </div>
+            </div>
+          </div></body></html>

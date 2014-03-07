@@ -1,0 +1,130 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+      <style type="text/css" media="all">
+        @import url('./css/maven-base.css');
+        @import url('./css/maven-theme.css');
+      </style>
+      <link href="./css/prettify.css" type="text/css" rel="stylesheet" />
+      <script type="text/javascript" src="./css/prettify.js"></script>
+      <link rel="stylesheet" href="./css/print.css" type="text/css" media="print" />
+      <link href="./css/tooltip.css" rel="stylesheet" type="text/css" />
+      <link href="./css/specs2-user.css" type="text/css" rel="stylesheet" />
+
+      <script type="text/javascript" src="./css/jquery.js"></script>
+      <script type="text/javascript" src="./css/jquery.cookie.js"></script>
+      <script type="text/javascript" src="./css/jquery.hotkeys.js"></script>
+      <script type="text/javascript" src="./css/jquery.jstree.js"></script>
+      <script type="text/javascript" src="./css/tooltip.js"></script>
+      <script type="text/javascript" src="./js/specs2-user.js"></script>
+      <script language="javascript">$.getScript("./js/specs2-user.js", initUserScript(document));</script>
+      <script language="javascript">
+      function init() {  prettyPrint(); };
+      /* found on : http://www.tek-tips.com/faqs.cfm?fid=6620 */
+      String.prototype.endsWith = function(str) { return (this.match(str+'$') == str) };
+      function changeWidth(id,width) {  document.getElementById(id).style.width = width; };
+      function changeMarginLeft(id, margin) { document.getElementById(id).style.marginLeft = margin; };
+      function toggleImage(image) {
+        if (image.src.endsWith('images/expanded.gif')) 
+          image.src = image.src.replace('expanded', 'collapsed');
+        else 
+          image.src = image.src.replace('collapsed', 'expanded');
+      };
+      function showHide(id) {
+        element = document.getElementById(id);
+        element.style.display = (element.style.display == 'block')? 'none' : 'block';
+      };
+      function showHideByClass(name) {
+        var elements = document.getElementsByClassName(name);
+        for (i = 0; i < elements.length; i++) {
+          elements[i].style.display = (elements[i].style.display == 'none') ? elements[i].style.display = '': 'none';
+        }
+      };
+      function showByClass(name) {
+        var elements = document.getElementsByClassName(name);
+        for (i = 0; i < elements.length; i++) {
+          elements[i].style.display = 'block';
+        }
+      };
+      function hideByClass(name) {
+        var elements = document.getElementsByClassName(name);
+        for (i = 0; i < elements.length; i++) {
+          elements[i].style.display = 'none';
+        }
+      };
+      function showById(id) {
+        document.getElementById(id).style.display = ''
+      };
+      function hideById(id) {
+        document.getElementById(id).style.display = 'none'
+      };
+    </script>
+      <script language="javascript">window.onload=init;</script>
+      <!-- the tabber.js file must be loaded after the onload function has been set, in order to run the
+           tabber code, then the init code -->
+      <script type="text/javascript" src="./css/tabber.js"></script>
+      <link rel="stylesheet" href="./css/tabber.css" type="text/css" media="screen" />
+      <title>Add/Remove Node On the fly</title>
+    </head><body><div id="breadcrumbs"><a href="com.ee.midas.run.Index.html">Index</a><t> / </t><a href="com.ee.midas.run.AddAndRemoveNodeJourney.html">AddAndRemoveNodeJourney</a></div><div class="colmask threecol">
+            <div class="colmid">
+              <div class="colleft">
+                <div class="col1"><div id="central"><html><title>Add/Remove Node On the fly</title><a name="Add%2FRemove+Node+On+the+fly"><h2 specId="1191171086">Add/Remove Node On the fly</h2></a><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  Narration: IncyWincyShoppingApp stores its persistent data on MongoDB. It has 2 nodes in the
+             cluster which are at the new version and are connected to Midas.
+             Adam, the admin needs to take down one node for scheduled maintenance. So, he
+             approaches Oscar, the DevOps guy.
+
+  Adam:  &quot;Hey Oscar, We need to take down NodeX for a scheduled maintenance and give it back to you in
+          about couple of hours.  How do we go about that?&quot;
+  Oscar: &quot;Ok Adam, thats not a problem. We just need to remove that node from application's config file
+          and the Load Balancer. After that no requests from that node will be accepted.
+          Once the node is up, we can again add it to the application config file and the Load balancer
+          and immediately after that the requests from the node will be entertained like they
+          were before.&quot;
+  Adam:  &quot;By any chance would Midas be shutdown during the whole process? In other words any
+          disservice to already connected nodes and clients?&quot;
+  Oscar: &quot;No, all this happens at runtime and Midas will be running all the time.  There will
+          be no issues to clients connected to other Nodes of the same application.&quot;
+  Adam:  &quot;Ok, That will be great.&quot;
+
+  1. To start out we have following documents in the database and this is simulated by inserting
+     them as shown below.
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Open Mongo Shell</th></tr><tr><td colspan="3" class="info" style="">&gt;use transactions</td></tr><tr><td style="">&gt;db.orders.insert({name: &quot;Vivek&quot;, &quot;YourCart&quot;: ['shoes', 'sipper'], &quot;TotalAmount&quot;: 6000, ShippingAddress: {line1: &quot;enter house/street&quot;, line2: &quot;enter city&quot;, &quot;pincode&quot;: 411006} })</td><td colspan="3" class="success">true</td></tr><tr><td style="">&gt;db.orders.insert({name: &quot;Komal&quot;, &quot;YourCart&quot;: ['scarf', 'footwear'], &quot;TotalAmount&quot;: 3000, ShippingAddress: {line1: &quot;enter house/street&quot;, line2: &quot;enter city&quot;, &quot;pincode&quot;: 411004} })</td><td colspan="3" class="success">true</td></tr><tr><td style="">&gt;db.orders.insert({name: &quot;Dhaval&quot;, &quot;YourCart&quot;: ['headsets'], &quot;TotalAmount&quot;: 8000, ShippingAddress: {line1: &quot;enter house/street&quot;, line2: &quot;enter city&quot;, &quot;pincode&quot;: 110007} })</td><td colspan="3" class="success">true</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  2. IncyWincyShoppingApp is already added to midas.config file in &quot;deltas&quot; folder.
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Write Config File</th></tr><tr><td colspan="3" class="info" style=""></td></tr><tr><td colspan="3" class="info" style="">apps {</td></tr><tr><td colspan="3" class="info" style="">  incyWincyShoppingApp</td></tr><tr><td colspan="3" class="info" style="">}</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  3. There is a &quot;incyWincyShoppingApp&quot; folder in &quot;deltas&quot; with &quot;incyWincyShoppingApp.midas&quot; file having
+     its Node information and mode.
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Write Application Config File</th></tr><tr><td colspan="3" class="info" style="">incyWincyShoppingApp {</td></tr><tr><td colspan="3" class="info" style="">                   mode = expansion</td></tr><tr><td colspan="3" class="info" style="">                   nodeX {</td></tr><tr><td colspan="3" class="info" style="">                     ip = 127.0.0.1</td></tr><tr><td colspan="3" class="info" style="">                     changeSet = 1</td></tr><tr><td colspan="3" class="info" style="">                   }</td></tr><tr><td colspan="3" class="info" style="">                   nodeY {</td></tr><tr><td colspan="3" class="info" style="">                     ip = 192.168.1.41</td></tr><tr><td colspan="3" class="info" style="">                     changeSet = 1</td></tr><tr><td colspan="3" class="info" style="">                   }</td></tr><tr><td colspan="3" class="info" style="">                 }</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  4. &quot;incyWincyShoppingApp&quot; has one change set &quot;001AddToOrders&quot;.
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Create ChangeSet Folder</th></tr><tr><td colspan="3" class="info" style="">001AddToOrders</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  5. &quot;001AddToOrders&quot; changeset has a delta file
+     &quot;0001_add_CountryToShippingAddress_transactions_orders.delta&quot; to add &quot;country&quot;
+     field to &quot;ShippingAddress&quot; in &quot;expansions&quot; folder.
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Write Delta</th></tr><tr><td colspan="3" class="info" style="">use transactions</td></tr><tr><td colspan="3" class="info" style="">                 db.orders.add('{&quot;ShippingAddress.country&quot;: &quot;India&quot;}')</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  6. Midas is running with deltas directory location as &quot;deltas&quot;
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Open Command Terminal</th></tr><tr><td style="">&gt;</td><td colspan="3" class="info" style="">midas --port 27020 --deltasDir /home/komal/midas_workspace/Midas//deltas</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  7. NodeX connects with midas and it receives expanded documents
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">IncyWincyShoppingApp - UpgradedVersion</th></tr><tr><td colspan="3" class="info" style="">&gt;use transactions</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a280e358c175febe0b41&quot;} , &quot;name&quot; : &quot;Vivek&quot; , &quot;YourCart&quot; : [ &quot;shoes&quot; , &quot;sipper&quot;] , &quot;TotalAmount&quot; : 6000.0 , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;pincode&quot; : 411006.0 , &quot;country&quot; : &quot;India&quot;} , &quot;_expansionVersion&quot; : 1.0}</td></tr><tr><td style="">document('_expansionVersion')</td><td colspan="3" class="success">1.0</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a280e358c175febe0b42&quot;} , &quot;name&quot; : &quot;Komal&quot; , &quot;YourCart&quot; : [ &quot;scarf&quot; , &quot;footwear&quot;] , &quot;TotalAmount&quot; : 3000.0 , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;pincode&quot; : 411004.0 , &quot;country&quot; : &quot;India&quot;} , &quot;_expansionVersion&quot; : 1.0}</td></tr><tr><td style="">document('_expansionVersion')</td><td colspan="3" class="success">1.0</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a280e358c175febe0b43&quot;} , &quot;name&quot; : &quot;Dhaval&quot; , &quot;YourCart&quot; : [ &quot;headsets&quot;] , &quot;TotalAmount&quot; : 8000.0 , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;pincode&quot; : 110007.0 , &quot;country&quot; : &quot;India&quot;} , &quot;_expansionVersion&quot; : 1.0}</td></tr><tr><td style="">document('_expansionVersion')</td><td colspan="3" class="success">1.0</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  8. Now NodeX is down for maintenance. So, we remove NodeX from &quot;incyWincyShoppingApp.midas&quot; file
+     in &quot;incyWincyShoppingApp&quot; folder in &quot;deltas&quot; folder
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Write Application Config File</th></tr><tr><td colspan="3" class="info" style="">incyWincyShoppingApp {</td></tr><tr><td colspan="3" class="info" style="">                   mode = expansion</td></tr><tr><td colspan="3" class="info" style="">                   nodeY {</td></tr><tr><td colspan="3" class="info" style="">                     ip = 192.168.1.41</td></tr><tr><td colspan="3" class="info" style="">                     changeSet = 1</td></tr><tr><td colspan="3" class="info" style="">                   }</td></tr><tr><td colspan="3" class="info" style="">                 }</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  9. NodeX try to connect. It is not allowed to connect to midas.
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">IncyWincyShoppingApp - UpgradedVersion</th></tr><tr><td colspan="3" class="info" style="">&gt;use transactions</td></tr><tr><td colspan="3" class="info" style="">Client cannot Connect</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  10. NodeX is up after maintenance now. So, we add NodeX to &quot;incyWincyShoppingApp.midas&quot; file in
+      &quot;incyWincyShoppingApp&quot; folder in &quot;deltas&quot; folder
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Write Application Config File</th></tr><tr><td colspan="3" class="info" style="">incyWincyShoppingApp {</td></tr><tr><td colspan="3" class="info" style="">                   mode = expansion</td></tr><tr><td colspan="3" class="info" style="">                   nodeX {</td></tr><tr><td colspan="3" class="info" style="">                     ip = 127.0.0.1</td></tr><tr><td colspan="3" class="info" style="">                     changeSet = 1</td></tr><tr><td colspan="3" class="info" style="">                   }</td></tr><tr><td colspan="3" class="info" style="">                   nodeY {</td></tr><tr><td colspan="3" class="info" style="">                     ip = 192.168.1.41</td></tr><tr><td colspan="3" class="info" style="">                     changeSet = 1</td></tr><tr><td colspan="3" class="info" style="">                   }</td></tr><tr><td colspan="3" class="info" style="">                 }</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  11.  NodeX connects to midas. It starts receiving the expanded documents.
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">IncyWincyShoppingApp - UpgradedVersion</th></tr><tr><td colspan="3" class="info" style="">&gt;use transactions</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a280e358c175febe0b41&quot;} , &quot;name&quot; : &quot;Vivek&quot; , &quot;YourCart&quot; : [ &quot;shoes&quot; , &quot;sipper&quot;] , &quot;TotalAmount&quot; : 6000.0 , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;pincode&quot; : 411006.0 , &quot;country&quot; : &quot;India&quot;} , &quot;_expansionVersion&quot; : 1.0}</td></tr><tr><td style="">document('_expansionVersion')</td><td colspan="3" class="success">1.0</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a280e358c175febe0b42&quot;} , &quot;name&quot; : &quot;Komal&quot; , &quot;YourCart&quot; : [ &quot;scarf&quot; , &quot;footwear&quot;] , &quot;TotalAmount&quot; : 3000.0 , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;pincode&quot; : 411004.0 , &quot;country&quot; : &quot;India&quot;} , &quot;_expansionVersion&quot; : 1.0}</td></tr><tr><td style="">document('_expansionVersion')</td><td colspan="3" class="success">1.0</td></tr><tr><td style="">document</td><td colspan="3" class="info" style="">{ &quot;_id&quot; : { &quot;$oid&quot; : &quot;5319a280e358c175febe0b43&quot;} , &quot;name&quot; : &quot;Dhaval&quot; , &quot;YourCart&quot; : [ &quot;headsets&quot;] , &quot;TotalAmount&quot; : 8000.0 , &quot;ShippingAddress&quot; : { &quot;line1&quot; : &quot;enter house/street&quot; , &quot;line2&quot; : &quot;enter city&quot; , &quot;pincode&quot; : 110007.0 , &quot;country&quot; : &quot;India&quot;} , &quot;_expansionVersion&quot; : 1.0}</td></tr><tr><td style="">document('_expansionVersion')</td><td colspan="3" class="success">1.0</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  12. Shutdown Midas
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Open Command Terminal</th></tr><tr><td colspan="3" class="info" style="">Shut Down Midas</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  13. Clean up the database
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="4">Open MongoShell</th></tr><tr><td colspan="3" class="info" style="">&gt;use transactions</td></tr><tr><td style="">&gt;db.dropDatabase()</td><td colspan="3" class="success">true</td></tr></table></form></status><status class="ok"><div style="display: show; text-indent:30px;"><pre><code class="prettyprint">  14. Cleanup deltas directory
+</code></pre></div></status><status class="ok"><form><table class="dataTable"><tr><th colspan="2">Delete Deltas Directory</th></tr></table></form></status><status class="ok"><div style="display: show; text-indent:540px;"></div></status><status class="ok"><br /></status><table class="dataTable">
+        <tr><th colSpan="2">Total for specification AddAndRemoveNodeJourney</th></tr>
+        <tr><td>Finished in</td><td class="info">1 ms</td></tr>
+        <tr><td>Results</td><td class="success">14 examples, 134 expectations, 0 failure, 0 error</td></tr>
+      </table></html></div></div>
+                <div class="col2"><div id="leftcolumn"><div id="tree">
+      <ul><li id="1786896782"><a href="com.ee.midas.run.Index.html#Midas+Journeys">Midas Journeys</a>
+            <ul><li id="1477096391"><a href="com.ee.midas.run.RenameJourney.html#Rename+Journey">Rename Journey</a>
+            
+          </li><li id="988556209"><a href="com.ee.midas.run.AddAndRemoveApplicationJourney.html#Add%2FRemove+Application+On+the+fly">Add/Remove Application On the fly</a>
+            
+          </li><li id="866980119"><a href="com.ee.midas.run.AddAndRemoveChangeSetJourney.html#Add%2FRemove+ChangeSet+On+the+fly">Add/Remove ChangeSet On the fly</a>
+            
+          </li><li id="1191171086"><a href="com.ee.midas.run.AddAndRemoveNodeJourney.html#Add%2FRemove+Node+On+the+fly">Add/Remove Node On the fly</a>
+            
+          </li></ul>
+          </li></ul>
+      <script>$(function () {  $('#tree').jstree({'core':{'initially_open':['1786896782','1191171086'], 'animation':200}, 'plugins':['themes', 'html_data']}); });</script>
+    </div></div></div>
+                <div class="col3"><div id="rightcolumn"></div></div>
+              </div>
+            </div>
+          </div></body></html>

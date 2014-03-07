@@ -63,65 +63,28 @@
            tabber code, then the init code -->
       <script type="text/javascript" src="./css/tabber.js"></script>
       <link rel="stylesheet" href="./css/tabber.css" type="text/css" media="screen" />
-      <title>Midas Index</title>
+      <title>Midas Journeys</title>
     </head><body><div class="colmask threecol">
             <div class="colmid">
               <div class="colleft">
-                <div class="col1"><div id="central"><html><title>Midas Index</title><a name="Midas+Index"><h2 specId="1046163652">Midas Index</h2></a><status class="ok"><div style="display: show; text-indent:15px;"><p>Midas is On-the-fly Schema Migration Tool for MongoDB.<br />     To perform schema migration on the fly, it takes schema changes in the form of delta files.</p>
-<pre><code class="prettyprint">A sample delta file &quot;0001_DB_Collection.delta&quot; would look like:
-&quot;use &lt;database-name&gt;
- db.&lt;collection-name&gt;.add('{newField : value}')
-
-Note: A delta file must have extension &quot;.delta&quot;.
-
-Midas operates in 2 modes:
-1. &quot;Expansion&quot; mode:
-    Apply changes to the documents safely that do not break backwards compatibility with
-    existing version of the application.
-    e.g Adding, copying, merging, splitting fields in a document.
-    Expansion operations are: add, split, merge, transform and copy.
-
-2. &quot;Contraction&quot; mode:
-    Clean up any database schema that is not needed after the upgrade.
-    E.g.: removing an existing field.
-    Contraction operation is: remove.
-
-Midas can be useful in following scenarios:
-Scenario 1: Migration involving addition of new fields
-
-Mechanics:
-a.) Express schema changes into delta files.
-
-b.) use midas in expansion mode.
-
-2.) Migration involving removal of existing fields.
-
-Mechanics:
-a.) Express schema changes into delta files
-
-b.) use midas in contraction mode
-
-
-3.) Migration involving both addition of new fields and removal of existing fields.
-
-Mechanics:
-a.) Express schema changes into delta files
-
-b.) use midas in expansion mode first until all the documents are migrated, and then.
-
-c.) use midas in contraction mode.
-</code></pre></div></status><subtoc specId="452849302"></subtoc><status class="ok"><div style="display: show; text-indent:0px;"><img src="./images/icon_success_sml.gif" /> <a href="com.ee.midas.run.RenameJourney.html" tooltip="">Rename Operation</a></div></status><status class="ok"><div style="display: show; text-indent:5px;"></div></status><status class="ok"><br /></status><table class="dataTable">
+                <div class="col1"><div id="central"><html><title>Midas Journeys</title><a name="Midas+Journeys"><h2 specId="1786896782">Midas Journeys</h2></a><status class="ok"><div style="display: show; text-indent:15px;"><p>M I D A S<br />    ~on-the-fly Schema Migration Tool for MongoDB.</p><p>User Journeys available here are meant to serve as a scenarios guide.</p></div></status><subtoc specId="1477096391"></subtoc><status class="ok"><div style="display: show; text-indent:0px;"><img src="./images/icon_success_sml.gif" /> <a href="com.ee.midas.run.RenameJourney.html" tooltip="">Rename Field(s)</a></div></status><status class="ok"><div style="display: show; text-indent:20px;"></div></status><subtoc specId="988556209"></subtoc><status class="ok"><div style="display: show; text-indent:0px;"><img src="./images/icon_success_sml.gif" /> <a href="com.ee.midas.run.AddAndRemoveApplicationJourney.html" tooltip="">Add/Remove Application on-the-fly</a></div></status><status class="ok"><div style="display: show; text-indent:20px;"></div></status><subtoc specId="866980119"></subtoc><status class="ok"><div style="display: show; text-indent:0px;"><img src="./images/icon_success_sml.gif" /> <a href="com.ee.midas.run.AddAndRemoveChangeSetJourney.html" tooltip="">Add/Remove ChangeSet on-the-fly</a></div></status><status class="ok"><div style="display: show; text-indent:20px;"></div></status><subtoc specId="1191171086"></subtoc><status class="ok"><div style="display: show; text-indent:0px;"><img src="./images/icon_success_sml.gif" /> <a href="com.ee.midas.run.AddAndRemoveNodeJourney.html" tooltip="">Add/Remove Nodes on-the-fly</a></div></status><status class="ok"><div style="display: show; text-indent:5px;"></div></status><status class="ok"><br /></status><table class="dataTable">
         <tr><th colSpan="2">Total for specification Index</th></tr>
-        <tr><td>Finished in</td><td class="info">30 ms</td></tr>
-        <tr><td>Results</td><td class="success">18 examples, 198 expectations, 0 failure, 0 error</td></tr>
+        <tr><td>Finished in</td><td class="info">29 ms</td></tr>
+        <tr><td>Results</td><td class="success">61 examples, 605 expectations, 0 failure, 0 error</td></tr>
       </table></html></div></div>
                 <div class="col2"><div id="leftcolumn"><div id="tree">
-      <ul><li id="1046163652"><a href="com.ee.midas.run.Index.html#Midas+Index">Midas Index</a>
-            <ul><li id="452849302"><a href="com.ee.midas.run.RenameJourney.html#Rename+Operation">Rename Operation</a>
+      <ul><li id="1786896782"><a href="com.ee.midas.run.Index.html#Midas+Journeys">Midas Journeys</a>
+            <ul><li id="1477096391"><a href="com.ee.midas.run.RenameJourney.html#Rename+Journey">Rename Journey</a>
+            
+          </li><li id="988556209"><a href="com.ee.midas.run.AddAndRemoveApplicationJourney.html#Add%2FRemove+Application+On+the+fly">Add/Remove Application On the fly</a>
+            
+          </li><li id="866980119"><a href="com.ee.midas.run.AddAndRemoveChangeSetJourney.html#Add%2FRemove+ChangeSet+On+the+fly">Add/Remove ChangeSet On the fly</a>
+            
+          </li><li id="1191171086"><a href="com.ee.midas.run.AddAndRemoveNodeJourney.html#Add%2FRemove+Node+On+the+fly">Add/Remove Node On the fly</a>
             
           </li></ul>
           </li></ul>
-      <script>$(function () {  $('#tree').jstree({'core':{'initially_open':['1046163652','1046163652'], 'animation':200}, 'plugins':['themes', 'html_data']}); });</script>
+      <script>$(function () {  $('#tree').jstree({'core':{'initially_open':['1786896782','1786896782'], 'animation':200}, 'plugins':['themes', 'html_data']}); });</script>
     </div></div></div>
                 <div class="col3"><div id="rightcolumn"></div></div>
               </div>

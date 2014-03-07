@@ -52,16 +52,22 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
     def is = s2"""
       ${"Add/Remove Node On the fly".title}
       Narration: IncyWincyShoppingApp stores its persistent data on MongoDB. It has 2 nodes in the
-                 cluster which are at the new version and are connected to Midas. Schema migration is
-                 in process, but they want to take down one node for maintenance for sometime. So,
-                 Bob, the business analyst approaches Dave, the developer.
+                 cluster which are at the new version and are connected to Midas.
+                 Adam, the admin needs to take down one node for scheduled maintenance. So, he
+                 approaches Oscar, the DevOps guy.
 
-      Bob:  "Hey Dave, I know schema migration is in process but we need to take down NodeX for maintenance
-             for sometime."
-      Dave: "Ok Bob, thats not a problem. We just need to remove that node from application's config file.
-             After that no requests from that node will be accepted. Once the node is up, we can again add
-             it to the config and the requests from the node will be entertained like they were before."
-      Bob:  "That will be great."
+      Adam:  "Hey Dave, We need to take down Node1 for a scheduled maintenance and give it back to you in
+              about couple of hours.  How do we go about that?"
+      Oscar: "Ok Adam, thats not a problem. We just need to remove that node from application's config file
+             and the Load Balancer. After that no requests from that node will be accepted.
+             Once the node is up, we can again add it to the application config file and the Load balancer
+             and immediately after that the requests from the node will be entertained like they
+              were before."
+      Adam:  "By any chance would Midas be shutdown during the whole process? In other words any
+             disservice to already connected nodes and clients?"
+      Oscar: "No, all this happens at runtime and Midas will be running all the time.  There will
+             be no issues to clients connected to other Nodes of the same application."
+      Adam:  "Ok, That will be great."
 
       1. To start out we have following documents in the database and this is simulated by inserting
          them as shown below .

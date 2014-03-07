@@ -49,5 +49,20 @@ def createDeltaFile(deltadir, appName, changeSet, mode, deltaName, content) {
     }
 }
 
+def appConfigText = """
+                        |app_version2 {
+                        |mode = expansion
+                        |  nodeA {
+                        |    ip = 127.0.0.1
+                        |    changeSet = 2
+                        |  }
+                        |}
+                        """.stripMargin()
+def appConfigFile = new File("midas/deltas/app/app.midas")
+appConfigFile.createNewFile()
+appConfigFile.withWriter { it <<
+	appConfigText
+}
+
 println(expansions)
 println(contractions)

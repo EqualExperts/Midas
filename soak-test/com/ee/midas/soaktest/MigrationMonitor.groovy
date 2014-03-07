@@ -59,7 +59,7 @@ databases.each { databaseName, collections ->
         checkUntilExpansionComplete(databaseName, collectionName, maxExpansionVersion)
 
         println("maxExpansionVersion = $maxExpansionVersion")
-        println("maxContractionVersion = $maxContractionVersion")
+        println("maxContractionVersion = $maxContractionVersion")		
         println("$databaseName, $collectionName, ${documentSpec.document}, ${documentSpec.count}")
     }
 }
@@ -69,7 +69,9 @@ private def mapChangeSetToTransformTypeVersion(TransformType transformType, Tree
     def request = [:]
     tree.eachWithVersionedMap(transformType) { String dbName, String collectionName, Map versionedMap ->
         def fullCollectionName = toFullCollectionName(dbName, collectionName)
+		println("nameSpace = $fullCollectionName, versionedMap = $versionedMap")
         request << versionedMap.collectEntries { Double version, Tuple values ->
+			println("version = $version, values = $values")
             def (verb, args, changeSet) = values
             [new Tuple(changeSet, fullCollectionName), version]
         }
@@ -95,6 +97,7 @@ def checkUntilExpansionComplete(def databaseName, def collectionName, def maxExp
         println("Will check again in 10 secs.")
         Thread.sleep(10000)
 		totalDocuments = collection.count()
+		println("looking for docs with _expansionVersion: $maxExpansionVersion")
         expandedDocuments = collection.count(new BasicDBObject("_expansionVersion" : maxExpansionVersion))
     }
     println("Expansion complete for $databaseName.$collectionName.")

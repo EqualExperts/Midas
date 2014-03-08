@@ -31,95 +31,99 @@
 
 package com.ee.midas.model
 
-import java.net.URL
-import java.io.{FileWriter, File}
-import org.specs2.mutable.BeforeAfter
-
-trait MidasConfigurationSetup extends BeforeAfter {
-
-  /* deltas dir */
-  val deltasDir = new File("src/test/scala/com/ee/midas/myDeltas")
-  val deltasDirURL =  deltasDir.toURI.toURL
-  val midasConfig = new File(s"${deltasDir.getAbsolutePath}/midas.config")
-  val midasConfigText = """
-                          |apps {
-                          |  app1
-                          |  app2
-                          |}
-                        """.stripMargin
-
-  /* app1 */
-  val app1 = new File(deltasDir.getAbsolutePath + "/app1")
-  val app1DirURL: URL = app1.toURI.toURL
-  val app1Config = new File(s"${app1.getAbsolutePath}/app1.midas")
-  val app1ChangeSet01 = new File(app1.getAbsolutePath + "/001-ChangeSet")
-  val app1ChangeSet01Expansion = new File(app1ChangeSet01.getAbsolutePath + "/expansion")
-  val app1ChangeSet01Contraction = new File(app1ChangeSet01.getAbsolutePath + "/contraction")
-  val app1ChangeSet01ExpansionDeltaFile = new File(app1ChangeSet01Expansion.getPath + "/01-expansion.delta")
-  val app1ChangeSet01ContractionDeltaFile = new File(app1ChangeSet01Contraction.getPath + "/01contraction.delta")
-  val app1ConfigText = s"""
-                          |app1_version1 {
-                          |  mode = expansion
-                          |  nodeA {
-                          |    ip = 127.0.0.1
-                          |    changeSet = 2
-                          |  }
-                          |}
-                        """.stripMargin
+import java.net.{Socket, InetAddress, URL}
+import java.io.File
+import org.specs2.mutable.After
+import com.ee.midas.transform.TransformType
 
 
-  /* app 2 */
-  val app2 = new File(deltasDir.getAbsolutePath + "/app2")
-  val app2DirURL: URL = app2.toURI.toURL
-  val app2Config = new File(s"${app2.getAbsolutePath}/app2.midas")
-  val app2ChangeSet01 = new File(app2.getAbsolutePath + "/001-ChangeSet")
-  val app2ChangeSet01Expansion = new File(app2ChangeSet01.getAbsolutePath + "/expansion")
-  val app2ChangeSet01Contraction = new File(app2ChangeSet01.getAbsolutePath + "/contraction")
-  val app2ChangeSet01ExpansionDeltaFile = new File(app2ChangeSet01Expansion.getPath + "/01-expansion.delta")
-  val app2ChangeSet01ContractionDeltaFile = new File(app2ChangeSet01Contraction.getPath + "/01contraction.delta")
-  val app2ConfigText = s"""
-                          |app2_version1 {
-                          |  mode = contraction
-                          |  nodeA {
-                          |    ip = 127.0.0.1
-                          |    changeSet = 2
-                          |  }
-                          |}
-                        """.stripMargin
+trait EntireConfigurationSetup extends After {
+  val deltasDir: File
 
-  def before: Any = {
-    app1ChangeSet01Expansion.mkdirs()
-    app1ChangeSet01Contraction.mkdirs()
-    app1Config.createNewFile()
-    app1ChangeSet01ExpansionDeltaFile.createNewFile()
-    app1ChangeSet01ContractionDeltaFile.createNewFile()
+  val appName1 = "app1"
+  val ipAddress1 = InetAddress.getByName("127.0.0.1")
+  val nodeApp1 = new Node("node1", ipAddress1, ChangeSet(1))
 
-    app2ChangeSet01Expansion.mkdirs()
-    app2ChangeSet01Contraction.mkdirs()
-    app2Config.createNewFile()
-    app2ChangeSet01ExpansionDeltaFile.createNewFile()
-    app2ChangeSet01ContractionDeltaFile.createNewFile()
+  val appName2 = "app2"
+  val ipAddress2 = InetAddress.getByName("127.0.0.2")
+  val nodeApp2 = new Node("node2", ipAddress2, ChangeSet(1))
+
+  val appName3 = "app3"
+  val ipAddress3 = InetAddress.getByName("127.0.0.3")
+  val nodeApp3 = new Node("node3", ipAddress3, ChangeSet(2))
+  val servers = new ServerSetup()
+
+  def createApplications = {
+    val application1 = createNewApplication(deltasDir.toURI.toURL, appName1, TransformType.EXPANSION, Set[Node](nodeApp1))
+    val application2 = createNewApplication(deltasDir.toURI.toURL, appName2, TransformType.EXPANSION, Set[Node](nodeApp2))
+    val application3 = createNewApplication(deltasDir.toURI.toURL, appName3, TransformType.EXPANSION, Set[Node](nodeApp3))
+    (application1, application2, application3)
   }
 
-  def after: Any = {
-    app1ChangeSet01ContractionDeltaFile.delete()
-    app1ChangeSet01ExpansionDeltaFile.delete()
-    app1ChangeSet01Contraction.delete()
-    app1ChangeSet01Expansion.delete()
-    app1ChangeSet01.delete()
-    app1Config.delete()
-    app1.delete()
-
-    app2ChangeSet01ContractionDeltaFile.delete()
-    app2ChangeSet01ExpansionDeltaFile.delete()
-    app2ChangeSet01Contraction.delete()
-    app2ChangeSet01Expansion.delete()
-    app2ChangeSet01.delete()
-    app2Config.delete()
-    app2.delete()
-
-    midasConfig.delete()
-    deltasDir.delete()
+  def createSockets = {
+    servers.start
+    val midasClient = new Socket("localhost", servers.midasServerPort)
+    val mongoClient = new Socket("localhost", servers.mongoServerPort)
+    (midasClient, mongoClient)
   }
 
+  def stopSockets = {
+    servers.stop
+  }
+
+  val oldConfiguration: Configuration = null
+  val newConfiguration: Configuration = null
+
+  def after = {
+    delete(deltasDir)
+  }
+
+  def delete(directory: File): Unit = {
+    directory.listFiles() foreach { file =>
+      if(file.isFile) {
+        println(s"deleting file: ${file.getAbsolutePath}")
+        file.delete()
+      }
+      else if(file.isDirectory){
+        delete(file)
+      }
+    }
+    println(s"deleting directory: ${directory.getAbsolutePath}")
+    directory.delete()
+  }
+
+  def createNewApplication(deltasDirURL: URL, appName: String, transformType: TransformType, nodes: Set[Node]) = {
+    val appConfigDir = new File(s"${deltasDirURL.toURI.getPath}/$appName")
+    appConfigDir.mkdirs()
+    val appConfigFile = new File(s"${appConfigDir.getAbsolutePath}/$appName.midas")
+    appConfigFile.createNewFile()
+    val appConfigText = s"""
+                            |$appName {
+                            |  mode = ${transformType.name.toLowerCase}
+                            |  ${nodes mkString (NEW_LINE).trim}
+                            |}
+                           """.stripMargin
+    println(s"writing to file: $appConfigText")
+    write(appConfigText, appConfigFile)
+    new Application(appConfigDir.toURI.toURL, appName, transformType, nodes)
+  }
+
+
+  val NEW_LINE = System.getProperty("line.separator")
+
+
+  def createNewConfiguration(deltasDirURL: URL, appNames: List[String]) = {
+    val configDir = new File(s"${deltasDirURL.toURI.getPath}")
+    configDir.mkdirs()
+    val configFile = new File(s"${configDir.getAbsolutePath}/midas.config")
+    configFile.createNewFile()
+
+    val configFileText = s"""
+                              |apps {
+                              |  ${appNames.mkString(NEW_LINE)}
+                              |}
+                             """.stripMargin
+    write(configFileText, configFile)
+    new Configuration(deltasDirURL, appNames)
+  }
 }

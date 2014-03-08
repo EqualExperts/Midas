@@ -58,7 +58,7 @@ import com.ee.midas.utils.SynchronizedHolder
 @RunWith(classOf[MockitoJUnitRunner])
 class ApplicationSpecs extends JUnitMustMatchers with Mockito {
 
-  val appName = "myApp"
+  val appName = "app1"
   val nonExistentAppName = "nonExistentApp"
 
   val ip1 = "127.0.0.1"
@@ -154,7 +154,7 @@ class ApplicationSpecs extends JUnitMustMatchers with Mockito {
   def parseDeltasWhenApplicationIsCreated() {
     //Given
     var processDeltaCalled = 0
-    val configDir: URL = new File("/src/test/scala/myDeltas/myApp").toURI.toURL
+    val configDir: URL = new File("test-data/applicationSpecs/deltas/app1").toURI.toURL
 
     //When
     new Application(configDir, appName, TransformType.EXPANSION, nodes) {
@@ -172,7 +172,7 @@ class ApplicationSpecs extends JUnitMustMatchers with Mockito {
   @Test
   def holderHoldsTransformerWhenApplicationIsCreated() {
     //Given
-    val configDir: URL = new File("/src/test/scala/myDeltas/myApp").toURI.toURL
+    val configDir: URL = new File("test-data/applicationSpecs/deltas/app1").toURI.toURL
     val transformer = mock[Transformer]
     val holder = mock[SynchronizedHolder[Transformer]]
 

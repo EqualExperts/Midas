@@ -35,34 +35,44 @@ import org.specs2.mutable.Specification
 import org.specs2.mock.Mockito
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
-import com.ee.midas.transform.TransformType
 import java.net.URL
 import scala.util.Try
 import java.util.concurrent.TimeUnit
+import java.io.File
 
 @RunWith(classOf[JUnitRunner])
 class ApplicationWatcherSpecs extends Specification with Mockito {
 
+  trait ApplicationWatcherSetup extends EntireConfigurationSetup {
+
+    def createChangeSet(appName: String) = {
+      val appChangeSet01 = new File(s"${deltasDir.getAbsolutePath}/${appName}/001-ChangeSet")
+      val appChangeSet01Expansion = new File(appChangeSet01.getAbsolutePath + "/expansion")
+      val appChangeSet01Contraction = new File(appChangeSet01.getAbsolutePath + "/contraction")
+      val appChangeSet01ExpansionDeltaFile = new File(appChangeSet01Expansion.getPath + "/01-expansion.delta")
+      val appChangeSet01ContractionDeltaFile = new File(appChangeSet01Contraction.getPath + "/01-contraction.delta")
+
+      appChangeSet01Expansion.mkdirs()
+      appChangeSet01Contraction.mkdirs()
+      appChangeSet01ExpansionDeltaFile.createNewFile()
+      appChangeSet01ContractionDeltaFile.createNewFile()
+      (appChangeSet01ExpansionDeltaFile, appChangeSet01ContractionDeltaFile)
+    }
+
+  }
+
   sequential
   "Application Watcher" should {
-    "start watching the deltas of given application" in new MidasConfigurationSetup {
+    "start watching the deltas of given application" in new ApplicationWatcherSetup {
 
       //Given
-      val application = new Application(app1DirURL, "demoApp", TransformType.EXPANSION, Set[Node]())
-      val appConfigText = s"""
-            |demoApp {
-            |  mode = contraction
-            |  nodeA {
-            |    ip = 127.0.0.1
-            |    changeSet = 2
-            |  }
-            |}
-          """.stripMargin
+      val deltasDir = new File("test-data/appWatcherSpecs/startWatching")
+      val (application, _, _) = createApplications
+      val (expansionDeltaFile, contractionDeltaFile) = createChangeSet(appName1)
       override def after = {
         appWatcher.stopWatching
         super.after
       }
-      write(appConfigText, app1Config)
 
       var updateWasInvoked = 0
       val appWatcher = new ApplicationWatcher(application, watchEvery = 1, unit = TimeUnit.SECONDS) {
@@ -75,8 +85,9 @@ class ApplicationWatcherSpecs extends Specification with Mockito {
       //When
       appWatcher.startWatching
       Thread.sleep(2000)
+
       //And
-      write("use someDb", app1ChangeSet01ExpansionDeltaFile)
+      write("use someDb", expansionDeltaFile)
       Thread.sleep(2000)
       appWatcher.isActive mustEqual true
 
@@ -84,12 +95,14 @@ class ApplicationWatcherSpecs extends Specification with Mockito {
       updateWasInvoked mustEqual 1
     }
 
-    "stop watching the deltas of given application" in new MidasConfigurationSetup {
+    "stop watching the deltas of given application" in new ApplicationWatcherSetup {
 
       //Given
-      val application = new Application(app2DirURL, "app2", TransformType.EXPANSION, Set[Node]())
-      val appWatcher = new ApplicationWatcher(application)
+      val deltasDir = new File("test-data/appWatcherSpecs/stopWatching")
+      val (application, _, _) = createApplications
+      val (expansionDeltaFile, contractionDeltaFile) = createChangeSet(appName1)
 
+      val appWatcher = new ApplicationWatcher(application)
       appWatcher.startWatching
       Thread.sleep(500)
 

@@ -46,11 +46,12 @@ class CLIParserSpecs extends Specification {
     val loader = this.getClass.getClassLoader
     val expansionFolder =  TransformType.EXPANSION.toString.toLowerCase
     val contractionFolder =  TransformType.CONTRACTION.toString.toLowerCase
-    val baseDeltasDirURI : URI =  loader.getResource("deltas").toURI
-    val midasConfigURL : URL = new URL(baseDeltasDirURI.toString + "/midas.config")
-    val expansionDeltasDirURL: URL = new File(baseDeltasDirURI.getPath + "/" + expansionFolder).toURI.toURL
-    val contractionDeltasDirURL: URL = new File(baseDeltasDirURI.getPath + "/" + contractionFolder).toURI.toURL
-    val newBaseDeltasDir = "src/test/scala/com/ee/midas/newDeltas"
+    val defaultBaseDeltasDirURI : URI =  loader.getResource("deltas").toURI
+    val defaultMidasConfigURL : URL = new URL(defaultBaseDeltasDirURI.toString + "/midas.config")
+    val defaultExpansionDeltasDirURL: URL = new File(defaultBaseDeltasDirURI.getPath + "/" + expansionFolder).toURI.toURL
+    val defaultContractionDeltasDirURL: URL = new File(defaultBaseDeltasDirURI.getPath + "/" + contractionFolder).toURI.toURL
+
+    val newBaseDeltasDir = "test-data/cliParserSpecs/deltas"
     val newExpansionDeltaURI = newBaseDeltasDir + "/" + expansionFolder
     val newContractionDeltaURI = newBaseDeltasDir + "/" + contractionFolder
     val newBaseDeltasdirFile = new File(newBaseDeltasDir)
@@ -59,9 +60,9 @@ class CLIParserSpecs extends Specification {
     val userSuppliedURI = new File(newBaseDeltasDir).toURI
 
     def before: Any = {
-      newBaseDeltasdirFile.mkdir()
-      newExpansionDeltasdirFile.mkdir()
-      newContractionDeltasdirFile.mkdir()
+      newBaseDeltasdirFile.mkdirs()
+      newExpansionDeltasdirFile.mkdirs()
+      newContractionDeltasdirFile.mkdirs()
     }
 
     def after: Any = {
@@ -81,7 +82,7 @@ class CLIParserSpecs extends Specification {
              config.midasPort mustEqual 27020
              config.mongoHost mustEqual "localhost"
              config.mongoPort mustEqual 27017
-             config.baseDeltasDir mustEqual baseDeltasDirURI
+             config.baseDeltasDir mustEqual defaultBaseDeltasDirURI
              success
 
            case None =>
@@ -96,7 +97,7 @@ class CLIParserSpecs extends Specification {
             config.midasPort mustEqual 27020
             config.mongoHost mustEqual "localhost"
             config.mongoPort mustEqual 27017
-            config.baseDeltasDir mustEqual baseDeltasDirURI
+            config.baseDeltasDir mustEqual defaultBaseDeltasDirURI
             success
 
           case None =>
@@ -112,7 +113,7 @@ class CLIParserSpecs extends Specification {
             config.midasPort mustEqual 27040
             config.mongoHost mustEqual "localhost"
             config.mongoPort mustEqual 27017
-            config.baseDeltasDir mustEqual baseDeltasDirURI
+            config.baseDeltasDir mustEqual defaultBaseDeltasDirURI
             success
 
           case None =>
@@ -121,14 +122,14 @@ class CLIParserSpecs extends Specification {
         }
       }
 
-      " run on default port and connect to given MONGOHOST on default mongoPort" in new SetupTeardown {
+      "run on default port and connect to given MONGOHOST on default mongoPort" in new SetupTeardown {
         CLIParser.parse(Array("--source","192.168.1.44")) match {
           case Some(config) =>
             config.midasHost mustEqual "localhost"
             config.midasPort mustEqual 27020
             config.mongoHost mustEqual "192.168.1.44"
             config.mongoPort mustEqual 27017
-            config.baseDeltasDir mustEqual baseDeltasDirURI
+            config.baseDeltasDir mustEqual defaultBaseDeltasDirURI
             success
 
           case None =>
@@ -144,7 +145,7 @@ class CLIParserSpecs extends Specification {
             config.midasPort mustEqual 27020
             config.mongoHost mustEqual "localhost"
             config.mongoPort mustEqual 27019
-            config.baseDeltasDir mustEqual baseDeltasDirURI
+            config.baseDeltasDir mustEqual defaultBaseDeltasDirURI
             success
 
           case None =>
@@ -153,14 +154,14 @@ class CLIParserSpecs extends Specification {
         }
       }
 
-      " run on given PORT and connect to given MONGOHOST on default mongoPort" in new SetupTeardown {
+      "run on given PORT and connect to given MONGOHOST on default mongoPort" in new SetupTeardown {
         CLIParser.parse(Array("--port","27040","--source","192.168.1.44")) match {
           case Some(config) =>
             config.midasHost mustEqual "localhost"
             config.midasPort mustEqual 27040
             config.mongoHost mustEqual "192.168.1.44"
             config.mongoPort mustEqual 27017
-            config.baseDeltasDir mustEqual baseDeltasDirURI
+            config.baseDeltasDir mustEqual defaultBaseDeltasDirURI
             success
 
           case None =>
@@ -169,14 +170,14 @@ class CLIParserSpecs extends Specification {
         }
       }
 
-      " run on given PORT and connect to default mongoHost on given MONGOPORT" in new SetupTeardown {
+      "run on given PORT and connect to default mongoHost on given MONGOPORT" in new SetupTeardown {
         CLIParser.parse(Array("--port","27040","--mongoPort","27019")) match {
           case Some(config) =>
             config.midasHost mustEqual "localhost"
             config.midasPort mustEqual 27040
             config.mongoHost mustEqual "localhost"
             config.mongoPort mustEqual 27019
-            config.baseDeltasDir mustEqual baseDeltasDirURI
+            config.baseDeltasDir mustEqual defaultBaseDeltasDirURI
             success
 
           case None =>
@@ -192,7 +193,7 @@ class CLIParserSpecs extends Specification {
             config.midasPort mustEqual 27020
             config.mongoHost mustEqual "192.168.1.44"
             config.mongoPort mustEqual 27019
-            config.baseDeltasDir mustEqual baseDeltasDirURI
+            config.baseDeltasDir mustEqual defaultBaseDeltasDirURI
             success
 
           case None =>
@@ -201,7 +202,7 @@ class CLIParserSpecs extends Specification {
         }
       }
 
-      " use the specified directory for picking up delta files " in new SetupTeardown {
+      "use the specified directory for picking up delta files " in new SetupTeardown {
         CLIParser.parse(Array("--port", "27040", "--source", "192.168.1.44",
           "--mongoPort", "27019", "--deltasDir", newBaseDeltasDir)) match {
           case Some(config) =>

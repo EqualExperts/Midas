@@ -45,12 +45,12 @@ import com.ee.midas.transform.TransformType._
 @RunWith(classOf[JUnitRunner])
 class DeltasProcessorSpecs extends Specification with Mockito with DeltasProcessor {
      trait SetupTeardown extends BeforeAfter {
-       val myDeltas = new File("test-data/deltaProcessorSpecs")
-       val myNewApp = new File(myDeltas.getAbsolutePath + "/myNewApp")
-       val changeSet01 = new File(myNewApp.getAbsolutePath + "/001-ChangeSet")
+       val deltas = new File("test-data/deltaProcessorSpecs/deltas")
+       val newApp = new File(deltas.getAbsolutePath + "/newApp")
+       val changeSet01 = new File(newApp.getAbsolutePath + "/001-ChangeSet")
        val expansion = new File(changeSet01.getAbsolutePath + "/expansion")
        val contraction = new File(changeSet01.getAbsolutePath + "/contraction")
-       val deltasDirURL =  myDeltas.toURI.toURL
+       val deltasDirURL =  deltas.toURI.toURL
        val expansionDeltaFile = new File(expansion.getPath + "/01-expansion.delta")
        val contractionDeltaFile = new File(contraction.getPath + "/01contraction.delta")
 
@@ -74,7 +74,7 @@ class DeltasProcessorSpecs extends Specification with Mockito with DeltasProcess
        def after: Any = {
          contractionDeltaFile.delete
          expansionDeltaFile.delete
-         myDeltas.delete
+         deltas.delete
        }
      }
 

@@ -53,13 +53,19 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
   trait Setup extends Scope {
     val reader = new Reader
     val generator = new ScalaGenerator
+    val expansionDir = new File("test-data/scalaGeneratorSpecs/deltas/app1/001-ChangeSet/expansion")
+    expansionDir.deleteOnExit()
+    expansionDir.mkdirs()
+    val contractionDir = new File("test-data/scalaGeneratorSpecs/deltas/app1/001-ChangeSet/contraction")
+    contractionDir.mkdirs()
+    contractionDir.deleteOnExit()
   }
 
   sequential
   "Scala Generator" should {
        "Generates Scala code for Add operation" in new Setup {
           //Given
-          val deltaFile = new File("src/test/scala/com/ee/midas/myDeltas/myApp/001-ChangeSet/expansion/add.delta")
+          val deltaFile = new File("test-data/scalaGeneratorSpecs/deltas/app1/001-ChangeSet/expansion/add.delta")
           deltaFile.createNewFile()
           val expansionDelta = new FileWriter(deltaFile)
 
@@ -106,7 +112,7 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
 
       "Generates Scala code for Remove operation" in new Setup {
         //Given
-        val deltaFile = new File("src/test/scala/com/ee/midas/myDeltas/myApp/001-ChangeSet/contraction/remove.delta")
+        val deltaFile = new File("test-data/scalaGeneratorSpecs/deltas/app1/001-ChangeSet/contraction/remove.delta")
         deltaFile.createNewFile()
         val expansionDelta = new PrintWriter(deltaFile)
 
@@ -150,7 +156,7 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
 
       "Generates Scala code for Copy operation" in new Setup {
         //Given
-        val deltaFile = new File("src/test/scala/com/ee/midas/myDeltas/myApp/001-ChangeSet/expansion/copy.delta")
+        val deltaFile = new File("test-data/scalaGeneratorSpecs/deltas/app1/001-ChangeSet/expansion/copy.delta")
         deltaFile.createNewFile()
         val expansionDelta = new PrintWriter(deltaFile)
 
@@ -196,7 +202,7 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
 
       "Generate Scala code for split operation" in new Setup {
         //Given
-        val deltaFile = new File("src/test/scala/com/ee/midas/myDeltas/myApp/001-ChangeSet/expansion/split.delta")
+        val deltaFile = new File("test-data/scalaGeneratorSpecs/deltas/app1/001-ChangeSet/expansion/split.delta")
         deltaFile.createNewFile()
         val expansionDelta = new PrintWriter(deltaFile)
 
@@ -239,7 +245,7 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
 
     "Generate Scala code for Merge operation" in new Setup {
       //Given
-      val deltaFile = new File("src/test/scala/com/ee/midas/myDeltas/myApp/001-ChangeSet/expansion/merge.delta")
+      val deltaFile = new File("test-data/scalaGeneratorSpecs/deltas/app1/001-ChangeSet/expansion/merge.delta")
       deltaFile.createNewFile()
       val expansionDelta = new PrintWriter(deltaFile)
 
@@ -284,7 +290,7 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
 
     "Generates empty Scala expansion response map for expansion delta in contraction mode" in new Setup {
       //Given
-      val deltaFile = new File("src/test/scala/com/ee/midas/myDeltas/myApp/001-ChangeSet/expansion/add2.delta")
+      val deltaFile = new File("test-data/scalaGeneratorSpecs/deltas/app1/001-ChangeSet/expansion/add2.delta")
       deltaFile.createNewFile()
       val expansionDelta = new PrintWriter(deltaFile)
 
@@ -323,7 +329,7 @@ class ScalaGeneratorSpecs extends Specification with ResponseTypes with RequestT
 
     "Generates empty Scala maps for contraction delta in expansion mode" in new Setup {
       //Given
-      val deltaFile = new File("src/test/scala/com/ee/midas/myDeltas/myApp/001-ChangeSet/contraction/remove2.delta")
+      val deltaFile = new File("test-data/scalaGeneratorSpecs/deltas/app1/001-ChangeSet/contraction/remove2.delta")
       deltaFile.createNewFile()
       val expansionDelta = new PrintWriter(deltaFile)
 

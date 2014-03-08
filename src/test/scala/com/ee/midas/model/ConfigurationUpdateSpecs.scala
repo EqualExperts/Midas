@@ -136,7 +136,7 @@ class ConfigurationUpdateSpecs extends Specification with Mockito {
   "Configuration" should  {
     "update by adding a new application from new configuration" in new UpdateSetup {
       //given
-      override val deltasDir = new File("/" + System.getProperty("user.dir") + "/" + "addsNewAppSpec")
+      override val deltasDir = new File("/" + System.getProperty("user.dir") + "/test-data/addsNewAppSpec")
       val (application1, application2, _) = createApplications
       val oldConfiguration = createNewConfiguration(deltasDir.toURI.toURL, List(appName1))
       val newConfiguration = createNewConfiguration(deltasDir.toURI.toURL, List(appName1, appName2))
@@ -151,7 +151,7 @@ class ConfigurationUpdateSpecs extends Specification with Mockito {
 
     "update by adding two or more new applications and keeping the common ones from new configuration" in new UpdateSetup {
       //given
-      override val deltasDir = new File("/" + System.getProperty("user.dir") + "/" + "addsTwoNewAppSpec")
+      override val deltasDir = new File("/" + System.getProperty("user.dir") + "/test-data/addsTwoNewAppSpec")
       val (application1, application2, application3) = createApplications
       val oldConfiguration = createNewConfiguration(deltasDir.toURI.toURL, List(appName1))
       val newConfiguration = createNewConfiguration(deltasDir.toURI.toURL, List(appName1, appName2, appName3))
@@ -167,7 +167,7 @@ class ConfigurationUpdateSpecs extends Specification with Mockito {
 
     "update by removing an application that is not present in new configuration" in new UpdateSetup {
       //given
-      val deltasDir = new File("/" + System.getProperty("user.dir") + "/" + "removesAppSpec")
+      val deltasDir = new File("/" + System.getProperty("user.dir") + "/test-data/removesAppSpec")
       val (application1, application2, _) = createApplications
       val oldConfiguration = createNewConfiguration(deltasDir.toURI.toURL, List(appName1, appName2))
       val newConfiguration = createNewConfiguration(deltasDir.toURI.toURL, List(appName1))
@@ -182,7 +182,7 @@ class ConfigurationUpdateSpecs extends Specification with Mockito {
 
     "update by removing an application and stopping it, if not present in new configuration" in new UpdateSetup {
       //given: a configuration with an active application
-      val deltasDir = new File("/" + System.getProperty("user.dir") + "/" + "removesAndStopsAppSpec")
+      val deltasDir = new File("/" + System.getProperty("user.dir") + "/test-data/removesAndStopsAppSpec")
       val (clientSocket, mongoSocket) = createSockets
 
       override def after = {

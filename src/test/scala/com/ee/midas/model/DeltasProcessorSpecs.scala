@@ -45,7 +45,7 @@ import com.ee.midas.transform.TransformType._
 @RunWith(classOf[JUnitRunner])
 class DeltasProcessorSpecs extends Specification with Mockito with DeltasProcessor {
      trait SetupTeardown extends BeforeAfter {
-       val myDeltas = new File("src/test/scala/com/ee/midas/myDeltas")
+       val myDeltas = new File("test-data/deltaProcessorSpecs")
        val myNewApp = new File(myDeltas.getAbsolutePath + "/myNewApp")
        val changeSet01 = new File(myNewApp.getAbsolutePath + "/001-ChangeSet")
        val expansion = new File(changeSet01.getAbsolutePath + "/expansion")

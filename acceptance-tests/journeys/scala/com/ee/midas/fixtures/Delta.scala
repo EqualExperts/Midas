@@ -39,7 +39,7 @@ case class Delta(deltaDir: String , deltaStr: () => String) {
 
   val deltasPath = System.getProperty("user.dir") + deltaDir
   val deltasDir = new File(deltasPath)
-  deltasDir.mkdir
+  deltasDir.mkdirs
 
   def saveAs(formName: String, fileName: String) = {
     val file = new File(deltasPath + "/" + fileName)

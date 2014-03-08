@@ -93,9 +93,9 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
             form
          }
 
-      2. IncyWincyShoppingApp is already added to midas.config file in "deltas" folder
+      2. IncyWincyShoppingApp is already added to midas.config file in "test-data/journeys/deltas" folder
          ${
-            baseDeltaDir = "/deltas"
+            baseDeltaDir = "/test-data/journeys/deltas"
             configFile = Delta(baseDeltaDir, () => {
               """
                 |apps {
@@ -107,7 +107,7 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
             form
          }
 
-      3. There is a "incyWincyShoppingApp" folder in "deltas" with "incyWincyShoppingApp.midas" file having
+      3. There is a "incyWincyShoppingApp" folder in "test-data/journeys/deltas" with "incyWincyShoppingApp.midas" file having
          its Node information and mode.
          ${
             app1Dir = baseDeltaDir + File.separator + "incyWincyShoppingApp"
@@ -147,7 +147,7 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
             form
          }
 
-      6. Midas is running with deltas directory location as "deltas"
+      6. Midas is running with deltas directory location as "test-data/journeys/deltas"
          ${
             midasTerminal = CommandTerminal("--port", "27020", "--deltasDir", System.getProperty("user.dir") + File.separator + baseDeltaDir)
             val form = midasTerminal.startMidas
@@ -208,7 +208,7 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
 
       11. Add application incyWincyTravelApp to midas.config file.
          ${
-            baseDeltaDir = "/deltas"
+            baseDeltaDir = "/test-data/journeys/deltas"
             configFile = Delta(baseDeltaDir, () => {
               """
                 |apps {

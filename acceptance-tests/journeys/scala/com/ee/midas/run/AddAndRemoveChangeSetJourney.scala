@@ -98,9 +98,9 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
             form
          }
 
-      2. "incyWincyShoppingApp" is already added to midas.config file in "deltas" folder
+      2. "incyWincyShoppingApp" is already added to midas.config file in "test-data/journeys/deltas" folder
          ${
-            baseDeltaDir = "/deltas"
+            baseDeltaDir = "/test-data/journeys/deltas"
             configFile = Delta(baseDeltaDir, () => {
               """
                 |apps {
@@ -156,7 +156,7 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
             form
          }
 
-      6. Midas is running with deltas directory location as "deltas"
+      6. Midas is running with deltas directory location as "test-data/journeys/deltas"
          ${
             midasTerminal = CommandTerminal("--port", "27020", "--deltasDir", System.getProperty("user.dir") + File.separator + baseDeltaDir)
             val form = midasTerminal.startMidas

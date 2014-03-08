@@ -190,7 +190,7 @@ def runJVMAcceptanceTests(String srcFolder, String reportsFolder) {
         systemProperties['specs2.junit.outDir'] = reportsFolder
         main = 'org.specs2.files'
         classpath = project.sourceSets.test.runtimeClasspath
-        args = ['html', 'junitxml', 'filesrunner.verbose', 'filesrunner.pattern', '(.*Specs)|(Index.*)']
+        args = ['html', 'junitxml', 'filesrunner.pattern', '(.*Specs)|(Index.*)'] //'filesrunner.verbose'
     }
 }
 

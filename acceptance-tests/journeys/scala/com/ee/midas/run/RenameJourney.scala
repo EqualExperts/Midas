@@ -100,9 +100,9 @@ class RenameJourney extends Specification with Forms {
           form
        }
 
-    2. Create a midas.config file in "deltas" folder
+    2. Create a midas.config file in "test-data/journeys/deltas" folder
        ${
-          baseDeltaDir = "/deltas"
+          baseDeltaDir = "/test-data/journeys/deltas"
           configFile = Delta(baseDeltaDir, () => {
             """
              |apps {
@@ -114,7 +114,7 @@ class RenameJourney extends Specification with Forms {
           form
        }
 
-    3. Create a incyWincyShoppingApp.midas file in "incyWincyShoppingApp" folder in "deltas" folder
+    3. Create a incyWincyShoppingApp.midas file in "incyWincyShoppingApp" folder in "test-data/journeys/deltas" folder
        with mode as expansion.
        ${
           appDir = baseDeltaDir + File.separator + "incyWincyShoppingApp"
@@ -185,7 +185,7 @@ class RenameJourney extends Specification with Forms {
            form
         }
 
-    8. Start Midas with deltas directory location as "deltas"
+    8. Start Midas with deltas directory location as "test-data/journeys/deltas"
        ${
           midasTerminal = CommandTerminal("--port", "27020", "--deltasDir", System.getProperty("user.dir") + File.separator + baseDeltaDir)
           val form = midasTerminal.startMidas

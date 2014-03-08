@@ -37,6 +37,10 @@ trait ExceptionInjector {
   def injectException(document : BSONObject, failureField: String, failure: Throwable): BSONObject =
     injectException(document, failureField, failure.getMessage)
 
-  def injectException(document : BSONObject, failureField: String, failureMsg: String): BSONObject =
-    document + (s"${failureField}.errmsg", s"exception: ${failureMsg}")
+  def injectException(document : BSONObject, failureField: String, failureMsg: String): BSONObject = {
+    if (failureField == null || failureField.isEmpty)
+      document + (s"_errmsg", s"exception: ${failureMsg}")
+    else
+      document + (s"${failureField}._errmsg", s"exception: ${failureMsg}")
+  }
 }

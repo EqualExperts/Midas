@@ -34,7 +34,7 @@ package com.ee.midas.interceptor
 import java.io.InputStream
 import org.bson.BSONObject
 import com.ee.midas.transform.DocumentOperations._
-import com.ee.midas.transform.{ResponseTransformer}
+import com.ee.midas.transform.{ExceptionInjector, ResponseTransformer}
 import com.ee.midas.utils.SynchronizedHolder
 
 //todo: Design changes for later
@@ -43,7 +43,7 @@ import com.ee.midas.utils.SynchronizedHolder
 // both outside. RequestInterceptor, the client, co-ordinates header, sucks out info from
 // request, transforms it, and puts it back in the response.
 class ResponseInterceptor (tracker: MessageTracker, transformerHolder: SynchronizedHolder[ _ <: ResponseTransformer])
-  extends MidasInterceptable {
+  extends MidasInterceptable with ExceptionInjector {
 
   def readHeader(response: InputStream): BaseMongoHeader = {
     val header = MongoHeader(response)
@@ -65,7 +65,7 @@ class ResponseInterceptor (tracker: MessageTracker, transformerHolder: Synchroni
       try {
         transformer.transformResponse(document, fullCollectionName)
       } catch {
-        case t: Throwable => document
+        case t: Throwable => injectException(document, "", s"Midas could not transform this document completely - ${t.getMessage}")
       }
     }
     val newPayloadBytes = transformedDocuments flatMap (_.toBytes)

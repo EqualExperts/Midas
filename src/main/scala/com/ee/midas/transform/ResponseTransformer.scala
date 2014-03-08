@@ -82,7 +82,6 @@ trait ResponseTransformer extends ResponseTypes with ResponseVersioner {
   private def applySnippets(snippets: Snippets, document: BSONObject): BSONObject =
     snippets.foldLeft(document) {
       case (document, snippet) => (snippet andThen versionDocument)(document)
-//        throw new Exception("Just for Fun")
     }
 
   private def versionDocument(document: BSONObject): BSONObject = version(document)(transformType)

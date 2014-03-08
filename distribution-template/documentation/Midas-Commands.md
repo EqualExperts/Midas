@@ -6,6 +6,36 @@ to say, if an input field expected by a command is not present, then that transf
 is not applicable.  If the output field does not exist, then it is created.
 In case if the output field exists, then its over-written.
 
+###What happens when a Command fails to apply itself?
+####Scenario 1
+In case, if there is a failure to apply a particular transformation, Midas
+will inject against that field an exception sub-document.  Say for some reason, the
+following split transformation failed:
+
+ `db.collection.split('field', 'regex', '{ "firstField": "$1", "secondField": "$2"}')`
+
+then for each output field, Midas will introduce an exception sub-document instead of a
+value.
+
+ `{
+    "firstField": { _errmsg: "exception: blah, blah, ..."},
+    "secondField": { _errmsg: "exception: blah, blah, ..."
+  }`
+
+####Secanrio 2
+In an event one of the transformations in a series of transformations fail, then we
+have a case of partially transformed document.  In such a case, Midas will, at
+document level inject a field _errMsg field indicating that this is a partially
+transformed document.
+
+ `{
+    ...
+    _errmsg: "exception: blah, blah, ...",
+    ...
+  }`
+
+
+##Commands Reference
 ###The use command
 Use a particular database and that sets the context to that DB, so that all commands
 appearing after it will look for collections within that DB.  This behavior is

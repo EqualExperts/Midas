@@ -32,13 +32,13 @@
 package com.ee.midas.interceptor
 
 import java.io.{InputStream}
-import com.ee.midas.transform.{RequestTransformer}
+import com.ee.midas.transform.{ExceptionInjector, RequestTransformer}
 import com.ee.midas.model.ChangeSet
 import com.ee.midas.utils.SynchronizedHolder
 import scala.language.postfixOps
 
 class RequestInterceptor (tracker: MessageTracker, transformerHolder: SynchronizedHolder[_ <: RequestTransformer], changeSetHolder: SynchronizedHolder[ChangeSet])
-  extends MidasInterceptable {
+  extends MidasInterceptable with ExceptionInjector {
   private val CSTRING_TERMINATION_DELIM = 0
 
   private def extractFullCollectionName(bytes: Array[Byte]): String = {
@@ -81,7 +81,7 @@ class RequestInterceptor (tracker: MessageTracker, transformerHolder: Synchroniz
     val modifiedDocument = try {
       transformer.transformRequest(document, changeSet, fullCollectionName)
     } catch {
-      case t: Throwable => document
+      case t: Throwable => injectException(document, "", s"Midas could not transform this document completely - ${t.getMessage}")
     }
     val modifiedPayload = request.reassemble(modifiedDocument)
     val newLength = modifiedPayload.length

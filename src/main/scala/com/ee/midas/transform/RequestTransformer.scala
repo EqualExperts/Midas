@@ -31,7 +31,7 @@
 
 package com.ee.midas.transform
 
-import com.ee.midas.config.{ChangeSet}
+import com.ee.midas.model.{ChangeSet}
 import TransformType._
 import org.bson.BSONObject
 

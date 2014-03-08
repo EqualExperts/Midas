@@ -32,12 +32,12 @@
 package com.ee.midas.interceptor
 
 import java.io.{InputStream}
-import com.ee.midas.transform.{Transformer}
-import com.ee.midas.config.ChangeSet
+import com.ee.midas.transform.{RequestTransformer}
+import com.ee.midas.model.ChangeSet
 import com.ee.midas.utils.SynchronizedHolder
 import scala.language.postfixOps
 
-class RequestInterceptor (tracker: MessageTracker, transformerHolder: SynchronizedHolder[Transformer], changeSetHolder: SynchronizedHolder[ChangeSet])
+class RequestInterceptor (tracker: MessageTracker, transformerHolder: SynchronizedHolder[_ <: RequestTransformer], changeSetHolder: SynchronizedHolder[ChangeSet])
   extends MidasInterceptable {
   private val CSTRING_TERMINATION_DELIM = 0
 
@@ -78,7 +78,11 @@ class RequestInterceptor (tracker: MessageTracker, transformerHolder: Synchroniz
     val document = request.extractDocument
     val transformer = transformerHolder.get
     val changeSet = changeSetHolder.get.number
-    val modifiedDocument = transformer.transformRequest(document, changeSet, fullCollectionName)
+    val modifiedDocument = try {
+      transformer.transformRequest(document, changeSet, fullCollectionName)
+    } catch {
+      case t: Throwable => document
+    }
     val modifiedPayload = request.reassemble(modifiedDocument)
     val newLength = modifiedPayload.length
     header.updateLength(newLength)

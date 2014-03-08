@@ -29,12 +29,11 @@
 * official policies, either expressed or implied, of the Midas Project.
 ******************************************************************************/
 
-package com.ee.midas.config
+package com.ee.midas.model
 
 import java.net.{Socket, InetAddress, URL}
 import com.ee.midas.transform.{Transformer, TransformType}
 import com.ee.midas.utils.{SynchronizedHolder, Loggable}
-import com.ee.midas.DeltasProcessor
 import scala.{None, Some}
 import com.ee.midas.dsl.Translator
 import com.ee.midas.dsl.interpreter.Reader

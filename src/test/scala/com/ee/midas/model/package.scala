@@ -31,24 +31,13 @@
 
 package com.ee.midas
 
-import com.ee.midas.utils.{FileVisitor, Loggable}
-import com.ee.midas.dsl.Translator
-import com.ee.midas.transform.{TransformType, Transformer}
-import java.net.URL
-import java.nio.file.Paths
-import java.util.regex.Pattern
-import java.io.File
-import scala.collection.JavaConverters._
-import scala.util.Try
+import java.io.{PrintWriter, File}
 
-trait DeltasProcessor extends Loggable {
-  def processDeltas(translator: Translator[Transformer], transformType: TransformType, deltasDir: URL): Try[Transformer] = Try {
-    logDebug(s"Translating Delta Files...in ${deltasDir} for $transformType TransformType")
-    val startDir = Paths.get(deltasDir.toURI)
-    val deltaFiles = new FileVisitor (startDir, Pattern.compile(".*\\.delta$")).visit.map(new File(_))
-    logDebug(s"Delta Files $deltaFiles")
-    val sortedDeltaFiles = deltaFiles.sortBy(f => f.getAbsolutePath)
-    logInfo(s"Sorted Delta Files $sortedDeltaFiles")
-    translator.translate(transformType, sortedDeltaFiles.asJava)
+package object model {
+  def write(text: String, toFile: File) = {
+    val writer = new PrintWriter(toFile, "utf-8")
+    writer.write(text)
+    writer.flush()
+    writer.close()
   }
 }

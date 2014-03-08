@@ -32,8 +32,9 @@ Documentation:
   specifications.
 
 Pre-Requisites:
-* It assumes that you have JDK1.6 or 1.7 installed and you have java
-in your path.
+* It assumes that you have JDK1.6 or 1.7 installed and you have java in your path.
+* It Works with MongoDB versions from 2.0.7, 2.2.7 till 2.4.9 and assumes you have it
+  installed and running.
 
 Running Midas:
 * After having exploded the Midas zip -

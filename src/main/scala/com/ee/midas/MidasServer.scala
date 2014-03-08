@@ -31,7 +31,7 @@
 
 package com.ee.midas
 
-import com.ee.midas.config.{ConfigurationWatcher, ConfigurationParser, Configuration}
+import com.ee.midas.model.{ConfigurationWatcher, ConfigurationParser, Configuration}
 import java.net.{Socket, InetAddress, ServerSocket}
 import com.ee.midas.utils.Loggable
 import java.io.File

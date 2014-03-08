@@ -39,7 +39,7 @@ import org.specs2.mock.Mockito
 import org.specs2.specification.Scope
 import com.mongodb.BasicDBObject
 import org.bson.BasicBSONEncoder
-import com.ee.midas.config.Application
+import com.ee.midas.model.Application
 import java.net.InetAddress
 import com.ee.midas.transform.Transformer
 import com.ee.midas.utils.SynchronizedHolder

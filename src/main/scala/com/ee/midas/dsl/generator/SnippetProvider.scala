@@ -39,8 +39,9 @@ import java.util.regex.Pattern
 import com.ee.midas.dsl.expressions.{Parser, Expression}
 import com.ee.midas.utils.Loggable
 import scala.util.Try
+import com.ee.midas.transform.ExceptionInjector
 
-trait SnippetProvider extends Parser with Loggable {
+trait SnippetProvider extends Parser with Loggable with ExceptionInjector {
    def toSnippet(verb: Verb, args: Array[String]): BSONObject => BSONObject = verb match {
      case Verb.add       => add(args(0))
      case Verb.remove    => remove(args(0))
@@ -90,8 +91,8 @@ trait SnippetProvider extends Parser with Loggable {
       } catch {
         case t: Throwable =>
           val errMsg = if(t.getMessage == null) s"Cannot parse $regex" else t.getMessage
-          documentWithSplitFields.keySet.toArray.foreach { case key: String =>
-            document + (s"${key}.errmsg", s"exception: $errMsg")
+          documentWithSplitFields.keySet.toArray.foreach { case field: String =>
+            injectException(document, field, errMsg)
           }
           document
       }
@@ -109,8 +110,7 @@ trait SnippetProvider extends Parser with Loggable {
         val literal = expression.evaluate(document)
         document + (outputField, literal.value)
       } catch {
-        case t: Throwable =>
-          document + (s"${outputField}.errmsg", s"exception: ${t.getMessage}")
+        case t: Throwable => injectException(document, outputField, t)
       }
     })
   }

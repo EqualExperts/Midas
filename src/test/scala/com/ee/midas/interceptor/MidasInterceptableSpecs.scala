@@ -36,7 +36,7 @@ import org.specs2.mutable.Specification
 import org.specs2.mock.Mockito
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
-import com.ee.midas.config.{ChangeSet, Node, Application}
+import com.ee.midas.model.{ChangeSet, Node, Application}
 import com.ee.midas.transform.TransformType
 import org.specs2.specification.Scope
 import java.net.{URL, InetAddress}

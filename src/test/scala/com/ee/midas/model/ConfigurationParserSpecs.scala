@@ -29,7 +29,7 @@
 * official policies, either expressed or implied, of the Midas Project.
 ******************************************************************************/
 
-package com.ee.midas.config
+package com.ee.midas.model
 
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner

@@ -28,47 +28,42 @@
 * are those of the authors and should not be interpreted as representing
 * official policies, either expressed or implied, of the Midas Project.
 ******************************************************************************/
+package com.ee.midas.model
 
-package com.ee.midas.config
+import scala.util.parsing.combinator.JavaTokenParsers
+import java.net.URL
+import scala.util.Try
+import java.io.File
 
-import java.net.ServerSocket
-import scala.util.{Failure, Success, Try}
+/**
+ * Example: midas.config
+ * apps {
+ *   app1
+ *   app2
+ * }
+ *
+ * BNF for Midas Configuration
+ * --------------------------------------
+ * apps ::=  "apps" "{" {appName} "}"
+ * appName ::=  ident
+ *
+ */
+trait ConfigurationParser extends JavaTokenParsers {
 
-class ServerSetup {
-  var midasServerPort = 0
-  var mongoServerPort = 0
-  var midasServer: ServerSocket = null
-  var mongoServer: ServerSocket = null
+  //Eat Java-Style comments like whitespace
+  protected override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
-  private def run(serverName: String, server: ServerSocket) = {
-    new Thread(new Runnable {
-      def run() = {
-        while(!server.isClosed) {
-          println(s"$serverName open on: ${server.getLocalPort}")
-          Try {
-            server.accept()
-          } match {
-            case Success(socket) => println("Connection Accepted")
-            case Failure(t) => println(s"${t.getMessage}")
-          }
-        }
-      }
-    }, serverName).start()
+  def configuration(deltasDir: URL): Parser[Configuration] = "apps" ~ "{" ~> rep(ident) <~ "}" ^^ { case appNames => new Configuration(deltasDir, appNames) }
+
+  def parse(input: String, deltasDir: URL): Configuration = parseAll(configuration(deltasDir), input) match {
+    case Success(value, _) => value
+    case NoSuccess(message, _) =>
+      throw new IllegalArgumentException(s"Parsing Failed: $message")
   }
 
-  def start = {
-    println("BEFORE CLASS INVOKED. STARTING SERVERS")
-    midasServer = new ServerSocket(0)
-    midasServerPort = midasServer.getLocalPort
-    mongoServer = new ServerSocket(0)
-    mongoServerPort = mongoServer.getLocalPort
-    run("Midas Server",midasServer)
-    run("Mongo Server", mongoServer)
-  }
-
-  def stop = {
-    println("AFTER CLASS INVOKED. SHUTTING DOWN SERVERS")
-    midasServer.close()
-    mongoServer.close()
+  def parse(deltasDir: URL, configFilename: String): Try[Configuration] = Try {
+    val midasConfig = new URL(deltasDir.toString + configFilename)
+    val configText: String = scala.io.Source.fromURL(midasConfig).mkString
+    parse(configText, deltasDir)
   }
 }

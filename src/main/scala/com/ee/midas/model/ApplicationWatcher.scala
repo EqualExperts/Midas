@@ -28,42 +28,39 @@
 * are those of the authors and should not be interpreted as representing
 * official policies, either expressed or implied, of the Midas Project.
 ******************************************************************************/
-package com.ee.midas.config
 
-import scala.util.parsing.combinator.JavaTokenParsers
-import java.net.URL
-import scala.util.Try
-import java.io.File
+package com.ee.midas.model
 
-/**
- * Example: midas.config
- * apps {
- *   app1
- *   app2
- * }
- *
- * BNF for Midas Configuration
- * --------------------------------------
- * apps ::=  "apps" "{" {appName} "}"
- * appName ::=  ident
- *
- */
-trait ConfigurationParser extends JavaTokenParsers {
+import com.ee.midas.utils.{DirectoryWatcher, Loggable}
+import java.nio.file.StandardWatchEventKinds._
+import java.util.concurrent.TimeUnit
 
-  //Eat Java-Style comments like whitespace
-  protected override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
+class ApplicationWatcher (application: Application, val watchEvery: Long = 100, val unit : TimeUnit = TimeUnit.MILLISECONDS) extends Watcher[Application] with Loggable
+with ApplicationParsers {
+  val configDir = application.configDir
 
-  def configuration(deltasDir: URL): Parser[Configuration] = "apps" ~ "{" ~> rep(ident) <~ "}" ^^ { case appNames => new Configuration(deltasDir, appNames) }
+  private val watcher: DirectoryWatcher = {
+    val dirWatchMsg = s"Setting up Directory Watcher for Application in ${configDir}..."
+    println(dirWatchMsg)
+    logInfo(dirWatchMsg)
+    new DirectoryWatcher(application.configDir.getPath, List(ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY),
+      watchEvery, stopWatchingOnException = false)(watchEvents => {
+      watchEvents.foreach { watchEvent =>
+        logInfo(s"Received ${watchEvent.kind()}, Context = ${watchEvent.context()}")
+      }
 
-  def parse(input: String, deltasDir: URL): Configuration = parseAll(configuration(deltasDir), input) match {
-    case Success(value, _) => value
-    case NoSuccess(message, _) =>
-      throw new IllegalArgumentException(s"Parsing Failed: $message")
+      parse(application.configDir) match {
+        case scala.util.Success(newlyParsedApp) => application.update(newlyParsedApp)
+        case scala.util.Failure(t) =>
+          logError(s"Failed to parse Application Config because ${t.getMessage}")
+          logError(s"Will Continue To Use Old Application Config")
+      }
+    })
   }
 
-  def parse(deltasDir: URL, configFilename: String): Try[Configuration] = Try {
-    val midasConfig = new URL(deltasDir.toString + configFilename)
-    val configText: String = scala.io.Source.fromURL(midasConfig).mkString
-    parse(configText, deltasDir)
-  }
+  def startWatching = watcher.start
+
+  def stopWatching = watcher.stopWatching
+
+  def isActive = watcher.isActive
 }

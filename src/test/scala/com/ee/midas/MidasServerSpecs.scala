@@ -36,7 +36,7 @@ import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 import org.specs2.mock.Mockito
 import java.net._
-import com.ee.midas.config.Configuration
+import com.ee.midas.model.Configuration
 import scala.util.Try
 import java.io.{IOException, File}
 import java.util.concurrent.TimeUnit

@@ -69,21 +69,22 @@ trait ResponseTransformer extends ResponseTypes with ResponseVersioner {
     }
   }
 
-  def versionedSnippets(fullCollectionName: String): VersionedSnippets =
+  private def versionedSnippets(fullCollectionName: String): VersionedSnippets =
     if(transformType == EXPANSION)
       responseExpansions(fullCollectionName)
     else if(transformType == CONTRACTION)
       responseContractions(fullCollectionName)
     else TreeMap.empty
 
-  def snippetsFrom(version: Double, versionedSnippets: VersionedSnippets) =
+  private def snippetsFrom(version: Double, versionedSnippets: VersionedSnippets) =
     versionedSnippets.filterKeys(v => v >= version).unzip._2
 
-  def applySnippets(snippets: Snippets, document: BSONObject): BSONObject =
+  private def applySnippets(snippets: Snippets, document: BSONObject): BSONObject =
     snippets.foldLeft(document) {
       case (document, snippet) => (snippet andThen versionDocument)(document)
+//        throw new Exception("Just for Fun")
     }
 
-  def versionDocument(document: BSONObject): BSONObject = version(document)(transformType)
+  private def versionDocument(document: BSONObject): BSONObject = version(document)(transformType)
 }
 

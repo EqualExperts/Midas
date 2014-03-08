@@ -38,7 +38,7 @@ import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
 import org.specs2.specification.Scope
 import java.net.InetAddress
-import com.ee.midas.config.{ChangeSet, Application}
+import com.ee.midas.model.{ChangeSet, Application}
 import org.bson.{BSONObject, BasicBSONObject}
 import com.ee.midas.transform.DocumentOperations._
 import com.ee.midas.transform.Transformer

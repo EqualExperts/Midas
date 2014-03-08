@@ -42,7 +42,7 @@ import com.ee.midas.model._
 import com.ee.midas.transform.TransformType
 
 @RunWith(classOf[JUnitRunner])
-class MidasWithJavaDriverSpecs extends Specification {
+class CrudSpecs extends Specification {
 
   var application: MongoClient = null
   var document:DBObject = null

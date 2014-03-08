@@ -14,6 +14,7 @@ apply plugin: 'pmd'
 idea {
     module {
        testSourceDirs += file('acceptance-tests/drivers/java/driver-version-2.11.3')
+       testSourceDirs += file('acceptance-tests/journeys/scala')
     }
 }
 defaultTasks 'clean', 'build'
@@ -83,17 +84,20 @@ project.ext {
     MONGODB_SERVER = 'localhost'
     mongoDB = System.getProperty('mongoDB', "$MONGODB_SERVER")
 
-    acceptanceTestDir = 'acceptance-tests/drivers'
+    acceptanceTestDir = 'acceptance-tests'
     acceptanceTestReportsDir = "${reporting.baseDir}/acceptance-tests"
     smokeTestsDir = "smoke-tests"
     smokeTestReportsDir = "${reporting.baseDir}/${smokeTestsDir}"
     documentationDir = "distribution-template/documentation/"
     journeysDir = "${documentationDir}/journeys"
 
-    javaAcceptanceTestDir = "$acceptanceTestDir/java/driver-version-2.11.3"
+    javaAcceptanceTestDir = "$acceptanceTestDir/drivers/java/driver-version-2.11.3"
     javaAcceptanceTestReportsDir = "$acceptanceTestReportsDir/java"
-    pythonTestDir = "$acceptanceTestDir/python/driver-version-2.6.3"
-    pythonTestReportsDir = "$acceptanceTestReportsDir/python"
+    pythonAcceptanceTestDir = "$acceptanceTestDir/drivers/python/driver-version-2.6.3"
+    pythonAcceptanceTestReportsDir = "$acceptanceTestReportsDir/python"
+
+    acceptanceJourneyTestDir = "$acceptanceTestDir/journeys/scala"
+    acceptanceJourneyTestReportsDir = "$acceptanceTestReportsDir/journeys"
 
     transformsPackage = 'com/ee/midas/transform/'
     deltas = "deltas"
@@ -126,19 +130,45 @@ task ('smoke-tests') << {
     javaexec {
         main = 'specs2.run'
         classpath = project.sourceSets.test.runtimeClasspath
-        args = ['com.ee.midas.smoke.MidasWithJavaDriverSpecs']
+        args = ['com.ee.midas.smoke.CrudSpecs']
     }
 }
 
-task ('acceptance-tests', dependsOn: ['cleanAcceptanceReportsDir']) << {
-    println "Running acceptance tests..."
-    project.ext.language == 'python'? runPythonTests(project.ext.pythonTestDir, project.ext.pythonTestReportsDir) :
+task ('acceptance-tests', dependsOn: ['cleanAcceptanceReportsDir', 'journey-tests', 'driver-tests']) << {
+    println "Running acceptance tests (journeys and driver-tests)"
+}
+
+task ('cleanAcceptanceReportsDir') {
+    File dir = new File(project.ext.acceptanceTestReportsDir)
+    !dir.exists() ?: dir.deleteDir()
+}
+
+task ('driver-tests', dependsOn: ['cleanDriverTestsReportsDir']) << {
+    println "Running driver-tests..."
+    project.ext.language == 'python'? runPythonAcceptanceTests(project.ext.pythonAcceptanceTestDir, project.ext.pythonAcceptanceTestReportsDir) :
         runJVMAcceptanceTests(project.ext.javaAcceptanceTestDir, project.ext.javaAcceptanceTestReportsDir)
+}
+
+task ('cleanDriverTestsReportsDir') {
+    File javaReportsDir = new File(project.ext.javaAcceptanceTestReportsDir)
+    !javaReportsDir.exists() ?: javaReportsDir.deleteDir()
+    File pythonReportsDir = new File(project.ext.pythonAcceptanceTestReportsDir)
+    !pythonReportsDir.exists() ?: pythonReportsDir.deleteDir()
+}
+
+task ('journey-tests', dependsOn: ['cleanJourneyTestReportsDir']) << {
+    println "Running journey tests..."
+    project.ext.language == runJVMAcceptanceTests(project.ext.acceptanceJourneyTestDir, project.ext.acceptanceJourneyTestReportsDir)
 
     copy {
-        from (project.ext.javaAcceptanceTestReportsDir)
+        from (project.ext.acceptanceJourneyTestReportsDir)
         into "${project.ext.journeysDir}"
     }
+}
+
+task ('cleanJourneyTestReportsDir') {
+    File dir = new File(project.ext.acceptanceJourneyTestReportsDir)
+    !dir.exists() ?: dir.deleteDir()
 }
 
 task ('startMidas', dependsOn: ['killMidas', 'unzip']) << {
@@ -164,7 +194,7 @@ def runJVMAcceptanceTests(String srcFolder, String reportsFolder) {
     }
 }
 
-def runPythonTests(String srcFolder, String reportsFolder) {
+def runPythonAcceptanceTests(String srcFolder, String reportsFolder) {
     println "cleaning reports directory..."
     def os = System.getProperty("os.name")
     println "running python tests"
@@ -178,11 +208,6 @@ def runPythonTests(String srcFolder, String reportsFolder) {
             throw new BuildException("python acceptance tests failed.")
         }
     }
-}
-
-task ('cleanAcceptanceReportsDir') {
-    File dir = new File(project.ext.acceptanceTestReportsDir)
-    !dir.exists() ?: dir.deleteDir()
 }
 
 // Apply External Plugins
@@ -285,7 +310,7 @@ cobertura {
     coverageCheckHaltOnFailure = true
 }
 
-task distribute(type:Zip, dependsOn: ['assemble', 'acceptance-tests']) {
+task distribute(type:Zip, dependsOn: ['assemble', 'journey-tests']) {
     doFirst {
         ant.mkdir(dir:"$distsBinDirName")
         prepareExecutables()
@@ -295,7 +320,7 @@ task distribute(type:Zip, dependsOn: ['assemble', 'acceptance-tests']) {
         include ('**/*.txt')
     }
     from (project.ext.documentationDir) { include ('**/*.pdf') into ('docs') }
-    from (project.ext.javaAcceptanceTestReportsDir) { into ('docs/journeys') }
+    from (project.ext.acceptanceJourneyTestReportsDir) { into ('docs/journeys') }
     from (project.ext.resourcesDir) {
         exclude('*.properties')
     }

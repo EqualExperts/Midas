@@ -127,6 +127,25 @@ class ResponseInterceptorSpecs extends Specification with Mockito {
         readData mustEqual (header.bytes ++ payloadBytes)
       }
 
+      "intercepts but does not transform payload when transformer could not apply one of transformations correctly" in new setup {
+        //given
+        val transformedPayload = new BasicDBObject("value", 1)
+          .append("_errmsg", "exception: Midas could not transform this document completely - Failed")
+
+        header.hasPayload returns true
+        header.responseTo returns responseID
+        header.documentsCount returns 1
+        header.payloadSize returns payloadBytes.length
+        tracker.fullCollectionName(responseID) returns Option(collectionName)
+
+        transformer.transformResponse(payloadData, collectionName) throws(new IllegalArgumentException("Failed"))
+
+        //when
+        val readData = resInterceptor.read(src, header)
+
+        //then
+        readData mustEqual header.bytes ++ encoder.encode(transformedPayload)
+      }
     }
 
   trait setup extends Scope {

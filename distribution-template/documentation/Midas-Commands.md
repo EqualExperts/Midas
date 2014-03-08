@@ -3,7 +3,7 @@
 ##Commands
 As a general guiding principle, all the commands below are fail-safe.  That is
 to say, if an input field expected by a command is not present, then that transformation
-is not applicable.  If the output field does not exist, then it is created.
+is not applied.  If the output field does not exist, then it is created.
 In case if the output field exists, then its over-written.
 
 ###What happens when a Command fails to apply itself?
@@ -22,10 +22,10 @@ value.
     "secondField": { _errmsg: "exception: blah, blah, ..."
   }`
 
-####Secanrio 2
+####Scenario 2
 In an event one of the transformations in a series of transformations fail, then we
 have a case of partially transformed document.  In such a case, Midas will, at
-document level inject a field _errMsg field indicating that this is a partially
+document level inject a field `_errmsg` field indicating that this is a partially
 transformed document.
 
  `{
@@ -42,13 +42,13 @@ appearing after it will look for collections within that DB.  This behavior is
 same as the use command used on Mongo Shell.
 
 ####Syntax
-`use <db>`
+    use <db>
 
 ####Examples
-`use transactions`
+    use transactions
 
-Set context to users db
-`use users`
+    //Set context to users db
+    use users
 
 
 ###The add command                                                                                         
@@ -155,25 +155,25 @@ Takes an array that contains a pair of numbers and returns the remainder of the 
 `db.things.transform("outputFieldName", "{ $mod: [arg0, arg1] }")`
 
 ###Examples of Arithmetic Transformation Functions
-`use users`
+    use users
 
-`//Increment age by 1`
-`db.customers.transform('age', '{ $add: ["$age", 1] }')`
+    //Increment age by 1
+    db.customers.transform('age', '{ $add: ["$age", 1] }')
 
-`//Decrement age by 1`
-`db.customers.transform('age', '{ $subtract: ["$age", 1] }')`
+    //Decrement age by 1
+    db.customers.transform('age', '{ $subtract: ["$age", 1] }')
 
-`//recursive example - add 1 and subtract 1 after in the same transformation`
-`db.customers.transform('age', '{ $subtract: [{ $add: ["$age", 1]}, 1] }')`
+    //recursive example - add 1 and subtract 1 after in the same transformation
+    db.customers.transform('age', '{ $subtract: [{ $add: ["$age", 1]}, 1] }')
 
-`// make age twice`
-`db.customers.transform('age', '{ $multiply: ["$age", 2] }')`
+    // make age twice
+    db.customers.transform('age', '{ $multiply: ["$age", 2] }')
 
-`// make age 1/3rd`
-`db.customers.transform('age', '{ $divide: ["$age", 3] }')`
+    // make age 1/3rd
+    db.customers.transform('age', '{ $divide: ["$age", 3] }')
 
-`// age % 3`
-`db.customers.transform("age", "{ $mod: ['$age', 3]}")`
+    // age % 3
+    db.customers.transform("age", "{ $mod: ['$age', 3]}")
 
 ####String Transformation Functions
 
@@ -196,12 +196,12 @@ Takes single argument (constant or field) and converts it to upper case.
 `db.things.transform("outputFieldName", "{ $toUpper: "$name" }")`
 
 ###Examples of String Transformation Functions
-`use catalog`
+    use catalog
 
-`db.items.transform('itemName', '{ $concat: ["item - ", "$itemName"] }')`
-`db.items.transform('itemName', '{ $toUpper: "$itemName" }')`
-`db.items.transform('description', '{ $toLower: "$itemName" }')`
-`db.items.transform('description', '{ $toUpper: { $concat: ["Description for ", "$description"] } }')`
+    db.items.transform('itemName', '{ $concat: ["item - ", "$itemName"] }')
+    db.items.transform('itemName', '{ $toUpper: "$itemName" }')
+    db.items.transform('description', '{ $toLower: "$itemName" }')
+    db.items.transform('description', '{ $toUpper: { $concat: ["Description for ", "$description"] } }')
 
 
 ####Date Transformation Functions
@@ -215,7 +215,7 @@ of String or could come from other fields as well
 `db.things.transform("outputFieldName", "{ $date: [format, value] }")`
 
 ###Examples of Date Transformation Functions
-`use transactions`
+    use transactions
 
-`db.orders.transform("executionDate", '{ $date: ["MMM dd, yyyy HH:mm", "Jun 23, 1912 00:00"]}')`
-`db.orders.transform("dispatch.date", "{ $date : ['dd-MMM-yy', '18-Aug-87']}")`
+    db.orders.transform("executionDate", '{ $date: ["MMM dd, yyyy HH:mm", "Jun 23, 1912 00:00"]}')
+    db.orders.transform("dispatch.date", "{ $date : ['dd-MMM-yy', '18-Aug-87']}")

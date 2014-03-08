@@ -78,10 +78,7 @@ case class Update(data: Array[Byte]) extends Request {
     (selector, updator)
   }
 
-
-  def extractDocument: BSONObject = {
-    updator
-  }
+  def extractDocument: BSONObject = updator
 
   def reassemble(modifiedDocument: BSONObject): Array[Byte] = {
     val modifiedPayload = selector.toBytes ++ modifiedDocument.toBytes
@@ -90,16 +87,11 @@ case class Update(data: Array[Byte]) extends Request {
 }
 
 case class Insert(data: Array[Byte]) extends Request {
-
   override protected val payloadStartIndex = extractFullCollectionName(data).length + delimiterLength
   val (initialBytes, payload) = extractPayload(data)
-  val document: BSONObject = payload
 
-  def extractDocument: BSONObject = {
-    document
-  }
+  def extractDocument: BSONObject = payload
 
-  def reassemble(modifiedDocument: BSONObject): Array[Byte] = {
+  def reassemble(modifiedDocument: BSONObject): Array[Byte] =
     initialBytes ++ modifiedDocument.toBytes
-  }
 }

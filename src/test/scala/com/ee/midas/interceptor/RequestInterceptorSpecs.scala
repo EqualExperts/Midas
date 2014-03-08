@@ -43,6 +43,7 @@ import org.bson.{BSONObject, BasicBSONObject}
 import com.ee.midas.transform.DocumentOperations._
 import com.ee.midas.transform.Transformer
 import com.ee.midas.utils.SynchronizedHolder
+import com.mongodb.BasicDBObject
 
 @RunWith(classOf[JUnitRunner])
 class RequestInterceptorSpecs extends Specification with Mockito {
@@ -244,5 +245,39 @@ class RequestInterceptorSpecs extends Specification with Mockito {
       there was one(transformer).transformRequest(document, newChangeSet.number, collectionName)
       there was no(transformer).transformRequest(document, oldChangeSet.number, collectionName)
     }
+
+    "intercepts but does not transform payload when transformer could not apply one of transformations correctly" in new setup {
+      //Given
+      val insertPayload: Array[Byte] = Array(0x6d.toByte, 0x79.toByte, 0x64.toByte, 0x62.toByte, 0x2e.toByte, 0x6d.toByte,
+      0x79.toByte, 0x43.toByte, 0x6f.toByte, 0x6c.toByte, 0x6c.toByte, 0x65.toByte, 0x63.toByte, 0x74.toByte,
+      0x69.toByte, 0x6f.toByte, 0x6e.toByte, 0x00.toByte, 0x28.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte,
+      0x07.toByte, 0x5f.toByte, 0x69.toByte, 0x64.toByte, 0x00.toByte, 0x52.toByte, 0xf8.toByte, 0x6f.toByte,
+      0x75.toByte, 0xe0.toByte, 0x07.toByte, 0xb7.toByte, 0x42.toByte, 0xf7.toByte, 0x3b.toByte, 0x8b.toByte,
+      0x7f.toByte, 0x01.toByte, 0x64.toByte, 0x6f.toByte, 0x63.toByte, 0x75.toByte, 0x6d.toByte, 0x65.toByte,
+      0x6e.toByte, 0x74.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x60.toByte, 0x00.toByte, 0x00.toByte,
+      0x00.toByte, 0xf0.toByte, 0x3f.toByte, 0x00.toByte)
+      val src = new ByteArrayInputStream(insertPayload)
+
+      header.payloadSize returns insertPayload.size
+      header.opCode returns BaseMongoHeader.OpCode.OP_INSERT
+      override val collectionName = "mydb.myCollection"
+      val insertRequest = Insert(insertPayload)
+      val document = insertRequest.extractDocument
+
+      //And Given an Interceptor with
+      val changeSetHolder = SynchronizedHolder(changeSet)
+      val interceptor = new RequestInterceptor(tracker, SynchronizedHolder(transformer), changeSetHolder)
+
+      //And Given
+      transformer.transformRequest(document, changeSet.number, collectionName) throws(new IllegalArgumentException("Failed"))
+
+      //When
+      val readBytes = interceptor.read(src, header)
+
+      //Then
+      document.put("_errmsg", "exception: Midas could not transform this document completely - Failed")
+      readBytes mustEqual header.bytes ++ insertRequest.reassemble(document)
+    }
+
   }
 }

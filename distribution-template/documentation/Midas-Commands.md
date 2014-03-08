@@ -1,6 +1,10 @@
 # Midas
 ***On-the-fly Schema Migration Tool for MongoDB***
 ##Commands
+As a general guiding principle, all the commands below are fail-safe.  That is
+to say, if an input field expected by a command is not present, then that transformation
+is not applicable.  If the output field does not exist, then it is created.
+In case if the output field exists, then its over-written.
 
 ###The use command
 Use a particular database and that sets the context to that DB, so that all commands
@@ -105,11 +109,13 @@ Takes an array of one or more numbers and multiples them, returning the resultin
 
 #####The `$divide` function 
 Takes an array that contains a pair of numbers and returns the value of the first number divided by the second number.
+It ignores more than 2 arguments.
 #####Syntax
 `db.things.transform("outputFieldName", "{ $divide: [arg0, arg1] }")`
 
 #####The `$subtract` function 
 Takes an array that contains a pair of numbers and subtracts the second from the first, returning their difference.
+It ignores more than 2 arguments.
 ####Syntax
 `db.things.transform("outputFieldName", "{ $subtract: [arg0, arg1] }")`
 
@@ -159,10 +165,27 @@ Takes single argument (constant or field) and converts it to upper case.
 #####Syntax
 `db.things.transform("outputFieldName", "{ $toUpper: "$name" }")`
 
-###Examples of Arithmetic Transformation Functions
+###Examples of String Transformation Functions
 `use catalog`
 
 `db.items.transform('itemName', '{ $concat: ["item - ", "$itemName"] }')`
 `db.items.transform('itemName', '{ $toUpper: "$itemName" }')`
 `db.items.transform('description', '{ $toLower: "$itemName" }')`
 `db.items.transform('description', '{ $toUpper: { $concat: ["Description for ", "$description"] } }')`
+
+
+####Date Transformation Functions
+
+#####The `$date` function
+Takes an array of two arguments. First one is the date format (the standard
+[Java Date format applies](http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html)) and the second argument is the date in the form
+of String or could come from other fields as well
+
+#####Syntax
+`db.things.transform("outputFieldName", "{ $date: [format, value] }")`
+
+###Examples of Date Transformation Functions
+`use transactions`
+
+`db.orders.transform("executionDate", '{ $date: ["MMM dd, yyyy HH:mm", "Jun 23, 1912 00:00"]}')`
+`db.orders.transform("dispatch.date", "{ $date : ['dd-MMM-yy', '18-Aug-87']}")`

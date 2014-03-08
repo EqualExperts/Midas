@@ -108,7 +108,7 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
                 |}
               """.stripMargin
             })
-            val form = configFile.saveAs("Write Config File", "midas.config")
+            val form = configFile.saveAs("Existing Config File", "midas.config")
             form
          }
 
@@ -130,7 +130,7 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
                  }
               """
             })
-            val form = appConfigFile.saveAs("Write Application Config File", "incyWincyShoppingApp.midas")
+            val form = appConfigFile.saveAs("Existing Application Config File", "incyWincyShoppingApp.midas")
             form
           }
 
@@ -138,7 +138,7 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
          ${
             changeSetDirPath1 = appDir + File.separator + "001SplitName"
             changeSetDir1 = Delta(changeSetDirPath1, () => "")
-            var form = Form("Create ChangeSet Folder")
+            var form = Form("Existing ChangeSet Folder")
             form = form.tr("001SplitName")
             form
          }
@@ -152,7 +152,7 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
                  db.orders.split('name', '^([a-zA-Z]+) ([a-zA-Z]+)$', '{"firstName": "$1", "lastName": "$2" }')
               """
             })
-            val form = expansionDelta1.saveAs("Write Delta", "0001_splitName_transactions_orders.delta")
+            val form = expansionDelta1.saveAs("Existing Delta", "0001_splitName_transactions_orders.delta")
             form
          }
 
@@ -163,10 +163,10 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
             form
          }
 
-      7. NodeY connects with midas and it receives expanded documents with "name" field splited as
+      7. NodeY is connected with midas and it receiving expanded documents with "name" field split as
          "firstName" and "lastName".
          ${
-            val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "127.0.0.1", 27020)
+            val form = MongoShell("IncyWincyShoppingApp - Version1", "127.0.0.1", 27020)
               .useDatabase("transactions")
               .readDocumentsFromCollection("orders")
               .assertFieldsAdded(Array("firstName", "lastName"), expansionVersion = 1)
@@ -219,9 +219,9 @@ class AddAndRemoveChangeSetJourney extends Specification with Forms {
          }
 
       11. Now NodeX is online and traffic is routed through NodeX. It connects with midas and it starts
-          receiving expanded documents.
+          receiving expanded documents for new changeset.
          ${
-            val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "127.0.0.1", 27020)
+            val form = MongoShell("IncyWincyShoppingApp - Version2", "127.0.0.1", 27020)
               .useDatabase("transactions")
               .readDocumentsFromCollection("orders")
               .assertFieldsAdded(Array("firstName", "lastName", "Discount Amount"), expansionVersion = 2)

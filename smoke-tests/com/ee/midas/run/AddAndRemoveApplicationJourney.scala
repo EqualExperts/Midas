@@ -103,7 +103,7 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
                 |}
               """.stripMargin
             })
-            val form = configFile.saveAs("Write Config File", "midas.config")
+            val form = configFile.saveAs("Existing Config File", "midas.config")
             form
          }
 
@@ -121,7 +121,7 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
                  }
               """
             })
-            val form = app1ConfigFile.saveAs("Write Application Config File", "incyWincyShoppingApp.midas")
+            val form = app1ConfigFile.saveAs("Existing Application Config File", "incyWincyShoppingApp.midas")
             form
          }
 
@@ -129,7 +129,7 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
          ${
             changeSetDirPathApp1 = app1Dir + File.separator + "001TransformNumber"
             changeSetDirApp1 = Delta(changeSetDirPathApp1, () => "")
-            var form = Form("Create ChangeSet Folder")
+            var form = Form("Existing ChangeSet Folder")
             form = form.tr("001TransformNumber")
             form
          }
@@ -143,7 +143,7 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
                        db.orders.transform('MobileNo', '{ $concat: ["+91", "$MobileNo"] }')
               """
             })
-            val form = expansionDeltaApp1.saveAs("Write Delta", "0001_tranformMobileNo_transactions_orders.delta")
+            val form = expansionDeltaApp1.saveAs("Existing Delta", "0001_tranformMobileNo_transactions_orders.delta")
             form
          }
 
@@ -166,8 +166,8 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
             form
           }
 
-      8. We create incyWincyTravelApp.midas file with all the nodes ips and changeset information given in
-         "incyWincyTravelApp" folder with mode as expansion.
+      8. We create incyWincyTravelApp.midas file with all the nodes ips and changeset information given
+         with mode as expansion.
          ${
             app2Dir = baseDeltaDir + File.separator + "incyWincyTravelApp"
             app2ConfigFile = Delta(app2Dir, () => {
@@ -206,7 +206,7 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
             form
          }
 
-      11. Add application incyWincyTravelApp to midas.config file in "deltas" folder
+      11. Add application incyWincyTravelApp to midas.config file.
          ${
             baseDeltaDir = "/deltas"
             configFile = Delta(baseDeltaDir, () => {
@@ -221,7 +221,7 @@ class AddAndRemoveApplicationJourney extends Specification with Forms {
             form
           }
 
-      12. IncyWincyTravelApp connects with midas and starts receiving expanded documents.
+      12. IncyWincyTravelApp connects with midas and it starts receiving expanded documents.
          ${
             val form = MongoShell("IncyWincyTravelApp - UpgradedVersion", "127.0.0.1", 27020)
               .useDatabase("users")

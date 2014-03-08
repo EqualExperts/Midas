@@ -91,7 +91,7 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
                 |}
               """.stripMargin
             })
-            val form = configFile.saveAs("Write Config File", "midas.config")
+            val form = configFile.saveAs("Existing Config File", "midas.config")
             form
          }
 
@@ -113,7 +113,7 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
                  }
               """
             })
-            val form = appConfigFile.saveAs("Write Application Config File", "incyWincyShoppingApp.midas")
+            val form = appConfigFile.saveAs("Existing Application Config File", "incyWincyShoppingApp.midas")
             form
          }
 
@@ -121,7 +121,7 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
          ${
             changeSetDirPath = appDir + File.separator + "001AddToOrders"
             changeSetDir = Delta(changeSetDirPath, () => "")
-            var form = Form("Create ChangeSet Folder")
+            var form = Form("Existing ChangeSet Folder")
             form = form.tr("001AddToOrders")
             form
          }
@@ -136,7 +136,7 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
                  db.orders.add('{"ShippingAddress.country": "India"}')
               """
             })
-            val form = expansionDelta.saveAs("Write Delta", "0001_add_CountryToShippingAddress_transactions_orders.delta")
+            val form = expansionDelta.saveAs("Existing Delta", "0001_add_CountryToShippingAddress_transactions_orders.delta")
             form
          }
 
@@ -147,7 +147,7 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
             form
          }
 
-      7. NodeX connects with midas and it receives expanded documents
+      7. NodeX is connected with midas and it is receiving expanded documents.
          ${
             val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "127.0.0.1", 27020)
               .useDatabase("transactions")
@@ -157,8 +157,7 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
             form
          }
 
-      8. Now NodeX is down for maintenance. So, we remove NodeX from "incyWincyShoppingApp.midas" file
-         in "incyWincyShoppingApp" folder in "deltas" folder
+      8. Now NodeX is down for maintenance. So, we remove NodeX from "incyWincyShoppingApp.midas" file.
          ${
             appDir = baseDeltaDir + File.separator + "incyWincyShoppingApp"
             appConfigFile = Delta(appDir, () => {
@@ -175,7 +174,7 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
             form
          }
 
-      9. NodeX try to connect. It is not allowed to connect to midas.
+      9. NodeX try to connect then it is not allowed to connect to midas.
          ${
             val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "127.0.0.1", 27020)
               .useDatabase("transactions")
@@ -184,8 +183,7 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
             form
          }
 
-      10. NodeX is up after maintenance now. So, we add NodeX to "incyWincyShoppingApp.midas" file in
-          "incyWincyShoppingApp" folder in "deltas" folder
+      10. NodeX is up after maintenance now. So, we add NodeX to "incyWincyShoppingApp.midas" file.
          ${
             appDir = baseDeltaDir + File.separator + "incyWincyShoppingApp"
             appConfigFile = Delta(appDir, () => {
@@ -206,7 +204,7 @@ class AddAndRemoveNodeJourney extends Specification with Forms {
             form
          }
 
-      11.  NodeX connects to midas. It starts receiving the expanded documents.
+      11.  NodeX connects to midas and it starts receiving the expanded document again.
          ${
             val form = MongoShell("IncyWincyShoppingApp - UpgradedVersion", "127.0.0.1", 27020)
               .useDatabase("transactions")

@@ -12,15 +12,15 @@ In case, if there is a failure to apply a particular transformation, Midas
 will inject against that field an exception sub-document.  Say for some reason, the
 following split transformation failed:
 
- `db.collection.split('field', 'regex', '{ "firstField": "$1", "secondField": "$2"}')`
+    db.collection.split('field', 'regex', '{ "firstField": "$1", "secondField": "$2"}')
 
 then for each output field, Midas will introduce an exception sub-document instead of a
 value.
 
- `{
-    "firstField": { _errmsg: "exception: blah, blah, ..."},
-    "secondField": { _errmsg: "exception: blah, blah, ..."
-  }`
+    {
+      "firstField": { _errmsg: "exception: blah, blah, ..."},
+      "secondField": { _errmsg: "exception: blah, blah, ..."
+    }
 
 ####Scenario 2
 In an event one of the transformations in a series of transformations fail, then we
@@ -28,11 +28,11 @@ have a case of partially transformed document.  In such a case, Midas will, at
 document level inject a field `_errmsg` field indicating that this is a partially
 transformed document.
 
- `{
-    ...
-    _errmsg: "exception: blah, blah, ...",
-    ...
-  }`
+    {
+      ...
+      _errmsg: "exception: blah, blah, ...",
+      ...
+    }
 
 
 ##Commands Reference
@@ -63,24 +63,24 @@ Like JavaScript, you can use quotes inside a string, as long as they don't match
 quotes surrounding the string                                                                       
                                                                                        
 ####Examples                                                                                           
-`db.collection.add('{ "fieldOne" : "valueOne"}')`                                              
-`db.collection.add('{ "fieldOne" : "valueOne", "nested.fieldTwo" : 2, ... }')`                 
-`db.collection.add("{ 'fieldOne' : 'valueOne', 'nested' : { 'fieldTwo' : 2}, ... }")`          
-`db.collection.add("{ 'arrayField' : ['one', 'two', ...] }")`                                  
+    db.collection.add('{ "fieldOne" : "valueOne"}')
+    db.collection.add('{ "fieldOne" : "valueOne", "nested.fieldTwo" : 2, ... }')
+    db.collection.add("{ 'fieldOne' : 'valueOne', 'nested' : { 'fieldTwo' : 2}, ... }")
+    db.collection.add("{ 'arrayField' : ['one', 'two', ...] }")
                                                                                                     
-Add age field with default value 0 to all documents that do not have one
-`db.customers.add('{"age" : 0 }')`
+    //Add age field with default value 0 to all documents that do not have one
+    db.customers.add('{"age" : 0 }')
 
 ###The remove command
 Remove single or multiple fields
 
 ####Syntax
-  `db.collection.remove('["fieldOne", "nested.fieldTwo", "arrayField", ...]')`
-  `db.collection.remove("['fieldOne', 'nested.fieldTwo', 'arrayField', ...]")`
+`db.collection.remove('["fieldOne", "nested.fieldTwo", "arrayField", ...]')`
+`db.collection.remove("['fieldOne', 'nested.fieldTwo', 'arrayField', ...]")`
  
 ####Examples
-`db.customers.remove("['age']")`
-`db.orders.remove("['dispatch.status']")`
+   db.customers.remove("['age']")
+   db.orders.remove("['dispatch.status']")
 
 ###The copy command
 Copies value from a field to another, if the target field does not exist, create one.
@@ -91,8 +91,8 @@ Source and target fields can be nested.
 `db.collection.copy("fromFieldName", "toFieldName")`
 
 ####Examples
-`use users`
-`db.customers.copy('pin', 'address.zip')`
+    use users
+    db.customers.copy('pin', 'address.zip')
 
 ###The merge command
 Merge the given source fields into a target field using a user-defined separator.  Separator can be any punctuations, symbols, spaces, alphanumeric string
@@ -102,8 +102,8 @@ Merge the given source fields into a target field using a user-defined separator
 `db.collection.merge("['fieldOne', 'fieldTwo', ...]", "usingSeparator", "targetField")`
 
 ####Examples
-`use users`
-`db.customers.merge('["title", "lname", "fname"]', ' ', 'details.name')`
+    use users
+    db.customers.merge('["title", "lname", "fname"]', ' ', 'details.name')
 
 ###The split command
 Split a field in to multiple fields using a user-defined regex.  The regex must contain groups that can be extracted and 
@@ -114,8 +114,8 @@ values extracted from there will be applied to the newly created fields.
 `db.collection.split("field", "regex", "{ 'firstField': '$1', 'secondField': '$2', ... }")`
 
 ####Examples
-`use users`
-`db.customers.split('details.name', '^(Mr|Mrs|Ms|Miss) ([a-zA-Z]+) ([a-zA-Z]+)$', '{"title": "$1", "fullName": { "firstName": "$2", "lastName": "$3" }}')`
+use users
+db.customers.split('details.name', '^(Mr|Mrs|Ms|Miss) ([a-zA-Z]+) ([a-zA-Z]+)$', '{"title": "$1", "fullName": { "firstName": "$2", "lastName": "$3" }}')
 
 ###The transform command
 Transform a field by using a built-in transformation functions.  Transformation function is a built-in function that takes in values or input fields 

@@ -253,7 +253,7 @@ class SnippetProviderSpecs extends Specification {
       val snippet = provideSnippet(verb, args)
 
       //Then
-      val expectedBSONObject = new BasicBSONObject("age", new BasicBSONObject("errmsg",  """exception: For input string: "someString""""))
+      val expectedBSONObject = new BasicBSONObject("age", new BasicBSONObject("_errmsg",  """exception: For input string: "someString""""))
       snippet(document) mustEqual expectedBSONObject
     }
 
@@ -268,9 +268,9 @@ class SnippetProviderSpecs extends Specification {
 
       //Then
       val expectedBSONObject = new BasicBSONObject("name", "Mr John Smith")
-      expectedBSONObject.put("firstName", new BasicBSONObject("errmsg", "exception: Cannot parse ^Mr|Mrs|Ms|Miss ([a-zA-Z]+) ([a-zA-Z]+)$"))
-      expectedBSONObject.put("lastName", new BasicBSONObject("errmsg", "exception: Cannot parse ^Mr|Mrs|Ms|Miss ([a-zA-Z]+) ([a-zA-Z]+)$"))
-      expectedBSONObject.put("title", new BasicBSONObject("errmsg", "exception: Cannot parse ^Mr|Mrs|Ms|Miss ([a-zA-Z]+) ([a-zA-Z]+)$"))
+      expectedBSONObject.put("firstName", new BasicBSONObject("_errmsg", "exception: Cannot parse ^Mr|Mrs|Ms|Miss ([a-zA-Z]+) ([a-zA-Z]+)$"))
+      expectedBSONObject.put("lastName", new BasicBSONObject("_errmsg", "exception: Cannot parse ^Mr|Mrs|Ms|Miss ([a-zA-Z]+) ([a-zA-Z]+)$"))
+      expectedBSONObject.put("title", new BasicBSONObject("_errmsg", "exception: Cannot parse ^Mr|Mrs|Ms|Miss ([a-zA-Z]+) ([a-zA-Z]+)$"))
       snippet(document) mustEqual expectedBSONObject
     }
   }

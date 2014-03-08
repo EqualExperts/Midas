@@ -14,22 +14,33 @@ and Java drivers) and their versions within those languages.
 Further, Midas is agnostic of the MongoDB configurations like Standalone, Replica Sets, Sharded environments.
 
 Features Summary:
-* Schema migration for multiple applications simultaneously
-* Support multi node configuration for application
 * Expansion operations - add, copy, merge, split, transform.
 * Contraction operations - remove
-* Addition and removal of application on the fly
-* Addition and removal of nodes on the fly
-* Addition and removal of deltas/changeset on the fly
+* Schema migration for multiple applications simultaneously
+* Support multi node configuration for application
+* Without shutting down Midas, you can -
+  * Add or remove applications on-the-fly
+  * Add or remove nodes on-the-fly
+  * Add or remove deltas/changeset on-the-fly
 
-Pre-Requisites
+Documentation:
+* On how to write delta scripts, follow the conventions given in Midas-Overview-Guide.pdf
+* Midas Command Reference (Midas-Commands.md) is available in the documentation section
+  of this distribution.
+* Further, documentation of scenarios in the form of user journeys are available within
+  the journeys folder under documentation of this distribution.  These are all executable
+  specifications.
+
+Pre-Requisites:
 * It assumes that you have JDK1.6 or 1.7 installed and you have java
 in your path.
 
-Running Midas
+Running Midas:
 * After having exploded the Midas zip -
-  * For Unix machine, grant executable permissions to midas.sh script.
-  * In order to start Midas, run midas.sh/midas.bat backing up a MongoDB (participating in a ReplicaSet), you need to provide
-    path of deltas directory, mongoHost, mongoPort, midasHost and midasPort.
-  * For delta scripts follow the conventions given in Midas-Overview-Guide.pdf
+  * For Unix machines, grant executable permissions to midas.sh script (chmod +x midas.sh)
+  * For Windows, run midas.bat to start Midas.
+  * By default, it runs on localhost and port 27020 and assumes mongod is also running
+    on localhost and its default port 27017.  It watches the deltas directory within this
+    distribution.  All these default settings can be overridden by you.  Type midas --help
+    at the prompt for the settings
 

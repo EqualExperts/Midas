@@ -13,7 +13,7 @@ apply plugin: 'pmd'
 
 idea {
     module {
-       testSourceDirs += file('smoke-tests')
+       testSourceDirs += file('acceptance-tests/drivers/java/driver-version-2.11.3')
     }
 }
 defaultTasks 'clean', 'build'

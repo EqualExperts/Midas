@@ -38,7 +38,7 @@ import org.specs2.runner.JUnitRunner
 import com.ee.midas.fixtures.MidasUtils
 import java.io.{PrintWriter, File}
 import java.net.{URL, InetAddress}
-import com.ee.midas.config._
+import com.ee.midas.model._
 import com.ee.midas.transform.TransformType
 
 @RunWith(classOf[JUnitRunner])

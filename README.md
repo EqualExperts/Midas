@@ -12,7 +12,7 @@
   Further, Midas is Agnostic of the MongoDB configurations like Standalone, Replica Sets, Sharded environments.
 <br>
 ## Documentation
-* Midas Overview and Guide.
+* Download <a href="https://github.com/EqualExperts/Midas/blob/master/distribution-template/documentation/Midas-Overview-Guide.pdf?raw=true">Midas Overview and Guide.</a>
 <iframe src="http://www.slideshare.net/slideshow/embed_code/32066219" width="427" height="356" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC; border-width:1px 1px 0; margin-bottom:5px; max-width: 100%;"></iframe>
 * Midas [Command Reference](https://github.com/EqualExperts/Midas/blob/master/distribution-template/documentation/Midas-Commands.md)
 * Additionally, as a part of distribution, you can refer to the ReadMe.txt and have executable specifications that double up as documentation simultaneously.  User journeys therein will help you gain better understanding when using Midas. 

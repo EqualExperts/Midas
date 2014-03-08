@@ -32,8 +32,6 @@
 package com.ee.midas.run
 
 import org.specs2._
-import runner.SpecificationsFinder._
-import org.specs2.specification.Fragments
 
 class Index extends Specification { def is = "Midas Journeys".title ^ s2"""
    M I D A S

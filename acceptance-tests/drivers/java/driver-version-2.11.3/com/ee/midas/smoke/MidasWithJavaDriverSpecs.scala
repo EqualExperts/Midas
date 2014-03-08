@@ -29,18 +29,98 @@
 * official policies, either expressed or implied, of the Midas Project.
 ******************************************************************************/
 
-package com.ee.midas.acceptance
+package com.ee.midas.smoke
 
 import com.mongodb._
 import org.junit.runner.RunWith
 import org.specs2.Specification
 import org.specs2.runner.JUnitRunner
+import com.ee.midas.fixtures.MidasUtils
+import java.io.{PrintWriter, File}
+import java.net.{URL, InetAddress}
+import com.ee.midas.config._
+import com.ee.midas.transform.TransformType
 
 @RunWith(classOf[JUnitRunner])
 class MidasWithJavaDriverSpecs extends Specification {
 
   var application: MongoClient = null
   var document:DBObject = null
+
+  object DeltasSetup {
+    val deltasDirPath = System.getProperty("user.dir") + File.separator + "/deltas"
+    val deltasDir: File = new File(deltasDirPath)
+
+    val appName1 = "app1"
+    val ipAddress1 = InetAddress.getByName("127.0.0.1")
+    val nodeApp1 = new Node("node1", ipAddress1, ChangeSet(0))
+
+    def createApplications = {
+      createNewApplication(deltasDir.toURI.toURL, appName1, TransformType.EXPANSION, Set[Node](nodeApp1))
+    }
+
+    def createConfigurations = {
+      createNewConfiguration(deltasDir.toURI.toURL, List(appName1))
+    }
+
+    def after = {
+      delete(deltasDir)
+    }
+
+    def delete(directory: File): Unit = {
+      directory.listFiles() foreach { file =>
+        if(file.isFile) {
+          println(s"deleting file: ${file.getAbsolutePath}")
+          file.delete()
+        }
+        else if(file.isDirectory){
+          delete(file)
+        }
+      }
+      println(s"deleting directory: ${directory.getAbsolutePath}")
+      directory.delete()
+    }
+
+    def createNewApplication(deltasDirURL: URL, appName: String, transformType: TransformType, nodes: Set[Node]) = {
+      val appConfigDir = new File(s"${deltasDirURL.toURI.getPath}/$appName")
+      appConfigDir.mkdirs()
+      val appConfigFile = new File(s"${appConfigDir.getAbsolutePath}/$appName.midas")
+      appConfigFile.createNewFile()
+      val appConfigText = s"""
+                            |$appName {
+                            |  mode = ${transformType.name.toLowerCase}
+                            |  ${nodes mkString (NEW_LINE).trim}
+                            |}
+                           """.stripMargin
+      println(s"writing to file: $appConfigText")
+      write(appConfigText, appConfigFile)
+    }
+
+
+    val NEW_LINE = System.getProperty("line.separator")
+
+
+    def createNewConfiguration(deltasDirURL: URL, appNames: List[String]) = {
+      val configDir = new File(s"${deltasDirURL.toURI.getPath}")
+      configDir.mkdirs()
+      val configFile = new File(s"${configDir.getAbsolutePath}/midas.config")
+      configFile.createNewFile()
+
+      val configFileText = s"""
+                              |apps {
+                              |  ${appNames.mkString(NEW_LINE)}
+                              |}
+                             """.stripMargin
+      write(configFileText, configFile)
+    }
+
+    def write(text: String, toFile: File) = {
+      val writer = new PrintWriter(toFile, "utf-8")
+      writer.write(text)
+      writer.flush()
+      writer.close()
+    }
+  }
 
   def is = sequential ^ s2"""
     Narration:
@@ -49,6 +129,8 @@ class MidasWithJavaDriverSpecs extends Specification {
 
     A client application should
         Step 1: Ensure Midas and mongods are running
+            Create Application setup         $createApplication
+            Start Midas                      $startMidas
             Connect to Midas                 $connect
 
         Step 2: Perform CRUD operations
@@ -60,7 +142,29 @@ class MidasWithJavaDriverSpecs extends Specification {
 
         Step 3: Close connection to Midas
             Disconnect                       $disconnect
+            Stop Midas                       $stopMidas
+            Clean up the deltas              $deleteApplication
                                                                """
+
+  def stopMidas = {
+    MidasUtils.stopMidas(27020)
+    true
+  }
+  def startMidas = {
+    MidasUtils.startMidas(s"--port 27020 --deltasDir ${DeltasSetup.deltasDirPath}")
+    true
+  }
+
+  def createApplication = {
+    DeltasSetup.createApplications
+    DeltasSetup.createConfigurations
+    true
+  }
+
+  def deleteApplication = {
+    DeltasSetup.delete(DeltasSetup.deltasDir)
+    true
+  }
 
   def connect = {
     application = new MongoClient("localhost", 27020)

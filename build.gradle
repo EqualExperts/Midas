@@ -90,8 +90,8 @@ project.ext {
     documentationDir = "distribution-template/documentation/"
     journeysDir = "${documentationDir}/journeys"
 
-    javaTestDir = "$acceptanceTestDir/java/driver-version-2.11.3"
-    javaTestReportsDir = "$acceptanceTestReportsDir/java"
+    javaAcceptanceTestDir = "$acceptanceTestDir/java/driver-version-2.11.3"
+    javaAcceptanceTestReportsDir = "$acceptanceTestReportsDir/java"
     pythonTestDir = "$acceptanceTestDir/python/driver-version-2.6.3"
     pythonTestReportsDir = "$acceptanceTestReportsDir/python"
 
@@ -118,22 +118,27 @@ sourceSets.main.scala.srcDirs += ["src/main/java", "src/main/groovy"]
 sourceSets.main.groovy.srcDirs += ["src/main/java"]
 
 test {
-    exclude '**/run/*.class', '**/sample/*.class', '**/acceptance/*.class'
+    exclude '**/smoke/*.class', '**/sample/*.class', '**/run/*.class'
 }
 
-task ('smoke-tests', dependsOn: 'unzip') << {
+task ('smoke-tests') << {
     println "Running smoke tests..."
-    runJVMAcceptanceTests(project.ext.smokeTestsDir, project.ext.smokeTestReportsDir)
-    copy {
-        from (project.ext.smokeTestReportsDir)
-        into "${project.ext.journeysDir}"
+    javaexec {
+        main = 'specs2.run'
+        classpath = project.sourceSets.test.runtimeClasspath
+        args = ['com.ee.midas.smoke.MidasWithJavaDriverSpecs']
     }
 }
 
-task ('acceptance-tests', dependsOn: ['unzip', 'cleanAcceptanceReportsDir']) << {
+task ('acceptance-tests', dependsOn: ['cleanAcceptanceReportsDir']) << {
     println "Running acceptance tests..."
     project.ext.language == 'python'? runPythonTests(project.ext.pythonTestDir, project.ext.pythonTestReportsDir) :
-        runJVMAcceptanceTests(project.ext.javaTestDir, project.ext.javaTestReportsDir)
+        runJVMAcceptanceTests(project.ext.javaAcceptanceTestDir, project.ext.javaAcceptanceTestReportsDir)
+
+    copy {
+        from (project.ext.javaAcceptanceTestReportsDir)
+        into "${project.ext.journeysDir}"
+    }
 }
 
 task ('startMidas', dependsOn: ['killMidas', 'unzip']) << {
@@ -149,25 +154,12 @@ task ('killMidas') << {
 }
 
 def runJVMAcceptanceTests(String srcFolder, String reportsFolder) {
-    def zipFile = file("${project.distsDir}/${project.archivesBaseName}.zip")
-    if(!zipFile.exists()) {
-        throw new RuntimeException(">>> Please run gradle to build the binary distributable ${project.archivesBaseName}.zip first!")
-    }
-    def runtimeClasspath = fileTree(dir: "${project.ext.explodedDir}/libs", include: '*.jar')
-    runtimeClasspath = runtimeClasspath + fileTree(dir: project.distsDir, include: '*.jar')
-    runtimeClasspath = runtimeClasspath + project.sourceSets.test.runtimeClasspath
-
-    def testReportsDir = new File(reportsFolder)
-    if(!testReportsDir.exists()) {
-        testReportsDir.mkdirs()
-    }
-
     javaexec {
         systemProperties['specs2.srcTestDir'] = srcFolder
         systemProperties['specs2.outDir'] = reportsFolder
         systemProperties['specs2.junit.outDir'] = reportsFolder
         main = 'org.specs2.files'
-        classpath = runtimeClasspath
+        classpath = project.sourceSets.test.runtimeClasspath
         args = ['html', 'junitxml', 'filesrunner.verbose', 'filesrunner.pattern', '(.*Specs)|(Index.*)']
     }
 }
@@ -241,7 +233,7 @@ jar {
 task ('createTestJar', type: Jar) {
     baseName = "${project.archivesBaseName}-test"
     destinationDir = project.distsDir
-    includes = ['**/acceptance/*.class']
+    includes = ['**/smoke/*.class', '**/fixtures/*.class', '**/run/*.class']
     includeEmptyDirs = false
     from sourceSets.test.output
 }
@@ -293,7 +285,7 @@ cobertura {
     coverageCheckHaltOnFailure = true
 }
 
-task distribute(type:Zip, dependsOn: assemble) {
+task distribute(type:Zip, dependsOn: ['assemble', 'acceptance-tests']) {
     doFirst {
         ant.mkdir(dir:"$distsBinDirName")
         prepareExecutables()
@@ -302,6 +294,8 @@ task distribute(type:Zip, dependsOn: assemble) {
     from (project.ext.distsTemplateDir) {
         include ('**/*.txt')
     }
+    from (project.ext.documentationDir) { include ('**/*.pdf') into ('docs') }
+    from (project.ext.javaAcceptanceTestReportsDir) { into ('docs/journeys') }
     from (project.ext.resourcesDir) {
         exclude('*.properties')
     }
@@ -387,4 +381,4 @@ def killFirst(def processName) {
 }
 
 check.dependsOn << ['scalastyle']
-build.dependsOn = ['check', 'cobertura', 'coberturaCheck', 'smoke-tests', 'createTestJar', 'distribute']
+build.dependsOn = ['check', 'cobertura', 'coberturaCheck', 'distribute']

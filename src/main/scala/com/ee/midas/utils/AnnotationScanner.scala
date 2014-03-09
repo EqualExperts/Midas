@@ -31,11 +31,11 @@
 
 package com.ee.midas.utils
 
-import scala.tools.asm._
 import java.io.File
 import java.nio.file._
 import java.util.regex.Pattern
 import java.net.URI
+import org.objectweb.asm.{ClassReader, AnnotationVisitor, Opcodes, ClassVisitor}
 
 class AnnotationScanner(pkg: String, annotationClass: Class[_]) extends Loggable {
   private val fsSlashifiedPkg = fsSlashify(pkg)

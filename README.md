@@ -19,7 +19,7 @@
 
 
 ## Binary Distributions
-Todo
+Please download the binaries from [here](http://eelabs.co.uk/projects/midas/)
 
 ## Build Info
 We are using Gradle 1.8 for our builds.  Please do not checkin Eclipse or Intellij or any IDE specific files.  

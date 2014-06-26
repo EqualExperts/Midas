@@ -164,7 +164,7 @@ class SnippetProviderSpecs extends Specification {
       val snippet = provideSnippet(verb, args)
 
       //Then
-      val expectedBSONObject = new BasicBSONObject("age", 11)
+      val expectedBSONObject = new BasicBSONObject("age", 11.0)
       snippet(document) mustEqual expectedBSONObject
     }
 
@@ -174,7 +174,7 @@ class SnippetProviderSpecs extends Specification {
       val args: Array[String] = Array("age", """{ $subtract: ["$age", 1] }""")
       val document: BSONObject = new BasicBSONObject()
       document.put("age", 10)
-      val expectedBSONObject = new BasicBSONObject("age", 9)
+      val expectedBSONObject = new BasicBSONObject("age", 9.0)
 
       //When
       val snippet = provideSnippet(verb, args)
@@ -189,7 +189,7 @@ class SnippetProviderSpecs extends Specification {
       val args: Array[String] = Array("age", """{ $multiply: ["$age", 2] }""")
       val document: BSONObject = new BasicBSONObject()
       document.put("age", 10)
-      val expectedBSONObject = new BasicBSONObject("age", 20)
+      val expectedBSONObject = new BasicBSONObject("age", 20.0)
 
       //When
       val snippet = provideSnippet(verb, args)
@@ -204,7 +204,7 @@ class SnippetProviderSpecs extends Specification {
       val args: Array[String] = Array("age", """{ $divide: ["$age", 2] }""")
       val document: BSONObject = new BasicBSONObject()
       document.put("age", 10)
-      val expectedBSONObject = new BasicBSONObject("age", 5)
+      val expectedBSONObject = new BasicBSONObject("age", 5.0)
 
       //When
       val snippet = provideSnippet(verb, args)
@@ -219,7 +219,7 @@ class SnippetProviderSpecs extends Specification {
       val args: Array[String] = Array("age", """{ $mod: ["$age", 2] }""")
       val document: BSONObject = new BasicBSONObject()
       document.put("age", 10)
-      val expectedBSONObject = new BasicBSONObject("age", 0)
+      val expectedBSONObject = new BasicBSONObject("age", 0.0)
 
       //When
       val snippet = provideSnippet(verb, args)

@@ -75,7 +75,7 @@ case class MongoShell(formName: String, host: String, port: Int) extends FormBui
   def update(collection: String, findQuery: DBObject, updateDocument: DBObject) = {
      val result: WriteResult = db.getCollection(collection).update(findQuery, updateDocument)
      val query = collection + ".update(" + findQuery + ", " + updateDocument + ")"
-     shell = shell.tr(prop(query, result.get.getField("updatedExisting"), true))
+     shell = shell.tr(prop(query, result.isUpdateOfExisting, true))
      this
   }
 

@@ -40,13 +40,13 @@ import java.io.{PrintWriter, File}
 import java.net.{URL, InetAddress}
 import com.ee.midas.model._
 import com.ee.midas.transform.TransformType
+import org.specs2.specification.Fragments
 
 @RunWith(classOf[JUnitRunner])
 class CrudSpecs extends Specification {
 
   var application: MongoClient = null
   var document:DBObject = null
-
   object DeltasSetup {
     val deltasDirPath = System.getProperty("user.dir") + File.separator + "/deltas"
     val deltasDir: File = new File(deltasDirPath)

@@ -13,7 +13,7 @@ apply plugin: 'pmd'
 
 idea {
     module {
-       testSourceDirs += file('acceptance-tests/drivers/java/driver-version-2.11.3')
+       testSourceDirs += file('acceptance-tests/drivers/java/driver-version-2.12.2')
        testSourceDirs += file('acceptance-tests/journeys/scala')
     }
 }
@@ -33,7 +33,7 @@ project.ext {
     previousArchiveName = appConfig.product.distribution.previousArchiveName
 
     //libs
-    mongoDriver = 'org.mongodb:mongo-java-driver:2.11.3'
+    mongoDriver = 'org.mongodb:mongo-java-driver:2.12.2'
     groovy = 'org.codehaus.groovy:groovy-all:2.2.0'
     scala = 'org.scala-lang:scala-library:2.10.2'
     asm = 'org.ow2.asm:asm:4.1'

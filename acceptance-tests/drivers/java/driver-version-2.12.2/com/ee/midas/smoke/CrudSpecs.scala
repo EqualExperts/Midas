@@ -168,7 +168,7 @@ class CrudSpecs extends Specification {
 
   def connect = {
     application = new MongoClient("localhost", 27020)
-    application.getConnector.isOpen
+    application mustNotEqual null
   }
 
   def insert = {
@@ -176,14 +176,14 @@ class CrudSpecs extends Specification {
     def database:DB = application.getDB("midasSmokeTest")
     def collection:DBCollection = database.getCollection("tests")
     def result:WriteResult = collection.insert(document)
-    result.getError == null
+    result.isUpdateOfExisting == true
   }
 
   def read = {
     def database:DB = application.getDB("midasSmokeTest")
     def collection:DBCollection = database.getCollection("tests")
     def readDocument:DBObject = collection.findOne()
-    readDocument == document
+    readDocument mustEqual document
   }
 
   def update = {
@@ -192,14 +192,14 @@ class CrudSpecs extends Specification {
     def document = collection.findOne
     document.put("version", 1)
     def result:WriteResult = collection.update(collection.findOne, document)
-    result.getError == null
+    result.isUpdateOfExisting mustEqual true
   }
 
   def delete = {
     def database:DB = application.getDB("midasSmokeTest")
     def collection:DBCollection = database.getCollection("tests")
     def result:WriteResult = collection.remove(document)
-    result.getError == null
+    result.isUpdateOfExisting mustEqual true
   }
 
   def drop = {
@@ -211,6 +211,6 @@ class CrudSpecs extends Specification {
 
   def disconnect = {
     application.close()
-    application.getConnector.isOpen must beFalse
+    application mustEqual null
   }
 }
